@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Apple Semantic Colors - Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    /* Apple System Colors */
+    --primary: 211 100% 50%;        /* Apple Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --tertiary: 0 0% 98%;
+    --tertiary-foreground: 0 0% 20%;
+    
+    /* Apple Label Colors */
+    --label-primary: 0 0% 0%;
+    --label-secondary: 0 0% 23.5%;
+    --label-tertiary: 0 0% 42%;
+    --label-quaternary: 0 0% 57%;
+    
+    /* Apple Fill Colors */
+    --fill-primary: 0 0% 47% / 0.2;
+    --fill-secondary: 0 0% 47% / 0.16;
+    --fill-tertiary: 0 0% 46% / 0.12;
+    --fill-quaternary: 0 0% 46% / 0.08;
+    
+    /* Apple Separator Colors */
+    --separator-opaque: 0 0% 78%;
+    --separator-non-opaque: 0 0% 23% / 0.29;
+    
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 211 100% 50%;
+    --radius: 8px;  /* Apple's 8pt grid */
+  }
+
+  .dark {
+    /* Apple Semantic Colors - Dark Mode */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
+    
+    /* Apple System Colors - Dark */
+    --primary: 211 100% 64%;        /* Apple Blue Dark */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --tertiary: 0 0% 11%;
+    --tertiary-foreground: 0 0% 80%;
+    
+    /* Apple Label Colors - Dark */
+    --label-primary: 0 0% 100%;
+    --label-secondary: 0 0% 76.5%;
+    --label-tertiary: 0 0% 58%;
+    --label-quaternary: 0 0% 43%;
+    
+    /* Apple Fill Colors - Dark */
+    --fill-primary: 0 0% 78% / 0.36;
+    --fill-secondary: 0 0% 78% / 0.32;
+    --fill-tertiary: 0 0% 77% / 0.24;
+    --fill-quaternary: 0 0% 77% / 0.18;
+    
+    /* Apple Separator Colors - Dark */
+    --separator-opaque: 0 0% 22%;
+    --separator-non-opaque: 0 0% 84% / 0.65;
+    
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 211 100% 64%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 211 100% 64%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Apple-inspired typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  
+  /* Smooth transitions */
+  * {
+    @apply transition-colors duration-200;
+  }
+  
+  /* Focus styles following Apple HIG */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  /* Apple Typography Styles */
+  .text-large-title {
+    font-size: 34px;
+    line-height: 41px;
+    font-weight: 700;
+    letter-spacing: 0.374px;
+  }
+
+  .text-title-1 {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: 0.364px;
+  }
+
+  .text-title-2 {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 700;
+    letter-spacing: 0.352px;
+  }
+
+  .text-title-3 {
+    font-size: 20px;
+    line-height: 25px;
+    font-weight: 600;
+    letter-spacing: 0.38px;
+  }
+
+  .text-headline {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 600;
+    letter-spacing: -0.408px;
+  }
+
+  .text-body {
+    font-size: 17px;
+    line-height: 22px;
+    font-weight: 400;
+    letter-spacing: -0.408px;
+  }
+
+  .text-callout {
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: 400;
+    letter-spacing: -0.32px;
+  }
+
+  .text-subhead {
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 400;
+    letter-spacing: -0.24px;
+  }
+
+  .text-footnote {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+    letter-spacing: -0.078px;
+  }
+
+  .text-caption-1 {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+    letter-spacing: 0px;
+  }
+
+  .text-caption-2 {
+    font-size: 11px;
+    line-height: 13px;
+    font-weight: 400;
+    letter-spacing: 0.066px;
+  }
+
+  /* Apple Button Styles */
+  .btn-apple {
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    @apply btn-apple bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply btn-apple bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-tertiary {
+    @apply btn-apple bg-transparent border border-border text-foreground hover:bg-secondary/50;
+  }
+
+  /* Apple Card Styles */
+  .card-apple {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Card component */
+  .card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* Apple Focus Styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  .focus-ring-inset {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset;
+  }
+
+  /* Apple Separator */
+  .separator {
+    background: hsl(var(--separator-opaque));
+    height: 1px;
+  }
+
+  .separator-non-opaque {
+    background: hsl(var(--separator-non-opaque));
+    height: 1px;
+  }
+  
+  /* Input styles */
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
