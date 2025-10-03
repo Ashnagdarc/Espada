@@ -1,15 +1,16 @@
 'use client'
 
 import Image from 'next/image'
-import { useCart } from '@/contexts/CartContext'
+import { useCartWithToast } from '@/hooks/useCartWithToast'
 import { formatPrice } from '@/lib/utils'
+import { Minus, Plus, X } from 'lucide-react'
 
 interface OrderSummaryProps {
   className?: string
 }
 
 export default function OrderSummary({ className }: OrderSummaryProps) {
-  const { state } = useCart()
+  const { state, removeItem, updateQuantity } = useCartWithToast()
 
   const subtotal = state.total
   const shipping = 0 // Free shipping
@@ -48,16 +49,35 @@ export default function OrderSummary({ className }: OrderSummaryProps) {
                 <span>{item.size}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  Qty: {item.quantity}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.color, item.size, Math.max(0, item.quantity - 1))}
+                    className="w-6 h-6 rounded-full border border-separator bg-background hover:bg-fill-secondary transition-colors flex items-center justify-center"
+                    disabled={item.quantity <= 1}
+                  >
+                    <Minus className="w-3 h-3 text-label-secondary" />
+                  </button>
+                  <span className="text-xs text-label-primary min-w-[20px] text-center" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                    {item.quantity}
+                  </span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.color, item.size, item.quantity + 1)}
+                    className="w-6 h-6 rounded-full border border-separator bg-background hover:bg-fill-secondary transition-colors flex items-center justify-center"
+                  >
+                    <Plus className="w-3 h-3 text-label-secondary" />
+                  </button>
+                </div>
                 <span className="text-sm font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  ${item.price}
+                  ${(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             </div>
-            <button className="text-xs text-label-secondary hover:text-label-primary transition-colors" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-              Change
+            <button
+              onClick={() => removeItem(item.id, item.color, item.size)}
+              className="w-6 h-6 rounded-full border border-separator bg-background hover:bg-fill-secondary transition-colors flex items-center justify-center group"
+              title="Remove item"
+            >
+              <X className="w-3 h-3 text-label-secondary group-hover:text-red-500 transition-colors" />
             </button>
           </div>
         ))}

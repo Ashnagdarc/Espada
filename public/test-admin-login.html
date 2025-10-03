@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Login</title>
+</head>
+<body>
+    <h1>Test Admin Login</h1>
+    <button onclick="loginAndRedirect()">Login as Admin and Go to Dashboard</button>
+    <div id="status"></div>
+
+    <script>
+        async function loginAndRedirect() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = 'Logging in...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    statusDiv.innerHTML = 'Login successful! Redirecting...';
+                    // Store session token in sessionStorage
+                    sessionStorage.setItem('adminAuth', result.sessionToken);
+                    // Redirect to admin dashboard
+                    window.location.href = 'http://localhost:3000/admin';
+                } else {
+                    statusDiv.innerHTML = 'Login failed: ' + result.message;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

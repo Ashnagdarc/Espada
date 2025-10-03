@@ -1,0 +1,135 @@
+[
+  {
+    "id": "prod_001",
+    "name": "Classic White T-Shirt",
+    "description": "Premium cotton t-shirt with a comfortable fit. Perfect for everyday wear.",
+    "price": 29.99,
+    "category": "T-Shirts",
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "White",
+      "Black",
+      "Gray"
+    ],
+    "images": [
+      "/images/mg0tjbpx-alzkptj.png",
+      "/images/mg0tjbpx-e6qwv49.png"
+    ],
+    "stock": 50,
+    "featured": true,
+    "createdAt": "2024-01-15T10:00:00.000Z",
+    "updatedAt": "2024-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "prod_002",
+    "name": "Denim Jacket",
+    "description": "Vintage-style denim jacket with a modern twist. Durable and stylish.",
+    "price": 89.99,
+    "category": "Jackets",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Blue",
+      "Black"
+    ],
+    "images": [
+      "/images/mg0tjbpx-2myp9b6.png",
+      "/images/mg0tjbpx-j2fwoy5.png"
+    ],
+    "stock": 25,
+    "featured": false,
+    "createdAt": "2024-01-16T14:30:00.000Z",
+    "updatedAt": "2024-01-16T14:30:00.000Z"
+  },
+  {
+    "id": "prod_003",
+    "name": "Slim Fit Jeans",
+    "description": "Comfortable slim fit jeans made from premium denim. Perfect for any occasion.",
+    "price": 79.99,
+    "category": "Jeans",
+    "sizes": [
+      "28",
+      "30",
+      "32",
+      "34",
+      "36"
+    ],
+    "colors": [
+      "Dark Blue",
+      "Light Blue",
+      "Black"
+    ],
+    "images": [
+      "/images/mg0tjbpx-ed9lslb.png",
+      "/images/mg0tjbpx-ls0hfxw.png"
+    ],
+    "stock": 35,
+    "featured": true,
+    "createdAt": "2024-01-17T09:15:00.000Z",
+    "updatedAt": "2024-01-17T09:15:00.000Z"
+  },
+  {
+    "id": "prod_004",
+    "name": "Casual Sneakers",
+    "description": "Comfortable and stylish sneakers for everyday wear. Breathable and durable.",
+    "price": 119.99,
+    "category": "Shoes",
+    "sizes": [
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "colors": [
+      "White",
+      "Black",
+      "Navy"
+    ],
+    "images": [
+      "/images/mg0tjbpx-qewhy9z.png",
+      "/images/mg0tjbpx-req7hd7.png"
+    ],
+    "stock": 8,
+    "featured": false,
+    "createdAt": "2024-01-18T16:45:00.000Z",
+    "updatedAt": "2024-01-18T16:45:00.000Z"
+  },
+  {
+    "id": "prod_005",
+    "name": "Wool Sweater",
+    "description": "Cozy wool sweater perfect for cold weather. Soft and warm.",
+    "price": 99.99,
+    "category": "Sweaters",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "colors": [
+      "Gray",
+      "Navy",
+      "Burgundy"
+    ],
+    "images": [
+      "/images/mg0tjbq2-3h6yy6x.png",
+      "/images/mg0tjbq2-6rgezts.png"
+    ],
+    "stock": 20,
+    "featured": true,
+    "createdAt": "2024-01-19T11:20:00.000Z",
+    "updatedAt": "2024-01-19T11:20:00.000Z"
+  }
+]

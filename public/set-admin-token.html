@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Admin Token</title>
+</head>
+<body>
+    <h1>Setting Admin Token...</h1>
+    <p id="status">Setting token...</p>
+    
+    <script>
+        // Set the correct admin session token
+        sessionStorage.setItem('adminAuth', 'test-session');
+        console.log('✅ Admin token set:', sessionStorage.getItem('adminAuth'));
+        
+        document.getElementById('status').innerHTML = '✅ Token set successfully! Redirecting to admin dashboard...';
+        
+        // Redirect to admin dashboard after a short delay
+        setTimeout(() => {
+            window.location.href = '/admin';
+        }, 1000);
+    </script>
+</body>
+</html>

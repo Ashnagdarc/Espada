@@ -119,8 +119,8 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        'gilroy': ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
-        'sans': ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
+        'gilroy': ['Gilroy', 'system-ui', 'sans-serif'],
+        'sans': ['Gilroy', 'system-ui', 'sans-serif'],
       },
     },
   },

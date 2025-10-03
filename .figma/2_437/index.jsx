@@ -10,7 +10,7 @@ const Component = () => {
         <div className={styles.autoWrapper}>
           <div className={styles.group3}>
             <p className={styles.home}>Home</p>
-            <p className={styles.collections}>Collections</p>
+            <p className={styles.products}>Products</p>
             <p className={styles.deals}>Deals</p>
           </div>
           <div className={styles.rectangle1}>

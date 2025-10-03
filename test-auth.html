@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Auth</title>
+</head>
+<body>
+    <h1>Admin Auth Test</h1>
+    <button onclick="clearSession()">Clear Session</button>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testOrders()">Test Orders API</button>
+    <div id="output"></div>
+
+    <script>
+        function clearSession() {
+            sessionStorage.removeItem('adminAuth');
+            document.getElementById('output').innerHTML = 'Session cleared';
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/admin/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    sessionStorage.setItem('adminAuth', result.sessionToken);
+                    document.getElementById('output').innerHTML = `Login successful. Token: ${result.sessionToken}`;
+                } else {
+                    document.getElementById('output').innerHTML = 'Login failed';
+                }
+            } catch (error) {
+                document.getElementById('output').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testOrders() {
+            try {
+                const token = sessionStorage.getItem('adminAuth');
+                document.getElementById('output').innerHTML = `Using token: ${token}<br>`;
+                
+                const response = await fetch('/api/admin/orders', {
+                    headers: {
+                        'x-admin-session': token || ''
+                    }
+                });
+                
+                const result = await response.json();
+                document.getElementById('output').innerHTML += `Orders response: ${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                document.getElementById('output').innerHTML += `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

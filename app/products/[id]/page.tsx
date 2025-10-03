@@ -1,15 +1,36 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Heart, ShoppingBag } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Heart, ShoppingCart, Star, ArrowLeft, Plus, Minus } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import ImageGallery from '@/components/ui/ImageGallery'
-import ColorSelector from '@/components/ui/ColorSelector'
-import SizeSelector from '@/components/ui/SizeSelector'
-import ProductInfo from '@/components/ui/ProductInfo'
-import { useCart } from '@/contexts/CartContext'
+import { useCartWithToast } from '@/hooks/useCartWithToast'
+// Using custom toast component instead of sonner
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  images: string[];
+  category: string;
+  collection: string;
+  stock: number;
+  inStock: boolean;
+  featured: boolean;
+  tags: string[];
+  rating: number;
+  sizes: string[];
+  colors: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Extended product data structure with detailed information
 const productData = {
@@ -227,70 +248,101 @@ interface ProductDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const router = useRouter()
-  const { addItem } = useCart()
-  const unwrappedParams = React.use(params)
-  const productId = parseInt(unwrappedParams.id)
-  const product = productData[productId as keyof typeof productData]
+export default function ProductDetailPage() {
+  const params = useParams()
+  const productId = params.id as string
+  const { addItem } = useCartWithToast()
   
-  const [selectedColor, setSelectedColor] = useState(product?.colors[0] || null)
-  const [selectedSize, setSelectedSize] = useState('')
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string>('')
+  const [selectedSize, setSelectedSize] = useState<string>('')
+  const [selectedImage, setSelectedImage] = useState(0)
   const [isLiked, setIsLiked] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
 
-  if (!product) {
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/products/${productId}`)
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Product not found')
+          } else {
+            setError('Failed to load product')
+          }
+          return
+        }
+        
+        const productData = await response.json()
+        setProduct(productData)
+        setSelectedColor(productData.colors?.[0] || '')
+        setSelectedSize(productData.sizes?.[0] || '')
+      } catch (err) {
+        setError('Failed to load product')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (productId) {
+      fetchProduct()
+    }
+  }, [productId])
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-label-primary mb-4" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-            Product Not Found
-          </h1>
-          <button
-            onClick={() => router.push('/products')}
-            className="text-label-secondary hover:text-label-primary transition-colors"
-            style={{ fontFamily: 'Gilroy, sans-serif' }}
-          >
-            ← Back to Products
-          </button>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{error || 'Product Not Found'}</h1>
+          <Link href="/products">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Products
+            </Button>
+          </Link>
         </div>
       </div>
     )
   }
 
   const handleAddToCart = async () => {
-    if (!selectedSize) {
-      alert('Please select a size')
-      return
-    }
-    
-    if (!selectedColor) {
-      alert('Please select a color')
-      return
-    }
+    if (!product) return
     
     setIsLoading(true)
     
     try {
-      // Add item to cart
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        color: selectedColor.name,
-        size: selectedSize
-      })
+      // Add item to cart with selected options
+      for (let i = 0; i < quantity; i++) {
+        addItem({
+          id: parseInt(product.id),
+          name: product.name,
+          price: product.price,
+          image: product.images[0] || product.image,
+          color: selectedColor || product.colors?.[0] || 'Default',
+          size: selectedSize || product.sizes?.[0] || 'M',
+        })
+      }
       
-      // Simulate brief loading for UX
+      // Brief loading for UX
       await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Show success message
-      alert('Added to cart!')
     } catch (error) {
       console.error('Error adding to cart:', error)
-      alert('Failed to add to cart. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -298,145 +350,191 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked)
+    console.log(isLiked ? 'Removed from wishlist' : 'Added to wishlist')
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <Header />
-      
-      {/* Breadcrumb */}
-      <div className="px-8 py-6 border-b border-separator bg-fill-secondary">
-        <div className="flex items-center gap-2 text-sm text-label-tertiary">
-          <button
-            onClick={() => router.push('/')}
-            className="font-medium hover:text-label-primary transition-colors"
-            style={{ fontFamily: 'Gilroy, sans-serif' }}
-          >
-            Home
-          </button>
-          <span className="text-label-quaternary">/</span>
-          <button
-            onClick={() => router.push('/products')}
-            className="font-medium hover:text-label-primary transition-colors"
-            style={{ fontFamily: 'Gilroy, sans-serif' }}
-          >
-            Shop
-          </button>
-          <span className="text-label-quaternary">/</span>
-          <span className="text-label-primary font-semibold" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-            {product.name}
-          </span>
-        </div>
-      </div>
+      <div className="bg-background">
+        <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Link href="/products" className="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Products
+        </Link>
 
-      {/* Back Button */}
-      <div className="px-8 py-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-label-secondary hover:text-label-primary transition-colors"
-          style={{ fontFamily: 'Gilroy, sans-serif' }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-      </div>
-
-      {/* Product Detail Content */}
-      <div className="px-8 pb-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Image Gallery */}
-            <div className="space-y-6">
-              <ImageGallery
-                images={product.images}
-                selectedIndex={selectedImageIndex}
-                onImageSelect={setSelectedImageIndex}
-                productName={product.name}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="aspect-square bg-white rounded-lg overflow-hidden">
+              <Image
+                src={product.images[selectedImage] || product.image}
+                alt={product.name}
+                width={600}
+                height={600}
+                className="w-full h-full object-cover"
               />
             </div>
-
-            {/* Product Information */}
-            <div className="space-y-8">
-              {/* Favorite Button */}
-              <div className="flex justify-end">
-                <button
-                  onClick={handleToggleLike}
-                  className="w-11 h-11 rounded-full border border-separator bg-background hover:bg-fill-secondary transition-all duration-200 flex items-center justify-center"
-                >
-                  <Heart
-                    className={`w-5 h-5 transition-colors ${
-                      isLiked ? 'fill-red-500 text-red-500' : 'text-label-secondary'
+            {product.images.length > 1 && (
+              <div className="flex space-x-2">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index ? 'border-gray-900' : 'border-gray-200'
                     }`}
-                  />
+                  >
+                    <Image
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Details */}
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{product.name}</h1>
+              <div className="flex items-center space-x-4 mb-4">
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">${product.price}</span>
+                <div className="flex items-center space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                  <span className="text-sm text-gray-600 ml-2">({product.rating})</span>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">{product.description}</p>
+            </div>
+
+            {/* Colors */}
+            {product.colors && product.colors.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Color</h3>
+                <div className="flex space-x-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`px-3 py-1 text-sm border rounded-md ${
+                        selectedColor === color
+                          ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-black'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sizes */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Size</h3>
+                <div className="flex space-x-2">
+                  {product.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-3 py-1 text-sm border rounded-md ${
+                        selectedSize === size
+                          ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-black'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quantity */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Quantity</h3>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="p-1 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 dark:text-white"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="text-lg font-medium dark:text-white">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="p-1 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 dark:text-white"
+                >
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
-
-              {/* Product Title and Price */}
-              <div className="space-y-2">
-                <h1 className="text-2xl font-normal text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  {product.name}
-                </h1>
-                <p className="text-xl font-normal text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  ${product.price}
-                </p>
-              </div>
-
-              {/* Product Description */}
-              <div className="space-y-3">
-                <p className="text-sm text-label-secondary leading-relaxed" style={{ fontFamily: 'Beatrice Trial, serif' }}>
-                  {product.detailedDescription}
-                </p>
-              </div>
-
-              {/* Color Selection */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-normal text-label-primary tracking-wider" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  COLOR
-                </h3>
-                <ColorSelector
-                  colors={product.colors}
-                  selectedColor={selectedColor}
-                  onColorSelect={setSelectedColor}
-                />
-              </div>
-
-              {/* Size Selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                    Size
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <button className="text-xs text-label-secondary underline hover:text-label-primary transition-colors">
-                      FIND YOUR SIZE
-                    </button>
-                    <button className="text-xs text-label-secondary underline hover:text-label-primary transition-colors">
-                      MEASUREMENT GUIDE
-                    </button>
-                  </div>
-                </div>
-                <SizeSelector
-                  sizes={product.sizes}
-                  selectedSize={selectedSize}
-                  onSizeSelect={setSelectedSize}
-                />
-              </div>
-
-              {/* Add to Cart Button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSize}
-                className="w-full h-[50px] bg-label-primary text-background font-medium text-sm tracking-[2px] transition-all duration-200 hover:bg-label-secondary disabled:bg-fill-secondary disabled:text-label-quaternary disabled:cursor-not-allowed flex items-center justify-center"
-                style={{ fontFamily: 'Gilroy, sans-serif' }}
-              >
-                {!selectedSize ? 'SELECT SIZE' : 'ADD'}
-              </button>
             </div>
+
+            {/* Stock Status */}
+            <div className="flex items-center space-x-2">
+              <Badge variant={product.inStock ? 'default' : 'destructive'}>
+                {product.inStock ? 'In Stock' : 'Out of Stock'}
+              </Badge>
+              {product.inStock && (
+                <span className="text-sm text-gray-600 dark:text-gray-300">{product.stock} available</span>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-4">
+              <Button
+                onClick={handleAddToCart}
+                disabled={!product.inStock || isLoading}
+                className="flex-1"
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                )}
+                {isLoading ? 'Adding...' : 'Add to Cart'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleToggleLike}
+                className="px-4"
+              >
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-red-500' : ''}`} />
+              </Button>
+            </div>
+
+            {/* Product Tags */}
+            {product.tags && product.tags.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      
-      <Footer />
     </div>
+    <Footer />
+    </>
   )
 }

@@ -5,16 +5,30 @@ import Link from 'next/link'
 import { ArrowLeft, Mail } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function XVIIPage() {
   const [email, setEmail] = useState('')
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { success, error } = useToast()
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) {
-      setIsSubscribed(true)
+    if (!email) {
+      error('Please enter your email address')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Thank you. You\'ll be the first to know about XVII.')
       setEmail('')
+    } catch (err) {
+      error('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -70,32 +84,27 @@ export default function XVIIPage() {
 
         {/* Newsletter signup */}
         <div className="w-full max-w-sm">
-          {!isSubscribed ? (
-            <form onSubmit={handleSubscribe} className="space-y-6">
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="email"
-                  placeholder="Your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/80 border border-gray-200 text-gray-900 placeholder-gray-400 rounded-none focus:border-gray-400 focus:ring-gray-400/20 backdrop-blur-sm shadow-sm"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit"
-                className="w-full py-4 bg-gray-900 hover:bg-gray-800 text-white font-light text-base rounded-none transition-all duration-500 transform hover:scale-[1.02]"
-              >
-                Notify Me
-              </Button>
-            </form>
-          ) : (
-            <div className="text-center p-8 bg-white/60 border border-gray-200 backdrop-blur-sm">
-              <p className="text-gray-800 font-medium text-lg">Thank you</p>
-              <p className="text-gray-600 text-sm mt-2 font-light">You'll be the first to know about XVII.</p>
+          <form onSubmit={handleSubscribe} className="space-y-6">
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="email"
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-white/80 border border-gray-200 text-gray-900 placeholder-gray-400 rounded-none focus:border-gray-400 focus:ring-gray-400/20 backdrop-blur-sm shadow-sm"
+                required
+                disabled={isSubmitting}
+              />
             </div>
-          )}
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-gray-900 hover:bg-gray-800 text-white font-light text-base rounded-none transition-all duration-500 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isSubmitting ? 'Subscribing...' : 'Notify Me'}
+            </Button>
+          </form>
         </div>
 
         {/* Minimalist stats */}

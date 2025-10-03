@@ -5,16 +5,30 @@ import Link from 'next/link'
 import { ArrowLeft, Mail } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function SudoPage() {
   const [email, setEmail] = useState('')
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { success, error } = useToast()
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) {
-      setIsSubscribed(true)
+    if (!email) {
+      error('Please enter your email address')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('You\'re on the list! We\'ll notify you when SUDO drops.')
       setEmail('')
+    } catch (err) {
+      error('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -70,32 +84,27 @@ export default function SudoPage() {
 
         {/* Newsletter signup */}
         <div className="w-full max-w-md">
-          {!isSubscribed ? (
-            <form onSubmit={handleSubscribe} className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <Input
-                  type="email"
-                  placeholder="Enter your email for updates"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg focus:border-red-500 focus:ring-red-500/20 backdrop-blur-sm"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit"
-                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105"
-              >
-                Get Notified
-              </Button>
-            </form>
-          ) : (
-            <div className="text-center p-6 bg-green-900/20 border border-green-700 rounded-lg backdrop-blur-sm">
-              <p className="text-green-400 font-semibold text-lg">✓ You're on the list!</p>
-              <p className="text-gray-400 text-sm mt-2">We'll notify you when SUDO drops.</p>
+          <form onSubmit={handleSubscribe} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+              <Input
+                type="email"
+                placeholder="Enter your email for updates"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg focus:border-red-500 focus:ring-red-500/20 backdrop-blur-sm"
+                required
+                disabled={isSubmitting}
+              />
             </div>
-          )}
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isSubmitting ? 'Subscribing...' : 'Get Notified'}
+            </Button>
+          </form>
         </div>
 
         {/* Social proof */}

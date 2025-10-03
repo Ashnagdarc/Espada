@@ -5,16 +5,30 @@ import Link from 'next/link'
 import { ArrowLeft, Mail } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function TeyoPage() {
   const [email, setEmail] = useState('')
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { success, error } = useToast()
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) {
-      setIsSubscribed(true)
+    if (!email) {
+      error('Please enter your email address')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Welcome to the future! You\'ll get exclusive early access to TEYO.')
       setEmail('')
+    } catch (err) {
+      error('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -79,32 +93,27 @@ export default function TeyoPage() {
 
         {/* Newsletter signup */}
         <div className="w-full max-w-md">
-          {!isSubscribed ? (
-            <form onSubmit={handleSubscribe} className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
-                <Input
-                  type="email"
-                  placeholder="Enter your email for early access"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-purple-400/50 text-white placeholder-purple-300 rounded-xl focus:border-cyan-400 focus:ring-cyan-400/30 backdrop-blur-md"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit"
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                Join the Future
-              </Button>
-            </form>
-          ) : (
-            <div className="text-center p-6 bg-gradient-to-r from-green-500/20 to-cyan-500/20 border border-green-400/50 rounded-xl backdrop-blur-md">
-              <p className="text-green-300 font-semibold text-lg">🚀 Welcome to the future!</p>
-              <p className="text-purple-200 text-sm mt-2">You'll get exclusive early access to TEYO.</p>
+          <form onSubmit={handleSubscribe} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
+              <Input
+                type="email"
+                placeholder="Enter your email for early access"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-white/10 border border-purple-400/50 text-white placeholder-purple-300 rounded-xl focus:border-cyan-400 focus:ring-cyan-400/30 backdrop-blur-md"
+                required
+                disabled={isSubmitting}
+              />
             </div>
-          )}
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-gradient-to-r from-pink-500 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isSubmitting ? 'Joining...' : 'Join the Future'}
+            </Button>
+          </form>
         </div>
 
         {/* Dynamic stats */}

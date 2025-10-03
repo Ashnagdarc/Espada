@@ -1,9 +1,7 @@
 {
-  "/page": "app/page.js",
-  "/xvii/page": "app/xvii/page.js",
-  "/teyo/page": "app/teyo/page.js",
-  "/checkout/page": "app/checkout/page.js",
-  "/about/page": "app/about/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/products/page": "app/products/page.js"
+  "/api/admin/products/route": "app/api/admin/products/route.js",
+  "/api/customer-profile/route": "app/api/customer-profile/route.js",
+  "/admin/products/page": "app/admin/products/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/page": "app/page.js"
 }

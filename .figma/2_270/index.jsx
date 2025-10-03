@@ -54,7 +54,7 @@ const Component = () => {
         <img src="../image/mg0vi5f1-muzk1jl.svg" className={styles.group6} />
         <div className={styles.group3}>
           <p className={styles.home}>Home</p>
-          <p className={styles.collections}>Collections</p>
+          <p className={styles.products}>Products</p>
           <p className={styles.new}>New</p>
         </div>
         <img src="../image/mg0vi5f5-1a0ytfg.png" className={styles.grainTexture} />
@@ -153,7 +153,7 @@ const Component = () => {
           </div>
           <div className={styles.group23}>
             <div className={styles.autoWrapper9}>
-              <p className={styles.category}>Collections</p>
+              <p className={styles.category}>Products</p>
               <img src="../image/mg0vi5f1-ktboy6t.png" className={styles.vector} />
             </div>
             <div className={styles.line5} />

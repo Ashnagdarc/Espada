@@ -34,8 +34,8 @@ const Component = () => {
           <div className={styles.autoWrapper2}>
             <div className={styles.group3}>
               <p className={styles.home}>Home</p>
-              <p className={styles.home}>Collections</p>
-              <p className={styles.home}>New</p>
+              <p className={styles.products}>Products</p>
+              <p className={styles.new}>New</p>
             </div>
             <div className={styles.rectangle15}>
               <img src="../image/mg0ujxh9-2an5asv.svg" className={styles.group4} />
@@ -49,7 +49,7 @@ const Component = () => {
             <img src="../image/mg0ujxh9-vckpkei.svg" className={styles.group42} />
             <div className={styles.group39}>
               <div className={styles.rectangle11}>
-                <p className={styles.goToShop}>Go To Shop</p>
+                <p className={styles.goToShop}>Shop Collections</p>
               </div>
               <img src="../image/mg0ujxh9-0dpylku.png" className={styles.vector} />
             </div>
@@ -88,10 +88,10 @@ const Component = () => {
         </div>
         <div className={styles.group56}>
           <p className={styles.seeAll}>See All</p>
-          <p className={styles.xIvCollections2324}>
+          <p className={styles.xIvProducts2324}>
             XIV
             <br />
-            Collections
+            Products
             <br />
             23-24
           </p>

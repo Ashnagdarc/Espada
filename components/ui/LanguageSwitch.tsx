@@ -6,7 +6,7 @@ import { ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/contexts/LocaleContext';
 import { locales, localeNames, localeFlags, Locale } from '@/lib/i18n';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 
 interface LanguageSwitchProps {
   className?: string

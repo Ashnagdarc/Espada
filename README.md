@@ -1,11 +1,16 @@
-# React + TypeScript + Vite
+# Espada Store - Next.js E-commerce
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern e-commerce application built with Next.js, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Next.js 15 with App Router
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Responsive design
+- Shopping cart functionality
+- Product catalog
+- Theme support
 
 ## Expanding the ESLint configuration
 

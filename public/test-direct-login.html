@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Direct Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Admin Authentication Test Page</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="setToken()">Set Admin Token</button>
+    <button onclick="checkToken()">Check Token</button>
+    <button onclick="clearToken()">Clear Token</button>
+    <button onclick="goToAdmin()">Go to Admin Dashboard</button>
+    
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            console.log(message);
+        }
+        
+        function setToken() {
+             sessionStorage.setItem('adminAuth', 'test-session');
+             updateStatus('✅ Admin session token set successfully!', 'success');
+             checkToken();
+         }
+        
+        function checkToken() {
+            const token = sessionStorage.getItem('adminAuth');
+            if (token) {
+                updateStatus(`✅ Token found: ${token}`, 'success');
+            } else {
+                updateStatus('❌ No token found in sessionStorage', 'info');
+            }
+        }
+        
+        function clearToken() {
+            sessionStorage.removeItem('adminAuth');
+            updateStatus('🗑️ Token cleared from sessionStorage', 'info');
+        }
+        
+        function goToAdmin() {
+            updateStatus('🔄 Redirecting to admin dashboard...', 'info');
+            setTimeout(() => {
+                window.location.href = '/admin';
+            }, 500);
+        }
+        
+        // Check token status on page load
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>
