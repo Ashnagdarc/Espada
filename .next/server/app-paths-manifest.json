@@ -1,6 +1,0 @@
-{
-  "/api/customer-profile/route": "app/api/customer-profile/route.js",
-  "/api/admin/check-role/route": "app/api/admin/check-role/route.js",
-  "/contact/page": "app/contact/page.js",
-  "/admin/page": "app/admin/page.js"
-}
