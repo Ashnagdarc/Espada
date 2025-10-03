@@ -49,20 +49,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white transition-colors duration-300">
-      {/* Mobile sidebar backdrop */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
+    <div className="min-h-screen bg-black text-white transition-colors duration-300 flex">
       {/* Sidebar */}
       {isDesktop ? (
         <div className="fixed inset-y-0 left-0 z-50 w-80 bg-black border-r border-white/10 flex flex-col justify-between lg:translate-x-0 lg:static lg:inset-0">
@@ -205,8 +192,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       )}
 
       {/* Main content */}
-      <div className="lg:pl-80">
-        <main className="pt-2 pb-8">
+      <div className="flex-1 lg:pl-80">
+        <main className="min-h-screen flex flex-col justify-start">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>
