@@ -313,6 +313,18 @@
 }
 
 @layer base {
+  /* Reset default spacing and box-sizing to make layout flush to the viewport */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Remove default browser margins so header/body sit flush at the edges */
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
   * {
     border-color: hsl(var(--border));
   }
@@ -320,6 +332,11 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Map Tailwind's font-sans utility to the Gilroy font variable exported by next/font/local */
+  .font-sans {
+    font-family: var(--font-gilroy), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   }
   
   html {

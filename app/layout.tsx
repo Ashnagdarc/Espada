@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { StackProvider, StackTheme } from "@stackframe/stack";
-import { stackClientApp } from "../stack/client";
-import { Inter } from "next/font/google";
+import StackProvidersClient from "@/components/providers/StackProvidersClient";
+import localFont from 'next/font/local';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LocaleProvider } from "@/contexts/LocaleContext";
@@ -10,10 +9,16 @@ import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
 import { Suspense } from "react";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
+const gilroy = localFont({
+  src: [
+    { path: '../font/Gilroy-Regular.woff2', weight: '400', style: 'normal' },
+    { path: '../font/Gilroy-Medium.woff2', weight: '500', style: 'normal' },
+    { path: '../font/Gilroy-Semibold.woff2', weight: '600', style: 'normal' },
+    { path: '../font/Gilroy-Bold.woff2', weight: '700', style: 'normal' },
+    { path: '../font/Gilroy-Black.woff2', weight: '900', style: 'normal' },
+  ],
+  variable: '--font-gilroy',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -40,8 +45,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}><StackProvider app={stackClientApp}><StackTheme>
-        <ThemeProvider
+  <body className={`${gilroy.variable} font-sans antialiased`}>
+        <StackProvidersClient>
+          <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
@@ -64,7 +70,8 @@ export default function RootLayout({
             </CartProvider>
           </LocaleProvider>
         </ThemeProvider>
-      </StackTheme></StackProvider></body>
+        </StackProvidersClient>
+      </body>
     </html>
   );
 }
