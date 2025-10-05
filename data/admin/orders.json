@@ -1,0 +1,156 @@
+[
+  {
+    "id": "order_001",
+    "customerName": "John Smith",
+    "customerEmail": "john.smith@email.com",
+    "items": [
+      {
+        "productId": "prod_001",
+        "productName": "Classic White T-Shirt",
+        "size": "M",
+        "color": "White",
+        "quantity": 2,
+        "price": 29.99
+      },
+      {
+        "productId": "prod_003",
+        "productName": "Slim Fit Jeans",
+        "size": "32",
+        "color": "Dark Blue",
+        "quantity": 1,
+        "price": 79.99
+      }
+    ],
+    "total": 139.97,
+    "status": "shipped",
+    "shippingAddress": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "USA"
+    },
+    "createdAt": "2024-01-20T10:30:00.000Z",
+    "updatedAt": "2025-09-29T11:04:26.942Z"
+  },
+  {
+    "id": "order_002",
+    "customerName": "Sarah Johnson",
+    "customerEmail": "sarah.johnson@email.com",
+    "items": [
+      {
+        "productId": "prod_002",
+        "productName": "Denim Jacket",
+        "size": "L",
+        "color": "Blue",
+        "quantity": 1,
+        "price": 89.99
+      }
+    ],
+    "total": 89.99,
+    "status": "processing",
+    "shippingAddress": {
+      "street": "456 Oak Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90210",
+      "country": "USA"
+    },
+    "createdAt": "2024-01-21T14:15:00.000Z",
+    "updatedAt": "2024-01-21T16:20:00.000Z"
+  },
+  {
+    "id": "order_003",
+    "customerName": "Mike Davis",
+    "customerEmail": "mike.davis@email.com",
+    "items": [
+      {
+        "productId": "prod_004",
+        "productName": "Casual Sneakers",
+        "size": "10",
+        "color": "White",
+        "quantity": 1,
+        "price": 119.99
+      },
+      {
+        "productId": "prod_005",
+        "productName": "Wool Sweater",
+        "size": "L",
+        "color": "Gray",
+        "quantity": 1,
+        "price": 99.99
+      }
+    ],
+    "total": 219.98,
+    "status": "shipped",
+    "shippingAddress": {
+      "street": "789 Pine St",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "USA"
+    },
+    "createdAt": "2024-01-19T09:45:00.000Z",
+    "updatedAt": "2024-01-22T11:30:00.000Z"
+  },
+  {
+    "id": "order_004",
+    "customerName": "Emily Wilson",
+    "customerEmail": "emily.wilson@email.com",
+    "items": [
+      {
+        "productId": "prod_001",
+        "productName": "Classic White T-Shirt",
+        "size": "S",
+        "color": "Black",
+        "quantity": 3,
+        "price": 29.99
+      }
+    ],
+    "total": 89.97,
+    "status": "delivered",
+    "shippingAddress": {
+      "street": "321 Elm Dr",
+      "city": "Miami",
+      "state": "FL",
+      "zipCode": "33101",
+      "country": "USA"
+    },
+    "createdAt": "2024-01-18T13:20:00.000Z",
+    "updatedAt": "2024-01-23T15:45:00.000Z"
+  },
+  {
+    "id": "order_005",
+    "customerName": "David Brown",
+    "customerEmail": "david.brown@email.com",
+    "items": [
+      {
+        "productId": "prod_003",
+        "productName": "Slim Fit Jeans",
+        "size": "34",
+        "color": "Black",
+        "quantity": 2,
+        "price": 79.99
+      },
+      {
+        "productId": "prod_002",
+        "productName": "Denim Jacket",
+        "size": "XL",
+        "color": "Black",
+        "quantity": 1,
+        "price": 89.99
+      }
+    ],
+    "total": 249.97,
+    "status": "pending",
+    "shippingAddress": {
+      "street": "654 Maple Ln",
+      "city": "Seattle",
+      "state": "WA",
+      "zipCode": "98101",
+      "country": "USA"
+    },
+    "createdAt": "2024-01-22T16:10:00.000Z",
+    "updatedAt": "2024-01-22T16:10:00.000Z"
+  }
+]
