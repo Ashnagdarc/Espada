@@ -17,8 +17,6 @@ import {
   Menu,
   X,
   Users,
-  FileText,
-  CreditCard,
   User,
   Sun,
   Moon,

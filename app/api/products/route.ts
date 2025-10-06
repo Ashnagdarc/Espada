@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { Product } from '@/lib/admin/data';
 
 // Helper function to get color hex values
 function getColorValue(colorName: string): string {
