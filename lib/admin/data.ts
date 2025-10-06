@@ -167,7 +167,6 @@ export function calculateEnhancedAnalytics(
   orderItems: OrderItem[],
   timeRange: { from: string; to: string; days: number }
 ): AnalyticsData {
-  const now = new Date();
   const fromDate = new Date(timeRange.from);
   const toDate = new Date(timeRange.to);
   
@@ -212,8 +211,8 @@ export function calculateEnhancedAnalytics(
 
   // Time-based revenue trends
   const dailyRevenue = calculateDailyTrend(currentOrders, fromDate, toDate);
-  const weeklyRevenue = calculateWeeklyTrend(currentOrders, fromDate, toDate);
-  const monthlyRevenue = calculateMonthlyTrend(currentOrders, fromDate, toDate);
+  const weeklyRevenue = calculateWeeklyTrend(currentOrders);
+  const monthlyRevenue = calculateMonthlyTrend(currentOrders);
 
   // Top products
   const productSales = new Map<string, { totalSold: number; revenue: number; productName: string }>();
@@ -323,9 +322,7 @@ export function calculateDailyTrend(
 }
 
 export function calculateWeeklyTrend(
-  orders: Order[], 
-  fromDate: Date, 
-  toDate: Date
+  orders: Order[]
 ): Array<{ week: string; revenue: number; orders: number }> {
   const weeklyData = new Map<string, { revenue: number; orders: number }>();
   
@@ -347,9 +344,7 @@ export function calculateWeeklyTrend(
 }
 
 export function calculateMonthlyTrend(
-  orders: Order[], 
-  fromDate: Date, 
-  toDate: Date
+  orders: Order[]
 ): Array<{ month: string; revenue: number; orders: number }> {
   const monthlyData = new Map<string, { revenue: number; orders: number }>();
   

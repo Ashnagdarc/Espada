@@ -1,6 +1,6 @@
 // Utility functions for admin API calls with authentication
 import { supabase } from '@/lib/supabase';
-import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
+import { cache } from '@/lib/cache';
 import { ProductFormData, Product, Order, OrderUpdateData, Customer, AnalyticsData, ApiResponse } from '@/lib/types/api';
 
 async function getAuthHeaders(): Promise<HeadersInit> {

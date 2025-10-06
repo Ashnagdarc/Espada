@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
+import { useState, useEffect, createContext, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
@@ -26,13 +26,8 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
 
-export const useToast = () => {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider')
-  }
-  return context
-}
+// Export the context for use in hooks
+export { ToastContext, type ToastContextType }
 
 interface ToastProviderProps {
   children: ReactNode
@@ -253,20 +248,4 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
       </div>
     </motion.div>
   )
-}
-
-// Helper hook for common toast actions
-export const useToastActions = () => {
-  const { addToast } = useToast()
-
-  return {
-    success: (title: string, message?: string) => 
-      addToast({ type: 'success', title, message }),
-    error: (title: string, message?: string) => 
-      addToast({ type: 'error', title, message }),
-    warning: (title: string, message?: string) => 
-      addToast({ type: 'warning', title, message }),
-    info: (title: string, message?: string) => 
-      addToast({ type: 'info', title, message })
-  }
 }

@@ -1,7 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { ToastProvider as UIToastProvider, useToast as useUIToast, useToastActions } from '@/components/ui/Toast'
+import { ToastProvider as UIToastProvider } from '@/components/ui/Toast'
+import { useToast as useUIToast, useToastActions } from '@/hooks/useToast'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
