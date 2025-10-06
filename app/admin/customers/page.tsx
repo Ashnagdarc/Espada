@@ -40,6 +40,12 @@ interface CustomerAddress {
   is_default: boolean;
 }
 
+interface CustomersApiResponse {
+  customers: Customer[];
+  totalPages: number;
+  total: number;
+}
+
 function CustomersPageContent() {
   const { success, error: showError } = useToastHelpers();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -127,9 +133,8 @@ function CustomersPageContent() {
       const url = `/api/admin/customers?${params}`;
       const cacheKey = CACHE_KEYS.CUSTOMERS(currentPage, searchTerm, filterStatus);
       
-      let data;
       if (useCache) {
-        const cachedData = cache.get(cacheKey) as any;
+        const cachedData = cache.get(cacheKey) as CustomersApiResponse;
         if (cachedData) {
           console.log(`Cache hit for ${cacheKey}`);
           setCustomers(cachedData.customers);
@@ -151,7 +156,7 @@ function CustomersPageContent() {
         throw new Error('Failed to load customers');
       }
 
-      data = await response.json();
+      const data: CustomersApiResponse = await response.json();
       cache.set(cacheKey, data, CACHE_TTL.CUSTOMERS);
       setCustomers(data.customers);
       setTotalPages(data.totalPages);

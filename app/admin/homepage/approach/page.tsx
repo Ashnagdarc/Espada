@@ -49,7 +49,7 @@ interface ApproachSection {
 function ApproachEditorContent() {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const { success, error: showError, info } = useToast();
+  const { success, error: showError } = useToast();
   const [approachSection, setApproachSection] = useState<ApproachSection>({
     content: {
       title: '',
