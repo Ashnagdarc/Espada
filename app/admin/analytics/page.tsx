@@ -5,8 +5,6 @@ import { adminFetchCached } from '@/lib/admin/api'
 import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
@@ -213,7 +211,7 @@ export default function AdminAnalyticsPage() {
         <div className="text-center">
           <p className="text-white/80 mb-4">{error}</p>
           <button
-            onClick={fetchAnalytics}
+            onClick={() => fetchAnalytics()}
             className="px-4 py-2 bg-white text-black rounded-lg hover:bg-white/80"
           >
             Retry

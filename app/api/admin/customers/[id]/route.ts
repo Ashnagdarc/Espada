@@ -6,10 +6,11 @@ import { withAuthParams } from '@/lib/auth-middleware';
 export const GET = withAuthParams(async (
   request: NextRequest,
   admin,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     console.log('🔍 Admin customer details API called by:', admin.email);
+    const { id } = await params;
 
     const { data: customer, error } = await supabaseAdmin
       .from('customer_profiles')
@@ -32,7 +33,7 @@ export const GET = withAuthParams(async (
           )
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
       
     if (error) {
@@ -51,10 +52,11 @@ export const GET = withAuthParams(async (
 export const PUT = withAuthParams(async (
   request: NextRequest,
   admin,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     console.log('🔍 Admin customer update API called by:', admin.email);
+    const { id } = await params;
 
     const customerData = await request.json();
 
@@ -75,7 +77,7 @@ export const PUT = withAuthParams(async (
         preferences: customerData.preferences,
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
       
@@ -95,10 +97,11 @@ export const PUT = withAuthParams(async (
 export const DELETE = withAuthParams(async (
   request: NextRequest,
   admin,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     console.log('🔍 Admin customer delete API called by:', admin.email);
+    const { id } = await params;
 
     // Soft delete by updating status
     const { error } = await supabaseAdmin
@@ -107,7 +110,7 @@ export const DELETE = withAuthParams(async (
         status: 'deleted',
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id);
+      .eq('id', id);
       
     if (error) {
       console.error('Error deleting customer:', error);

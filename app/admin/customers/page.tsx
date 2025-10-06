@@ -54,7 +54,6 @@ function CustomersPageContent() {
   // Modal states
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerAddresses, setCustomerAddresses] = useState<CustomerAddress[]>([]);
@@ -130,7 +129,7 @@ function CustomersPageContent() {
       
       let data;
       if (useCache) {
-        const cachedData = cache.get(cacheKey);
+        const cachedData = cache.get(cacheKey) as any;
         if (cachedData) {
           console.log(`Cache hit for ${cacheKey}`);
           setCustomers(cachedData.customers);
@@ -294,7 +293,6 @@ function CustomersPageContent() {
   const closeModals = () => {
     setViewModalOpen(false);
     setEditModalOpen(false);
-    setDeleteModalOpen(false);
     setConfirmDeleteOpen(false);
     setSelectedCustomer(null);
     setEditForm(null);

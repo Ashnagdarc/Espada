@@ -13,7 +13,7 @@ Each design is unisex, made to fit anyone comfortably. Great style has no gender
 
 const ScrollRevealText = ({ children, className }: { children: string; className?: string }) => {
   const ref = useRef(null)
-  const isInView = useInView(ref, { threshold: 0.05, once: true })
+  const isInView = useInView(ref, { once: true })
 
   const words = children.split(' ')
 
@@ -136,7 +136,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true, threshold: 0.3 }}
+            viewport={{ once: true }}
           >
             <h2 className="text-2xl md:text-3xl font-medium text-label-primary mb-8 tracking-wide" style={{ fontFamily: 'Gilroy, sans-serif' }}>
               A Letter From Our Founder
@@ -159,7 +159,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true, threshold: 0.5 }}
+            viewport={{ once: true }}
           >
             <div className="inline-block">
               <div className="text-lg font-medium text-label-primary mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>

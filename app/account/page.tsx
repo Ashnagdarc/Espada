@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 type TabType = 'profile' | 'orders' | 'wishlist' | 'settings';
 
 function AccountContent() {
-  const { user, profile, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
 
