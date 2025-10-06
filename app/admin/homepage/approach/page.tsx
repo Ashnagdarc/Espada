@@ -13,7 +13,6 @@ import {
   Eye, 
   EyeOff,
   Trash2,
-  Edit3,
   Move,
   FileText,
   Image as ImageIcon
