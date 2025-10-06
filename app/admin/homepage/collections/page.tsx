@@ -13,14 +13,12 @@ import {
   X, 
   Eye, 
   EyeOff,
-  AlertCircle,
   CheckCircle,
   Trash2,
   Star,
-  Package,
-  Filter,
+  List,
   Grid,
-  List
+  Package
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -77,10 +75,10 @@ function CollectionsManagerContent() {
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const { success, error: showError, info } = useToastHelpers();
+  const { success, error: showError } = useToastHelpers();
 
   // Redirect if not admin
   useEffect(() => {
@@ -298,6 +296,7 @@ function CollectionsManagerContent() {
             </button>
             
             <select
+              aria-label="Section status"
               value={section.status}
               onChange={(e) => setSection(prev => ({ 
                 ...prev, 
@@ -492,12 +491,16 @@ function CollectionsManagerContent() {
                             onClick={() => index < section.collection_items.length - 1 && moveItem(index, index + 1)}
                             disabled={index === section.collection_items.length - 1}
                             className="p-1 text-white/60 hover:text-white disabled:opacity-30 text-xs"
+                            aria-label="Move item down"
+                            title="Move down"
                           >
                             ↓
                           </button>
                           <button
                             onClick={() => removeFromCollection(index)}
                             className="p-1 text-red-400 hover:text-red-300"
+                            aria-label="Remove item"
+                            title="Remove"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -521,6 +524,8 @@ function CollectionsManagerContent() {
                   <button
                     onClick={() => setShowProductSelector(false)}
                     className="p-2 text-white/60 hover:text-white"
+                    aria-label="Close product selector"
+                    title="Close"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -542,6 +547,7 @@ function CollectionsManagerContent() {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
+                    aria-label="Filter by category"
                   >
                     <option value="">All Categories</option>
                     {categories.map(category => (

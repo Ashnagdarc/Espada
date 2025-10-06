@@ -1,6 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+interface HomepageImage {
+  id?: string;
+  image_url: string;
+  alt_text?: string;
+  display_order: number;
+}
+
+interface CollectionItem {
+  id?: string;
+  product_id: string;
+  display_order: number;
+}
+
+interface HomepageSection {
+  id?: string;
+  section_type: 'hero' | 'collections' | 'featured' | 'banner';
+  content: Record<string, unknown>;
+  status: 'draft' | 'published' | 'scheduled';
+  scheduled_publish_at?: string | null;
+  homepage_images?: HomepageImage[];
+  collection_items?: CollectionItem[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface TransformedSections {
+  [key: string]: {
+    id: string | null;
+    content: Record<string, unknown>;
+    status: 'draft' | 'published' | 'scheduled';
+    scheduled_publish_at: string | null;
+    images: HomepageImage[];
+    collection_items: CollectionItem[];
+    created_at: string | null;
+    updated_at: string | null;
+  };
+}
+
 // Validate environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -131,7 +169,7 @@ export async function GET() {
       }
 
       return acc;
-    }, {} as any);
+    }, {} as TransformedSections);
 
     const duration = Date.now() - startTime;
     console.log('[API] Request completed successfully:', {

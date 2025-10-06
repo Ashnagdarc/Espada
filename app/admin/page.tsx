@@ -7,16 +7,15 @@ import { adminAPI } from '@/lib/admin/api';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Card from '@/components/admin/ui/Card';
 import {
-  BarChart3,
   Users,
   ShoppingCart,
-  Package,
-  FileText,
-  Settings,
-  TrendingUp,
   DollarSign,
   AlertCircle,
-  Calendar
+  Calendar,
+  BarChart3,
+  Package,
+  FileText,
+  Settings
 } from 'lucide-react';
 
 interface RecentOrder {
@@ -132,7 +131,6 @@ const generateRecentActivities = (analyticsData: any): ActivityItem[] => {
 export default function AdminDashboard() {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats>({
     totalOrders: 0,
     totalCustomers: 0,
@@ -197,9 +195,10 @@ export default function AdminDashboard() {
          }
 
         // User is authenticated and is admin
+        if (user && isAdmin && !hasRedirected) {
         console.log('User is authenticated admin, loading dashboard...');
-        setAdminEmail(user.email ?? null);
         await loadStats();
+      } catch (error) {
       } catch (error) {
         console.error('Error in admin access check:', error);
         setError('Failed to load admin data');
@@ -215,13 +214,11 @@ export default function AdminDashboard() {
     try {
       console.log('🔄 Starting loadStats function...');
       const response = await adminAPI.getAnalytics();
-      console.log('📡 API Response status:', response.status, response.ok);
-      
-      if (!response.ok) {
+      if (!response) {
         throw new Error('Failed to fetch analytics data');
       }
       
-      const analyticsData = await response.json();
+      const analyticsData = response;
       console.log('📊 Analytics data received:', analyticsData);
       
       // Generate recent activities from analytics data

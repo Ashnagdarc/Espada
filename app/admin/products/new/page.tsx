@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  ArrowLeft, Save, X, Plus, Trash2, Upload, Check, AlertCircle, 
-  Info, ChevronRight, ChevronLeft, Eye, EyeOff, Hash, Tag, 
-  Package, Ruler, Weight, Globe, Star, Clock, HelpCircle,
+  ArrowLeft, X, Plus, Trash2, AlertCircle, 
+  ChevronRight, ChevronLeft, Weight, Globe,
   Image as ImageIcon, DragDropIcon, CheckCircle2, AlertTriangle
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,7 +13,6 @@ import { useToastHelpers, ToastProvider } from '@/components/admin/ui/Toast'
 import Button from '@/components/admin/ui/Button'
 import Input from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
-import Card from '@/components/admin/ui/Card'
 import { supabase } from '@/lib/supabase'
 
 interface ProductFormData {
@@ -554,9 +552,9 @@ function NewProductPageContent() {
         router.push('/admin/products')
       }, 1000)
       
-    } catch (err) {
-      console.error('Error creating product:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create product'
+    } catch (error) {
+      console.error('Error creating product:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create product'
       error('Error', errorMessage)
     } finally {
       setIsSubmitting(false)

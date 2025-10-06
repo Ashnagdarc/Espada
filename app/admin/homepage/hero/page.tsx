@@ -9,14 +9,10 @@ import {
   ArrowLeft, 
   Save, 
   Upload, 
-  X, 
   Plus, 
   Eye, 
   EyeOff,
-  AlertCircle,
-  CheckCircle,
   Trash2,
-  Edit3,
   Move
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -63,9 +59,9 @@ function HeroEditorContent() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
-  const { success, error: showError, info } = useToastHelpers();
+  const { success, error: showError } = useToastHelpers();
 
   // Redirect if not admin
   useEffect(() => {
@@ -310,6 +306,7 @@ function HeroEditorContent() {
                 status: e.target.value as 'draft' | 'published' | 'scheduled' 
               }))}
               className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
+              aria-label="Section status"
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
@@ -435,6 +432,8 @@ function HeroEditorContent() {
                       <button
                         onClick={() => removeCategory(index)}
                         className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        aria-label={`Remove category ${index + 1}`}
+                        title="Remove category"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -492,6 +491,8 @@ function HeroEditorContent() {
                             onClick={() => index > 0 && moveImage(index, index - 1)}
                             disabled={index === 0}
                             className="p-1 text-white/60 hover:text-white disabled:opacity-30"
+                            aria-label={`Move image ${index + 1} up`}
+                            title="Move up"
                           >
                             <Move className="w-4 h-4" />
                           </button>
@@ -499,6 +500,8 @@ function HeroEditorContent() {
                           <button
                             onClick={() => removeImage(index)}
                             className="p-1 text-red-400 hover:text-red-300"
+                            aria-label={`Remove image ${index + 1}`}
+                            title="Remove image"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

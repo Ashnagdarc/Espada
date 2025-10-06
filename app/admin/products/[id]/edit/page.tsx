@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Product } from '@/lib/admin/data';
-import { ArrowLeft, Save, X, Upload, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, X, Trash2, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function ProductEditPage() {

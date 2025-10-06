@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Order, updateOrderData } from '@/lib/admin/data';
 import { withAuthParams } from '@/lib/auth-middleware';
 
 // PUT /api/admin/orders/[id]/status - Update order status

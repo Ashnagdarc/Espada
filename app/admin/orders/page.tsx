@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Filter, Eye, Package, ShoppingCart, Truck, RefreshCw } from 'lucide-react'
+import { RefreshCw, Eye, ShoppingCart } from 'lucide-react'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
 import toast from 'react-hot-toast'
-import { Button, IconButton } from '@/components/admin/ui/Button'
+import { Button } from '@/components/admin/ui/Button'
 import { SearchInput } from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
 import Table from '@/components/admin/ui/Table'
-import { StatusBadge } from '@/components/admin/ui/Badge'
 import Card from '@/components/admin/ui/Card'
 import { SkeletonTable } from '@/components/admin/ui/Skeleton'
 
@@ -152,42 +150,6 @@ export default function AdminOrdersPage() {
     setFilteredOrders(filtered)
   }, [orders, searchTerm, selectedStatus])
 
-  const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-session': sessionStorage.getItem('adminAuth') || ''
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update order status')
-      }
-
-      // Update the order in the local state
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId
-            ? { ...order, status: newStatus }
-            : order
-        )
-      )
-
-      toast.success(`Order status updated to ${newStatus}`)
-    } catch (error) {
-      console.error('Failed to update order status:', error)
-      toast.error('Failed to update order status. Please try again.')
-    }
-  }
-
-  const handleViewOrder = (orderId: string) => {
-    // Navigate to order details page or open modal
-    console.log('View order:', orderId)
-  }
-
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
@@ -221,19 +183,7 @@ export default function AdminOrdersPage() {
 
 
 
-  const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled']
-
-  // Helper function to get status variant for StatusBadge
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'pending': return 'warning'
-      case 'processing': return 'info'
-      case 'shipped': return 'primary'
-      case 'delivered': return 'success'
-      case 'cancelled': return 'danger'
-      default: return 'secondary'
-    }
-  }
+  // Helper functions have been removed as they were unused
 
   // Helper function to format currency
   const formatCurrency = (amount: number) => {
@@ -325,13 +275,14 @@ export default function AdminOrdersPage() {
       align: 'center' as const,
       render: (order: Order) => (
         <div className="flex items-center justify-center space-x-2">
-          <IconButton
+          <Button
             variant="ghost"
-            size="sm"
+            className="p-2"
             onClick={() => router.push(`/admin/orders/${order.id}`)}
-            icon={<Eye className="h-4 w-4" />}
-            tooltip="View Details"
-          />
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
         </div>
       )
     }
@@ -355,14 +306,14 @@ export default function AdminOrdersPage() {
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
-          <h1 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold font-gilroy">
             Orders Management
           </h1>
           <Button
             variant="outline"
             onClick={() => loadOrders(true)}
             disabled={isRefreshing}
-            loading={isRefreshing}
+            isLoading={isRefreshing}
             leftIcon={<RefreshCw className="h-4 w-4" />}
           >
             Refresh
@@ -384,7 +335,7 @@ export default function AdminOrdersPage() {
             </div>
             <Select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={(value) => setSelectedStatus(value as string)}
               options={[
                 { value: 'all', label: 'All Status' },
                 { value: 'pending', label: 'Pending' },
@@ -413,8 +364,7 @@ export default function AdminOrdersPage() {
             data={filteredOrders}
             columns={columns}
             rowKey="id"
-            hover
-            striped
+            className="hover:bg-white/5"
           />
         )}
       </div>
