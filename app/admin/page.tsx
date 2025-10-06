@@ -196,9 +196,9 @@ export default function AdminDashboard() {
 
         // User is authenticated and is admin
         if (user && isAdmin && !hasRedirected) {
-        console.log('User is authenticated admin, loading dashboard...');
-        await loadStats();
-      } catch (error) {
+          console.log('User is authenticated admin, loading dashboard...');
+          await loadStats();
+        }
       } catch (error) {
         console.error('Error in admin access check:', error);
         setError('Failed to load admin data');

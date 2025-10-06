@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { Search, ChevronDown, Heart, ShoppingBag, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, ChevronDown, Menu, X } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";

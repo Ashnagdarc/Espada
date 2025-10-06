@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronUp, ChevronDown, MoreHorizontal, Search } from 'lucide-react'
+import { ChevronUp, ChevronDown, Search } from 'lucide-react'
 import Skeleton from './Skeleton'
 
 interface Column<T = any> {

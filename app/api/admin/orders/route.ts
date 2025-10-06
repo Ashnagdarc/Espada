@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { withAuth } from '@/lib/auth-middleware';
-import { Order } from '@/lib/admin/data';
 
 // GET /api/admin/orders - Get all orders with filtering and pagination
 export const GET = withAuth(async (request, admin) => {

@@ -94,7 +94,7 @@ export default function AdminOrdersPage() {
       
       let data;
       if (useCache && !showRefreshToast) {
-        const cachedData = cache.get(cacheKey);
+        const cachedData = cache.get(cacheKey) as any;
         if (cachedData) {
           console.log(`Cache hit for ${cacheKey}`);
           setOrders(cachedData.orders || cachedData);
@@ -256,8 +256,7 @@ export default function AdminOrdersPage() {
       render: (order: Order) => (
         <Select
           value={order.status}
-          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-          size="sm"
+          onChange={(value) => updateOrderStatus(order.id, value as string)}
           options={[
             { value: 'pending', label: 'Pending' },
             { value: 'processing', label: 'Processing' },

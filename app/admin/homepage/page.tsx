@@ -58,7 +58,7 @@ function HomepageManagementContent() {
   const [sections, setSections] = useState<HomepageSections>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { success, error: showError, info } = useToastHelpers();
+  const { success, error: showError } = useToastHelpers();
 
   // Redirect if not admin
   useEffect(() => {

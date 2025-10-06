@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Save, Settings, Store, Users, Bell, Shield, Globe, Palette, Loader2 } from 'lucide-react';
+import { Save, Store, Bell, Shield, Palette, Loader2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { ToastProvider, useToast } from '@/components/admin/ui/Toast';
 

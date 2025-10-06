@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { withAuth } from '@/lib/auth-middleware';
-import { Product, createProductData } from '@/lib/admin/data';
 import { ProductFormData } from '@/lib/types/api';
 
 // GET /api/admin/products - Get all products

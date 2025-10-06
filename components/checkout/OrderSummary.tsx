@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useCartWithToast } from '@/hooks/useCartWithToast'
-import { formatPrice } from '@/lib/utils'
+
 import { Minus, Plus, X } from 'lucide-react'
 
 interface OrderSummaryProps {

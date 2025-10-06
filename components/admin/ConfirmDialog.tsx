@@ -1,4 +1,3 @@
-import React from 'react';
 import { HoverScale } from './PageTransition';
 import { AlertTriangle, X } from 'lucide-react';
 

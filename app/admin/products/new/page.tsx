@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { 
   ArrowLeft, X, Plus, Trash2, AlertCircle, 
   ChevronRight, ChevronLeft, Weight, Globe,
-  Image as ImageIcon, DragDropIcon, CheckCircle2, AlertTriangle
+  Image as ImageIcon, CheckCircle2, AlertTriangle
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import AdminLayout from '@/components/admin/AdminLayout'

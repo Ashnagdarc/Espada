@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Star, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
