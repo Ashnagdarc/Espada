@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, ChevronDown, Menu, X } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import Header from "@/components/layout/Header";
@@ -43,6 +44,7 @@ const priceRanges = [
 const ratings = [5, 4, 3, 2, 1];
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export default function ProductsPage() {
   const [selectedPriceRange, setSelectedPriceRange] = useState<string[]>([]);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
   // Collapsible filter states
   const [isAvailabilityCollapsed, setIsAvailabilityCollapsed] = useState(false);
@@ -107,6 +109,14 @@ export default function ProductsPage() {
   const categories = products.length > 0 ? getAvailableCategories() : [];
   const collections = products.length > 0 ? getAvailableCollections() : [];
   const tags = products.length > 0 ? getAvailableTags() : [];
+
+  // Handle URL search parameters
+  useEffect(() => {
+    const urlSearchQuery = searchParams.get('search');
+    if (urlSearchQuery) {
+      setSearchQuery(urlSearchQuery);
+    }
+  }, [searchParams]);
 
   // Fetch products from API
   useEffect(() => {
@@ -345,6 +355,27 @@ export default function ProductsPage() {
             </div>
           </div>
 
+          {/* Search Input */}
+          <div className="mb-8">
+            <h3
+              className="text-lg font-semibold mb-4 text-label-primary"
+              style={{ fontFamily: "Gilroy, sans-serif" }}
+            >
+              Search
+            </h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-3 pl-10 border border-separator rounded-xl bg-background text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-label-primary focus:border-transparent transition-all"
+                style={{ fontFamily: "Gilroy, sans-serif" }}
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-label-tertiary" />
+            </div>
+          </div>
+
           {/* Size Filter */}
           <div className="mb-8">
             <h3
@@ -571,7 +602,7 @@ export default function ProductsPage() {
                     {range.label}
                   </span>
                   <span className="text-sm text-label-quaternary ml-auto">
-                    ({getPriceRangeCount(range)})
+                    ({getPriceRangeCount(range.label)})
                   </span>
                 </label>
               ))}
@@ -853,9 +884,12 @@ export default function ProductsPage() {
             ) : (
               products
                   .filter((product) => {
-                    const matchesSearch = product.name
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase());
+                    // Enhanced search across name, description, and category
+                    const searchLower = searchQuery.toLowerCase();
+                    const matchesSearch = searchQuery === "" || 
+                      product.name.toLowerCase().includes(searchLower) ||
+                      product.description.toLowerCase().includes(searchLower) ||
+                      product.category.toLowerCase().includes(searchLower);
                     
                     // Category filter - check both top tabs and sidebar checkboxes
                     const matchesTopCategory =
@@ -913,8 +947,7 @@ export default function ProductsPage() {
                     const matchesRating =
                       selectedRatings.length === 0 ||
                       selectedRatings.some((rating) => {
-                        const ratingNum = parseInt(rating);
-                        return product.rating >= ratingNum;
+                        return product.rating >= rating;
                       });
 
                     return (

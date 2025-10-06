@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import OrderSummary from '@/components/checkout/OrderSummary'
+import { useToastActions } from '@/contexts/ToastContext'
 
 // Loading component for better UX
 function CheckoutLoading() {
@@ -81,8 +82,9 @@ interface ShippingAddress {
 
 function CheckoutContent() {
   const router = useRouter()
-  const { state } = useCart()
+  const { state, clearCart } = useCart()
   const { user, profile } = useAuth()
+  const { success, error: showError } = useToastActions()
   const [mounted, setMounted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -101,8 +103,98 @@ function CheckoutContent() {
     postalCode: ''
   })
   const [saveAddress, setSaveAddress] = useState(false)
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Handle order placement
+  const handlePlaceOrder = async () => {
+    if (!user || !profile) {
+      showError('Authentication required', 'Please sign in to place an order')
+      return
+    }
+
+    // Validate required fields
+    const newErrors: Record<string, string> = {}
+    
+    if (!contactInfo.email) newErrors.email = 'Email is required'
+    if (!shippingAddress.firstName) newErrors.firstName = 'First name is required'
+    if (!shippingAddress.lastName) newErrors.lastName = 'Last name is required'
+    if (!shippingAddress.address) newErrors.address = 'Address is required'
+    if (!shippingAddress.city) newErrors.city = 'City is required'
+    if (!shippingAddress.postalCode) newErrors.postalCode = 'Postal code is required'
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      showError('Missing information', 'Please fill in all required fields')
+      setCurrentStep('information')
+      return
+    }
+
+    setIsPlacingOrder(true)
+
+    try {
+      // Prepare order data
+      const orderData = {
+        customer_id: profile.id,
+        items: state.items.map(item => ({
+          product_id: String(item.id),
+          quantity: item.quantity,
+          unit_price: item.price,
+          color: item.color,
+          size: item.size
+        })),
+        total_amount: state.total,
+        shipping_address: {
+          street: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country
+        },
+        billing_address: {
+          street: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country
+        },
+        payment_method: 'cash_on_delivery',
+        notes: `Contact: ${contactInfo.phone || 'Not provided'}`
+      }
+
+      // Create order
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to create order')
+      }
+
+      // Clear cart and show success
+      clearCart()
+      success('Order placed successfully!', `Order #${result.data.order_number} has been created`)
+      
+      // Redirect to order confirmation or orders page
+      router.push(`/account/orders?new_order=${result.data.order_number}`)
+
+    } catch (err) {
+      console.error('Error placing order:', err)
+      showError(
+        'Order failed', 
+        err instanceof Error ? err.message : 'Please try again or contact support'
+      )
+    } finally {
+      setIsPlacingOrder(false)
+    }
+  }
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -474,11 +566,58 @@ function CheckoutContent() {
                 <h2 className="text-lg font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
                   PAYMENT
                 </h2>
-                <div className="p-8 border border-separator bg-fill-secondary text-center">
-                  <p className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                    Payment integration coming soon
-                  </p>
+                
+                {/* Payment Method Selection */}
+                <div className="space-y-4">
+                  <div className="p-4 border border-separator bg-fill-secondary rounded-lg">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="cash_on_delivery"
+                        defaultChecked
+                        className="w-4 h-4 text-label-primary"
+                      />
+                      <span className="text-label-primary font-medium" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                        Cash on Delivery
+                      </span>
+                    </label>
+                    <p className="text-sm text-label-secondary mt-2 ml-7" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                      Pay when your order is delivered to your doorstep
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 border border-separator bg-fill-tertiary rounded-lg opacity-60">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="credit_card"
+                        disabled
+                        className="w-4 h-4 text-label-primary"
+                      />
+                      <span className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                        Credit Card (Coming Soon)
+                      </span>
+                    </label>
+                  </div>
                 </div>
+
+                {/* Place Order Button */}
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={isPlacingOrder || !user}
+                  className="w-full h-12 bg-label-primary text-white font-medium text-sm tracking-wider transition-all duration-200 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: 'Gilroy, sans-serif' }}
+                >
+                  {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+                </button>
+
+                {!user && (
+                  <p className="text-sm text-label-secondary text-center" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                    Please sign in to place an order
+                  </p>
+                )}
               </div>
             )}
           </div>
