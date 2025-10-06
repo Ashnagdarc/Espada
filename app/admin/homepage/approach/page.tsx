@@ -62,7 +62,7 @@ function ApproachEditorContent() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
 
   // Redirect if not admin
