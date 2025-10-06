@@ -62,7 +62,13 @@ export const CACHE_KEYS = {
   ORDERS: (page: number, status: string) => `orders:${page}:${status}`,
   CUSTOMERS: (page: number, search: string, status: string) => `customers:${page}:${search}:${status}`,
   SETTINGS: 'admin:settings',
-  PRODUCTS: (page: number) => `products:${page}`
+  PRODUCTS: (page: number) => `products:${page}`,
+  HOMEPAGE: 'homepage:data',
+  HOMEPAGE_SECTIONS: 'homepage:sections',
+  HOMEPAGE_IMAGES: (sectionId: string) => `homepage:images:${sectionId}`,
+  HOMEPAGE_COLLECTIONS: (sectionId: string) => `homepage:collections:${sectionId}`,
+  USER_PROFILE: (email: string) => `user:profile:${email}`,
+  USER_ROLE: (email: string) => `user:role:${email}`
 };
 
 // Cache TTL values (in milliseconds)
@@ -71,5 +77,11 @@ export const CACHE_TTL = {
   ORDERS: 1 * 60 * 1000, // 1 minute
   CUSTOMERS: 5 * 60 * 1000, // 5 minutes
   SETTINGS: 10 * 60 * 1000, // 10 minutes
-  PRODUCTS: 5 * 60 * 1000 // 5 minutes
+  PRODUCTS: 5 * 60 * 1000, // 5 minutes
+  HOMEPAGE: 10 * 60 * 1000, // 10 minutes - homepage data changes infrequently
+  HOMEPAGE_SECTIONS: 15 * 60 * 1000, // 15 minutes
+  HOMEPAGE_IMAGES: 30 * 60 * 1000, // 30 minutes
+  HOMEPAGE_COLLECTIONS: 10 * 60 * 1000, // 10 minutes
+  USER_PROFILE: 15 * 60 * 1000, // 15 minutes - user profiles don't change often
+  USER_ROLE: 30 * 60 * 1000 // 30 minutes - user roles change very rarely
 };

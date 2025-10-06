@@ -8,7 +8,7 @@ import { Heart } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useTranslations } from "@/contexts/LocaleContext";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
+import { HomepageSkeleton } from "@/components/ui/OptimizedLoader";
 
 interface HomepageImage {
   id: string;
@@ -34,7 +34,7 @@ interface CollectionItem {
 
 interface HomepageSection {
   id: string;
-  content: any;
+  content: Record<string, unknown>;
   status: string;
   images: HomepageImage[];
   collection_items: CollectionItem[];
@@ -51,8 +51,6 @@ interface HomepageData {
 
 export default function HomePage() {
   const t = useTranslations();
-  const { user, profile, isLoading, handleRoleBasedRedirect } =
-    useAuth();
   const [homepageData, setHomepageData] = useState<HomepageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +63,18 @@ export default function HomePage() {
   const fetchHomepageData = async () => {
     try {
       setLoading(true);
+      console.log('🚀 Starting homepage data fetch');
+      const startTime = performance.now();
+      
       const response = await fetch('/api/homepage');
       const result = await response.json();
 
+      const endTime = performance.now();
+      console.log(`📊 Homepage API took ${Math.round(endTime - startTime)}ms`);
+
       if (result.success) {
         setHomepageData(result.data);
+        console.log('✅ Homepage data loaded successfully');
       } else {
         setError('Failed to load homepage data');
       }
@@ -82,17 +87,7 @@ export default function HomePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <HomepageSkeleton />;
   }
 
   if (error) {

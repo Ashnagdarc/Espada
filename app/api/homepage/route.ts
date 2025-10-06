@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
 interface HomepageImage {
   id: string;
@@ -43,40 +44,32 @@ interface HomepageData {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check cache first
+    const cachedData = cache.get<any>(CACHE_KEYS.HOMEPAGE);
+    if (cachedData) {
+      console.log('📦 Serving homepage data from cache');
+      const headers = new Headers({
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+        'X-Cache': 'HIT',
+      });
+      return NextResponse.json({
+        success: true,
+        data: cachedData,
+      }, { headers });
+    }
+
+    console.log('🔄 Fetching fresh homepage data from database');
+
     // Add cache headers for better performance
     const headers = new Headers({
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+      'X-Cache': 'MISS',
     });
 
-    // Fetch all published homepage sections with their images and collection items
+    // Optimize: Fetch sections first, then fetch related data separately to reduce join complexity
     const { data: sections, error: sectionsError } = await supabaseAdmin
       .from('homepage_sections')
-      .select(`
-        id,
-        section_type,
-        content,
-        status,
-        created_at,
-        updated_at,
-        homepage_images (
-          id,
-          image_url,
-          alt_text,
-          display_order
-        ),
-        collection_items (
-          id,
-          product_id,
-          display_order,
-          products (
-            id,
-            name,
-            price,
-            images,
-            category
-          )
-        )
-      `)
+      .select('id, section_type, content, status, created_at, updated_at')
       .eq('status', 'published')
       .order('created_at', { ascending: true });
 
@@ -88,6 +81,63 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch images and collection items separately for better performance
+    const sectionIds = sections?.map(s => s.id) || [];
+    
+    const [imagesResult, collectionsResult] = await Promise.all([
+      // Fetch all images for these sections
+      supabaseAdmin
+        .from('homepage_images')
+        .select('id, section_id, image_url, alt_text, display_order')
+        .in('section_id', sectionIds)
+        .order('display_order', { ascending: true }),
+      
+      // Fetch collection items with products
+      supabaseAdmin
+        .from('collection_items')
+        .select(`
+          id,
+          section_id,
+          product_id,
+          display_order,
+          products (
+            id,
+            name,
+            price,
+            images,
+            category
+          )
+        `)
+        .in('section_id', sectionIds)
+        .order('display_order', { ascending: true })
+    ]);
+
+    if (imagesResult.error) {
+      console.error('Error fetching homepage images:', imagesResult.error);
+    }
+
+    if (collectionsResult.error) {
+      console.error('Error fetching collection items:', collectionsResult.error);
+    }
+
+    // Group images and collections by section_id for efficient lookup
+    const imagesBySection = new Map<string, any[]>();
+    const collectionsBySection = new Map<string, any[]>();
+
+    imagesResult.data?.forEach(image => {
+      if (!imagesBySection.has(image.section_id)) {
+        imagesBySection.set(image.section_id, []);
+      }
+      imagesBySection.get(image.section_id)!.push(image);
+    });
+
+    collectionsResult.data?.forEach(collection => {
+      if (!collectionsBySection.has(collection.section_id)) {
+        collectionsBySection.set(collection.section_id, []);
+      }
+      collectionsBySection.get(collection.section_id)!.push(collection);
+    });
+
     // Transform the data into a more usable format
     const homepageData: HomepageData = {
       hero: null,
@@ -96,23 +146,16 @@ export async function GET(request: NextRequest) {
       approach: null,
     };
 
-    sections?.forEach((section: HomepageSection) => {
-      // Sort images by display_order
-      const sortedImages = section.homepage_images?.sort(
-        (a, b) => a.display_order - b.display_order
-      ) || [];
-
-      // Sort collection items by display_order and include product data
-      const sortedCollectionItems = section.collection_items?.sort(
-        (a, b) => a.display_order - b.display_order
-      ) || [];
+    sections?.forEach((section: any) => {
+      const sectionImages = imagesBySection.get(section.id) || [];
+      const sectionCollections = collectionsBySection.get(section.id) || [];
 
       const sectionData = {
         id: section.id,
         content: section.content,
         status: section.status,
-        images: sortedImages,
-        collection_items: sortedCollectionItems,
+        images: sectionImages,
+        collection_items: sectionCollections,
         created_at: section.created_at,
         updated_at: section.updated_at,
       };
@@ -133,6 +176,10 @@ export async function GET(request: NextRequest) {
           break;
       }
     });
+
+    // Cache the result for future requests
+    cache.set(CACHE_KEYS.HOMEPAGE, homepageData, CACHE_TTL.HOMEPAGE);
+    console.log('💾 Cached homepage data for', CACHE_TTL.HOMEPAGE / 1000, 'seconds');
 
     return NextResponse.json({
       success: true,

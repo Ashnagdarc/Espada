@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
 interface UserProfile {
   id: string;
@@ -120,52 +121,104 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   // Fetch profile by email (for use in auth state changes)
   const fetchProfileByEmail = useCallback(async (email: string): Promise<UserProfile | null> => {
     try {
-      // First check if user is an admin
-      const { data: adminData } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (adminData) {
-        return {
-          id: adminData.id,
-          email: adminData.email,
-          first_name: adminData.first_name,
-          last_name: adminData.last_name,
-          role: 'admin',
-          created_at: adminData.created_at,
-          updated_at: adminData.updated_at,
-        };
+      // Check cache first
+      const cacheKey = CACHE_KEYS.USER_PROFILE(email);
+      const cachedProfile = cache.get<UserProfile>(cacheKey);
+      if (cachedProfile) {
+        console.log('📦 Using cached user profile for:', email);
+        return cachedProfile;
       }
 
-      // If not admin, check customer profiles
-      const { data: customerData } = await supabase
-        .from('customer_profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
+      console.log('🔍 Fetching fresh user profile for:', email);
 
-      if (customerData) {
-        return {
-          id: customerData.id,
-          email: customerData.email,
-          first_name: customerData.first_name,
-          last_name: customerData.last_name,
-          role: 'customer',
-          phone: customerData.phone,
-          address: customerData.address,
-          city: customerData.city,
-          postal_code: customerData.postal_code,
-          country: customerData.country,
-          date_of_birth: customerData.date_of_birth,
-          preferences: customerData.preferences,
-          created_at: customerData.created_at,
-          updated_at: customerData.updated_at,
-        };
+      // Optimize: Check role first with a single query
+      const roleKey = CACHE_KEYS.USER_ROLE(email);
+      let cachedRole = cache.get<'admin' | 'customer' | null>(roleKey);
+      
+      if (!cachedRole) {
+        // Check admin table first (usually smaller table)
+        const { data: adminData } = await supabase
+          .from('admins')
+          .select('email')
+          .eq('email', email)
+          .single();
+
+        if (adminData) {
+          cachedRole = 'admin';
+          cache.set(roleKey, 'admin', CACHE_TTL.USER_ROLE);
+        } else {
+          // Check if customer exists
+          const { data: customerData } = await supabase
+            .from('customer_profiles')
+            .select('email')
+            .eq('email', email)
+            .single();
+
+          if (customerData) {
+            cachedRole = 'customer';
+            cache.set(roleKey, 'customer', CACHE_TTL.USER_ROLE);
+          } else {
+            cache.set(roleKey, null, CACHE_TTL.USER_ROLE);
+            return null;
+          }
+        }
       }
 
-      return null;
+      // Now fetch full profile based on role
+      let profile: UserProfile | null = null;
+
+      if (cachedRole === 'admin') {
+        const { data: adminData } = await supabase
+          .from('admins')
+          .select('*')
+          .eq('email', email)
+          .single();
+
+        if (adminData) {
+          profile = {
+            id: adminData.id,
+            email: adminData.email,
+            first_name: adminData.first_name,
+            last_name: adminData.last_name,
+            role: 'admin',
+            created_at: adminData.created_at,
+            updated_at: adminData.updated_at,
+          };
+        }
+      } else if (cachedRole === 'customer') {
+        const { data: customerData } = await supabase
+          .from('customer_profiles')
+          .select('*')
+          .eq('email', email)
+          .single();
+
+        if (customerData) {
+          profile = {
+            id: customerData.id,
+            email: customerData.email,
+            first_name: customerData.first_name,
+            last_name: customerData.last_name,
+            role: 'customer',
+            phone: customerData.phone,
+            address: customerData.address,
+            city: customerData.city,
+            postal_code: customerData.postal_code,
+            country: customerData.country,
+            date_of_birth: customerData.date_of_birth,
+            preferences: customerData.preferences,
+            created_at: customerData.created_at,
+            updated_at: customerData.updated_at,
+          };
+        }
+      }
+
+      // Cache the profile if found
+      if (profile) {
+        cache.set(cacheKey, profile, CACHE_TTL.USER_PROFILE);
+        console.log('💾 Cached user profile for:', email);
+      }
+
+      return profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;
