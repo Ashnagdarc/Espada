@@ -10,7 +10,7 @@ function getColorValue(colorName: string): string {
     'White': '#FFFFFF',
     'Gray': '#808080',
     'Grey': '#808080',
-    
+
     // Earth tones
     'Brown': '#8B4513',
     'Tan': '#D2B48C',
@@ -20,7 +20,7 @@ function getColorValue(colorName: string): string {
     'Sand': '#C2B280',
     'Cream': '#FFFDD0',
     'Ivory': '#FFFFF0',
-    
+
     // Blues
     'Blue': '#0066CC',
     'Navy': '#000080',
@@ -31,7 +31,7 @@ function getColorValue(colorName: string): string {
     'Cyan': '#00FFFF',
     'Steel Blue': '#4682B4',
     'Powder Blue': '#B0E0E6',
-    
+
     // Reds
     'Red': '#DC2626',
     'Crimson': '#DC143C',
@@ -41,7 +41,7 @@ function getColorValue(colorName: string): string {
     'Rose': '#FF007F',
     'Coral': '#FF7F50',
     'Salmon': '#FA8072',
-    
+
     // Greens
     'Green': '#16A34A',
     'Forest Green': '#228B22',
@@ -51,7 +51,7 @@ function getColorValue(colorName: string): string {
     'Emerald': '#50C878',
     'Jade': '#00A86B',
     'Pine': '#01796F',
-    
+
     // Purples
     'Purple': '#7C3AED',
     'Violet': '#8A2BE2',
@@ -60,7 +60,7 @@ function getColorValue(colorName: string): string {
     'Indigo': '#4B0082',
     'Magenta': '#FF00FF',
     'Orchid': '#DA70D6',
-    
+
     // Yellows/Oranges
     'Yellow': '#EAB308',
     'Gold': '#FFD700',
@@ -70,7 +70,7 @@ function getColorValue(colorName: string): string {
     'Apricot': '#FBCEB1',
     'Mustard': '#FFDB58',
     'Honey': '#FFC30B',
-    
+
     // Pinks
     'Pink': '#EC4899',
     'Hot Pink': '#FF69B4',
@@ -78,7 +78,7 @@ function getColorValue(colorName: string): string {
     'Fuchsia': '#FF00FF',
     'Mauve': '#E0B0FF',
     'Dusty Rose': '#DCAE96',
-    
+
     // Neutrals
     'Charcoal': '#36454F',
     'Slate': '#708090',
@@ -88,7 +88,7 @@ function getColorValue(colorName: string): string {
     'Ash': '#B2BEB5',
     'Stone': '#928E85',
     'Taupe': '#483C32',
-    
+
     // Modern colors
     'Mint Green': '#00FF7F',
     'Electric Blue': '#7DF9FF',
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     // Transform Supabase products to shop format
     const shopProducts = products.map(product => ({
       id: product.id,
@@ -135,17 +135,17 @@ export async function GET(request: NextRequest) {
       tags: product.featured ? ['Featured'] : [],
       rating: 4.5, // Default rating for shop display
       sizes: product.sizes || ['S', 'M', 'L', 'XL'],
-      colors: Array.isArray(product.colors) 
-        ? product.colors.map(color => 
-            typeof color === 'string' 
-              ? { name: color, value: getColorValue(color) }
-              : color
-          )
+      colors: Array.isArray(product.colors)
+        ? product.colors.map(color =>
+          typeof color === 'string'
+            ? { name: color, value: getColorValue(color) }
+            : color
+        )
         : [{ name: 'Black', value: '#000000' }, { name: 'White', value: '#FFFFFF' }],
       createdAt: product.created_at,
       updatedAt: product.updated_at
     }));
-    
+
     return NextResponse.json(shopProducts);
   } catch (error) {
     console.error('Error fetching products for shop:', error);

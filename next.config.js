@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion']
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'react-hot-toast', 'sonner', 'zustand']
   },
+  output: 'standalone',
+  outputFileTracingRoot: __dirname,
   images: {
     remotePatterns: [
       {

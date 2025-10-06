@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, LogIn } from 'lucide-react'
+import { ArrowLeft, User, LogIn, Loader2 } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { useCart } from '@/contexts/CartContext'
@@ -12,6 +12,51 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import OrderSummary from '@/components/checkout/OrderSummary'
+
+// Loading component for better UX
+function CheckoutLoading() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-label-secondary" />
+          <span className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            Loading checkout...
+          </span>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  )
+}
+
+// Error fallback component
+function CheckoutError({ error, retry }: { error?: Error; retry: () => void }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md">
+          <h2 className="text-xl font-semibold text-label-primary mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            Checkout Error
+          </h2>
+          <p className="text-label-secondary mb-6" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            We encountered an error while loading the checkout page. Please try again.
+          </p>
+          <button
+            onClick={retry}
+            className="px-4 py-2 bg-label-primary text-white rounded-lg hover:bg-opacity-90 transition-all"
+            style={{ fontFamily: 'Gilroy, sans-serif' }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  )
+}
 
 interface CheckoutStep {
   id: string
@@ -40,6 +85,7 @@ function CheckoutContent() {
   const { state, addItem, removeItem, updateQuantity, clearCart } = useCart()
   const { user, profile, isLoading } = useAuth()
   const [mounted, setMounted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [currentStep, setCurrentStep] = useState('information')
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
@@ -61,28 +107,38 @@ function CheckoutContent() {
 
   // Prevent hydration mismatch
   useEffect(() => {
-    setMounted(true)
+    try {
+      setMounted(true)
+    } catch (err) {
+      console.error('Error mounting component:', err)
+      setError('Failed to initialize checkout')
+    }
   }, [])
 
   // Pre-fill form with customer data if authenticated
   useEffect(() => {
-    if (user && profile) {
-      setContactInfo({
-        email: user.primaryEmail || '',
-        phone: profile.phone || ''
-      })
-
-      if (profile.address) {
-        setShippingAddress({
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-          country: profile.country || 'United States',
-          state: profile.state || '',
-          address: profile.address || '',
-          city: profile.city || '',
-          postalCode: profile.postal_code || ''
+    try {
+      if (user && profile) {
+        setContactInfo({
+          email: user.primaryEmail || '',
+          phone: profile.phone || ''
         })
+
+        if (profile.address) {
+          setShippingAddress({
+            firstName: profile.first_name || '',
+            lastName: profile.last_name || '',
+            country: profile.country || 'United States',
+            state: profile.state || '',
+            address: profile.address || '',
+            city: profile.city || '',
+            postalCode: profile.postal_code || ''
+          })
+        }
       }
+    } catch (err) {
+      console.error('Error pre-filling form data:', err)
+      setError('Failed to load user data')
     }
   }, [user, profile])
 
@@ -182,22 +238,14 @@ function CheckoutContent() {
     setShippingAddress(prev => ({ ...prev, [field]: value }))
   }
 
+  // Show error state if there's an error
+  if (error) {
+    return <CheckoutError error={new Error(error)} retry={() => setError(null)} />
+  }
+
   // Show loading state until component is mounted and cart is loaded to prevent hydration mismatch
-  if (!mounted || !state.isLoaded) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-label-primary mx-auto mb-4"></div>
-            <p className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-              Loading checkout...
-            </p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    )
+  if (!mounted || !state.isLoaded || isLoading) {
+    return <CheckoutLoading />
   }
 
   if (state.items.length === 0) {
@@ -282,7 +330,7 @@ function CheckoutContent() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => router.push('/handler/signin?redirect=/checkout')}
+                      onClick={() => router.push('/signin?redirect=/checkout')}
                       className="flex items-center gap-2 px-4 py-2 bg-label-primary text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-all"
                       style={{ fontFamily: 'Gilroy, sans-serif' }}
                     >
@@ -474,7 +522,9 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <SupabaseAuthProvider>
-      <CheckoutContent />
+      <Suspense fallback={<CheckoutLoading />}>
+        <CheckoutContent />
+      </Suspense>
     </SupabaseAuthProvider>
   )
 }

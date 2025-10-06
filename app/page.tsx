@@ -124,6 +124,8 @@ export default function HomePage() {
           width={1299}
           height={832}
           className="w-full h-full object-cover"
+          priority={false}
+          loading="lazy"
         />
       </div>
 

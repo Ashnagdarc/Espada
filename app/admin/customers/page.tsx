@@ -6,7 +6,7 @@ import { Search, Filter, UserPlus, Mail, Phone, MapPin, Eye, Edit, Trash2, X, Ca
 import { supabase } from '@/lib/supabase';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
-import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
+import ConfirmDialog from '@/components/admin/ConfirmDialog';
 
 interface Customer {
   id: string;

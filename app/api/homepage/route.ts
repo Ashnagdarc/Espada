@@ -43,6 +43,10 @@ interface HomepageData {
 
 export async function GET(request: NextRequest) {
   try {
+    // Add cache headers for better performance
+    const headers = new Headers({
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+    });
 
     // Fetch all published homepage sections with their images and collection items
     const { data: sections, error: sectionsError } = await supabaseAdmin
@@ -133,7 +137,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: homepageData,
-    });
+    }, { headers });
 
   } catch (error) {
     console.error('Error in homepage API:', error);
