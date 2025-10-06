@@ -199,8 +199,8 @@ function NewProductPageContent() {
     
     // Auto-generate SKU when name or category changes
     if (field === 'name' || field === 'category') {
-      const name = field === 'name' ? value : formData.name
-      const category = field === 'category' ? value : formData.category
+      const name = field === 'name' ? String(value) : formData.name
+      const category = field === 'category' ? String(value) : formData.category
       if (name && category) {
         setFormData(prev => ({
           ...prev,
@@ -227,27 +227,32 @@ function NewProductPageContent() {
     
     switch (field) {
       case 'name':
-        if (!value?.trim()) error = 'Product name is required'
-        else if (value.length < 3) error = 'Product name must be at least 3 characters'
-        else if (value.length > 100) error = 'Product name must be less than 100 characters'
+        const nameValue = String(value || '')
+        if (!nameValue.trim()) error = 'Product name is required'
+        else if (nameValue.length < 3) error = 'Product name must be at least 3 characters'
+        else if (nameValue.length > 100) error = 'Product name must be less than 100 characters'
         break
       case 'description':
-        if (!value?.trim()) error = 'Description is required'
-        else if (value.length < 10) error = 'Description must be at least 10 characters'
-        else if (value.length > 1000) error = 'Description must be less than 1000 characters'
+        const descValue = String(value || '')
+        if (!descValue.trim()) error = 'Description is required'
+        else if (descValue.length < 10) error = 'Description must be at least 10 characters'
+        else if (descValue.length > 1000) error = 'Description must be less than 1000 characters'
         break
       case 'category':
         if (!value) error = 'Category is required'
         break
       case 'price':
-        if (value <= 0) error = 'Price must be greater than 0'
-        else if (value > 999999) error = 'Price must be less than $999,999'
+        const priceValue = Number(value)
+        if (priceValue <= 0) error = 'Price must be greater than 0'
+        else if (priceValue > 999999) error = 'Price must be less than $999,999'
         break
       case 'stock':
-        if (value < 0) error = 'Stock cannot be negative'
+        const stockValue = Number(value)
+        if (stockValue < 0) error = 'Stock cannot be negative'
         break
       case 'metaDescription':
-        if (value && value.length > 160) error = 'Meta description should be under 160 characters'
+        const metaValue = String(value || '')
+        if (metaValue && metaValue.length > 160) error = 'Meta description should be under 160 characters'
         break
     }
     
@@ -552,9 +557,9 @@ function NewProductPageContent() {
         router.push('/admin/products')
       }, 1000)
       
-    } catch (error) {
-      console.error('Error creating product:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create product'
+    } catch (err) {
+      console.error('Error creating product:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create product'
       error('Error', errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -572,15 +577,7 @@ function NewProductPageContent() {
     }
   }
 
-  // Helper component for tooltips
-  const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => (
-    <div className="group relative">
-      {children}
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-white text-black text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-        {content}
-      </div>
-    </div>
-  )
+
 
   return (
     <AdminLayout>

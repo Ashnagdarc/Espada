@@ -208,7 +208,7 @@ function AdminProductsPageContent() {
               <div className="sm:w-48">
                 <Select
                   value={selectedCategory}
-                  onChange={(value) => setSelectedCategory(value)}
+                  onChange={(value) => setSelectedCategory(String(value))}
                   options={categories.map(category => ({
                     value: category,
                     label: category === 'all' ? 'All Categories' : category
