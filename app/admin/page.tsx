@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { adminAPI } from '@/lib/admin/api';
+import { AnalyticsData } from '@/lib/types/api';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Card from '@/components/admin/ui/Card';
 import {
@@ -73,7 +74,7 @@ const formatTimeAgo = (timestamp: string): string => {
 };
 
 // Function to generate recent activities from analytics data
-const generateRecentActivities = (analyticsData: any): ActivityItem[] => {
+const generateRecentActivities = (analyticsData: AnalyticsData): ActivityItem[] => {
   const activities: ActivityItem[] = [];
 
   // Add recent orders as activities
@@ -101,7 +102,7 @@ const generateRecentActivities = (analyticsData: any): ActivityItem[] => {
   }
 
   // Add new customers activity
-  if (analyticsData.newCustomers > 0) {
+  if (analyticsData.newCustomers && analyticsData.newCustomers > 0) {
     activities.push({
       id: 'new-customers',
       type: 'customer',
@@ -142,6 +143,34 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasRedirected, setHasRedirected] = useState(false);
+
+  // Show loading screen while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            Verifying access...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading screen while checking admin status
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            Checking permissions...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     console.log('Admin page useEffect - Auth state:', { 

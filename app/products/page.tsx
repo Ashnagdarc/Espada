@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, ChevronDown, Menu, X } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
@@ -43,7 +43,26 @@ const priceRanges = [
 
 const ratings = [5, 4, 3, 2, 1];
 
-export default function ProductsPage() {
+// Loading component for Suspense fallback
+function ProductsPageLoading() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 border-2 border-label-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+            Loading products...
+          </span>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+// Main products component that uses useSearchParams
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -987,6 +1006,17 @@ export default function ProductsPage() {
 
       <Footer />
       </div>
+    </ErrorBoundary>
+  );
+}
+
+// Main export with Suspense wrapper
+export default function ProductsPage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<ProductsPageLoading />}>
+        <ProductsPageContent />
+      </Suspense>
     </ErrorBoundary>
   );
 }
