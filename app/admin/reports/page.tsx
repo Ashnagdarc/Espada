@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { adminAPI } from '@/lib/admin/api';
 import { Download, Calendar, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, FileText, BarChart3, Loader2 } from 'lucide-react';
-import { ToastProvider, useToast } from '@/components/admin/ui/Toast';
+import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
 
 interface AnalyticsData {
   totalProducts: number;
@@ -86,7 +86,7 @@ interface ReportData {
 }
 
 function ReportsPageContent() {
-  const { success, error: showError, info } = useToast();
+  const { success, error: showError, info } = useToastHelpers();
   const [selectedReport, setSelectedReport] = useState('sales');
   const [dateRange, setDateRange] = useState('30');
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -154,7 +154,7 @@ function ReportsPageContent() {
       console.error('Failed to fetch report data:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load report data. Please try again.';
       setError(errorMessage);
-      error('Loading Failed', errorMessage);
+      showError('Loading Failed', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -220,7 +220,7 @@ function ReportsPageContent() {
     } catch (err) {
       console.error('Export failed:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to export report. Please try again.';
-      error('Export Failed', errorMessage);
+      showError('Export Failed', errorMessage);
     } finally {
       setExportLoading(false);
     }
