@@ -14,21 +14,21 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
 }
 
 const buttonVariants = {
-  default: 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 shadow-sm hover:shadow-md',
-  destructive: 'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 shadow-sm hover:shadow-md',
-  outline: 'border border-gray-300 dark:border-gray-600 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:shadow-md',
-  secondary: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 shadow-sm hover:shadow-md',
-  ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100 hover:shadow-sm',
-  link: 'text-black dark:text-white underline-offset-4 hover:underline',
-  gradient: 'bg-gradient-to-r from-gray-900 to-black dark:from-gray-100 dark:to-white text-white dark:text-black hover:from-gray-800 hover:to-gray-900 dark:hover:from-gray-200 dark:hover:to-gray-100 shadow-lg hover:shadow-xl',
+  default: 'bg-apple-blue-500 text-white hover:bg-apple-blue-600 active:bg-apple-blue-700 dark:bg-apple-blue-500 dark:hover:bg-apple-blue-400 shadow-sm hover:shadow-md',
+  destructive: 'bg-apple-red-500 text-white hover:bg-apple-red-600 active:bg-apple-red-700 dark:bg-apple-red-500 dark:hover:bg-apple-red-400 shadow-sm hover:shadow-md',
+  outline: 'border border-form-border bg-transparent hover:bg-fill-secondary active:bg-fill-tertiary text-label-primary shadow-sm hover:shadow-md',
+  secondary: 'bg-fill-secondary text-label-primary hover:bg-fill-tertiary active:bg-fill-quaternary shadow-sm hover:shadow-md',
+  ghost: 'hover:bg-fill-secondary active:bg-fill-tertiary text-label-primary hover:shadow-sm',
+  link: 'text-apple-blue-500 dark:text-apple-blue-400 underline-offset-4 hover:underline',
+  gradient: 'bg-gradient-to-r from-apple-blue-600 to-apple-blue-500 text-white hover:from-apple-blue-700 hover:to-apple-blue-600 shadow-lg hover:shadow-xl',
 }
 
 const sizeVariants = {
-  xs: 'h-7 px-2 text-xs',
-  sm: 'h-9 px-3 text-sm',
-  default: 'h-10 px-4 py-2',
-  lg: 'h-11 px-8 text-base',
-  icon: 'h-10 w-10',
+  xs: 'min-h-apple-touch px-apple-2 text-apple-caption-1',
+  sm: 'min-h-apple-touch px-apple-3 text-apple-footnote',
+  default: 'min-h-apple-touch px-apple-4 py-apple-3 text-apple-body',
+  lg: 'min-h-apple-touch px-apple-6 py-apple-4 text-apple-headline',
+  icon: 'min-h-apple-touch min-w-apple-touch',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         className={cn(
-          'relative inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 overflow-hidden',
+          'relative inline-flex items-center justify-center rounded-apple-md font-medium transition-all duration-200 focus-apple disabled:pointer-events-none disabled:opacity-50 overflow-hidden select-none transform-gpu will-change-transform',
           buttonVariants[variant],
           sizeVariants[size],
           className

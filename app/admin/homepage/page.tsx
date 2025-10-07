@@ -99,9 +99,9 @@ function HomepageManagementContent() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'published':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'scheduled':
-        return <Clock className="w-4 h-4 text-yellow-400" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       case 'draft':
       default:
         return <AlertCircle className="w-4 h-4 text-gray-400" />;
@@ -123,13 +123,13 @@ function HomepageManagementContent() {
   const getSectionDescription = (sectionType: string, section?: HomepageSection) => {
     switch (sectionType) {
       case 'hero':
-        return `Hero section with ${section?.images?.length || 0} images and navigation categories`;
+        return `${section?.images?.length || 0} images • Navigation categories`;
       case 'new_this_week':
-        return `Featured collection with ${section?.collection_items?.length || 0} products`;
+        return `${section?.collection_items?.length || 0} featured products`;
       case 'xiv_collections':
-        return `XIV Collections with ${section?.collection_items?.length || 0} products`;
+        return `${section?.collection_items?.length || 0} collection items`;
       case 'approach':
-        return `Approach section with ${section?.images?.length || 0} images and content`;
+        return `${section?.images?.length || 0} images • Content sections`;
       default:
         return 'Homepage section';
     }
@@ -138,14 +138,14 @@ function HomepageManagementContent() {
   const getSectionIcon = (sectionType: string) => {
     switch (sectionType) {
       case 'hero':
-        return <ImageIcon className="w-6 h-6" />;
+        return <ImageIcon className="w-5 h-5" />;
       case 'new_this_week':
       case 'xiv_collections':
-        return <Grid className="w-6 h-6" />;
+        return <Grid className="w-5 h-5" />;
       case 'approach':
-        return <FileText className="w-6 h-6" />;
+        return <FileText className="w-5 h-5" />;
       default:
-        return <FileText className="w-6 h-6" />;
+        return <FileText className="w-5 h-5" />;
     }
   };
 
@@ -181,12 +181,15 @@ function HomepageManagementContent() {
   if (authLoading || isLoading) {
     return (
       <AdminLayout>
-        <div className="p-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-white/10 rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-8 max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="space-y-3">
+              <div className="h-8 bg-white/10 rounded-lg w-80"></div>
+              <div className="h-5 bg-white/5 rounded w-96"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-48 bg-white/10 rounded-lg"></div>
+                <div key={i} className="h-48 bg-white/5 rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -198,14 +201,14 @@ function HomepageManagementContent() {
   if (error) {
     return (
       <AdminLayout>
-        <div className="p-8">
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
+        <div className="p-8 max-w-7xl mx-auto">
+          <div className="bg-red-50/10 border border-red-200/20 rounded-xl p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-red-400 mb-2">Error Loading Homepage</h2>
-            <p className="text-white/70 mb-4">{error}</p>
+            <p className="text-white/70 mb-6">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
             >
               Retry
             </button>
@@ -219,31 +222,33 @@ function HomepageManagementContent() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-8 max-w-7xl mx-auto" style={{ fontFamily: 'Gilroy, -apple-system, BlinkMacSystemFont, sans-serif' }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Homepage Management</h1>
-            <p className="text-white/70">Manage all homepage content and sections</p>
+        <div className="flex items-center justify-between mb-12">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-white tracking-tight">Homepage Management</h1>
+            <p className="text-white/60 text-lg">Manage all homepage content and sections</p>
           </div>
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/"
-              target="_blank"
-              className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Preview Live Site
-            </Link>
-          </div>
+          <Link
+            href="/"
+            target="_blank"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white rounded-xl transition-all duration-200 font-medium backdrop-blur-sm border border-white/10"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Preview Live Site
+          </Link>
         </div>
 
         {/* Section Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {sectionTypes.map((sectionType) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
+          {sectionTypes.map((sectionType, index) => {
             const section = sections[sectionType as keyof HomepageSections];
             const lastUpdated = section?.updated_at 
-              ? new Date(section.updated_at).toLocaleDateString()
+              ? new Date(section.updated_at).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  year: 'numeric'
+                })
               : 'Never';
 
             return (
@@ -251,21 +256,22 @@ function HomepageManagementContent() {
                 key={sectionType}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: sectionTypes.indexOf(sectionType) * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-lg p-6 hover:bg-white/10 transition-colors"
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                className="group bg-white/5 hover:bg-white/8 border border-white/10 hover:border-white/20 rounded-xl p-6 transition-all duration-300 backdrop-blur-sm"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/10 rounded-lg">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-white/10 rounded-lg group-hover:bg-white/15 transition-colors">
                       {getSectionIcon(sectionType)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">
+                      <h3 className="font-semibold text-white text-base">
                         {formatSectionTitle(sectionType)}
                       </h3>
-                      <div className="flex items-center space-x-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1">
                         {getStatusIcon(section?.status || 'draft')}
-                        <span className="text-sm text-white/70">
+                        <span className="text-sm text-white/60">
                           {getStatusText(section?.status || 'draft')}
                         </span>
                       </div>
@@ -273,23 +279,26 @@ function HomepageManagementContent() {
                   </div>
                 </div>
 
-                <p className="text-sm text-white/60 mb-4">
+                {/* Description */}
+                <p className="text-sm text-white/50 mb-4 leading-relaxed">
                   {getSectionDescription(sectionType, section)}
                 </p>
 
-                <div className="text-xs text-white/50 mb-4">
-                  Last updated: {lastUpdated}
+                {/* Last Updated */}
+                <div className="text-xs text-white/40 mb-6">
+                  Updated {lastUpdated}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                {/* Actions */}
+                <div className="flex items-center gap-2">
                   <Link
                     href={getEditPath(sectionType)}
-                    className="flex-1 flex items-center justify-center px-3 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-white/90 text-black rounded-lg transition-all duration-200 text-sm font-medium"
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Edit className="w-4 h-4" />
                     Edit
                   </Link>
-                  <button className="p-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">
+                  <button className="p-2.5 bg-white/10 hover:bg-white/15 text-white rounded-lg transition-colors">
                     <Eye className="w-4 h-4" />
                   </button>
                 </div>
@@ -298,35 +307,56 @@ function HomepageManagementContent() {
           })}
         </div>
 
-        {/* Quick Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Published Sections</h3>
-            <p className="text-3xl font-bold text-green-400">
-              {Object.values(sections).filter(s => s?.status === 'published').length}
-            </p>
-            <p className="text-sm text-white/60 mt-1">out of {sectionTypes.length} sections</p>
-          </div>
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-6 backdrop-blur-sm"
+          >
+            <h3 className="text-base font-semibold text-white mb-3">Published Sections</h3>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-green-400">
+                {Object.values(sections).filter(s => s?.status === 'published').length}
+              </p>
+              <p className="text-sm text-white/50">of {sectionTypes.length}</p>
+            </div>
+          </motion.div>
           
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Total Images</h3>
-            <p className="text-3xl font-bold text-blue-400">
-              {Object.values(sections).reduce((acc, section) => 
-                acc + (section?.images?.length || 0), 0
-              )}
-            </p>
-            <p className="text-sm text-white/60 mt-1">across all sections</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+            className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-6 backdrop-blur-sm"
+          >
+            <h3 className="text-base font-semibold text-white mb-3">Total Images</h3>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-blue-400">
+                {Object.values(sections).reduce((acc, section) => 
+                  acc + (section?.images?.length || 0), 0
+                )}
+              </p>
+              <p className="text-sm text-white/50">across sections</p>
+            </div>
+          </motion.div>
           
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Featured Products</h3>
-            <p className="text-3xl font-bold text-purple-400">
-              {Object.values(sections).reduce((acc, section) => 
-                acc + (section?.collection_items?.length || 0), 0
-              )}
-            </p>
-            <p className="text-sm text-white/60 mt-1">in collections</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.4 }}
+            className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-6 backdrop-blur-sm"
+          >
+            <h3 className="text-base font-semibold text-white mb-3">Featured Products</h3>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-purple-400">
+                {Object.values(sections).reduce((acc, section) => 
+                  acc + (section?.collection_items?.length || 0), 0
+                )}
+              </p>
+              <p className="text-sm text-white/50">in collections</p>
+            </div>
+          </motion.div>
         </div>
       </div>
     </AdminLayout>

@@ -20,34 +20,34 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const getVariantClasses = (variant: ButtonVariant) => {
   switch (variant) {
     case 'primary':
-      return 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-black dark:focus:ring-white';
+      return 'bg-apple-blue-500 text-label-primary-inverse hover:bg-apple-blue-600 active:bg-apple-blue-700';
     case 'secondary':
-      return 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 focus:ring-gray-500';
+      return 'bg-fill-secondary text-label-primary hover:bg-fill-tertiary active:bg-fill-quaternary';
     case 'outline':
-      return 'border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-gray-500';
+      return 'border-2 border-separator text-label-primary hover:bg-fill-secondary active:bg-fill-tertiary';
     case 'ghost':
-      return 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-500';
+      return 'text-label-primary hover:bg-fill-secondary active:bg-fill-tertiary';
     case 'danger':
-      return 'bg-red-600 dark:bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-700 focus:ring-red-500';
+      return 'bg-apple-red-500 text-label-primary-inverse hover:bg-apple-red-600 active:bg-apple-red-700';
     case 'success':
-      return 'bg-green-600 dark:bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-700 focus:ring-green-500';
+      return 'bg-apple-green-500 text-label-primary-inverse hover:bg-apple-green-600 active:bg-apple-green-700';
     default:
-      return 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 focus:ring-black dark:focus:ring-white';
+      return 'bg-apple-blue-500 text-label-primary-inverse hover:bg-apple-blue-600 active:bg-apple-blue-700';
   }
 };
 
 const getSizeClasses = (size: ButtonSize) => {
   switch (size) {
     case 'sm':
-      return 'px-3 py-1.5 text-sm';
+      return 'px-apple-3 py-apple-2 text-apple-footnote min-h-apple-touch';
     case 'md':
-      return 'px-4 py-2 text-sm';
+      return 'px-apple-4 py-apple-3 text-apple-body min-h-apple-touch';
     case 'lg':
-      return 'px-6 py-3 text-base';
+      return 'px-apple-6 py-apple-4 text-apple-headline min-h-apple-touch';
     case 'xl':
-      return 'px-8 py-4 text-lg';
+      return 'px-apple-8 py-apple-5 text-apple-title-3 min-h-apple-touch';
     default:
-      return 'px-4 py-2 text-sm';
+      return 'px-apple-4 py-apple-3 text-apple-body min-h-apple-touch';
   }
 };
 
@@ -80,12 +80,13 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const baseClasses = `
     inline-flex items-center justify-center
-    font-semibold rounded-lg
+    font-medium rounded-apple-md
     transition-all duration-200
-    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black
+    focus-apple
     disabled:opacity-50 disabled:cursor-not-allowed
-    shadow-sm hover:shadow-md
+    shadow-apple-sm hover:shadow-apple-md
     border border-transparent
+    select-none transform-gpu will-change-transform
   `;
 
   const variantClasses = getVariantClasses(variant);

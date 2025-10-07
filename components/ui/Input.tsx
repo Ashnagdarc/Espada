@@ -42,10 +42,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasValue = value !== undefined && value !== ''
 
     const variantClasses = {
-      default: 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-black dark:focus:border-white focus:shadow-sm',
-      filled: 'border-transparent bg-gray-100 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:border-black dark:focus:border-white focus:shadow-sm',
-      outlined: 'border-2 border-gray-300 dark:border-gray-600 bg-transparent focus:border-black dark:focus:border-white focus:shadow-md',
-      minimal: 'border-0 border-b-2 border-gray-300 dark:border-gray-600 bg-transparent rounded-none focus:border-black dark:focus:border-white px-0',
+      default: 'border border-form-border bg-form-background focus:border-form-border-focus focus:shadow-sm',
+      filled: 'border border-transparent bg-fill-secondary focus:bg-form-background focus:border-form-border-focus focus:shadow-sm',
+      outlined: 'border-2 border-form-border bg-transparent focus:border-form-border-focus focus:shadow-md',
+      minimal: 'border-0 border-b-2 border-form-border bg-transparent rounded-none focus:border-form-border-focus px-0',
     }
 
     const handleClear = () => {
@@ -58,7 +58,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="space-y-2">
         {label && (
           <motion.label
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="label-apple"
             style={{ fontFamily: 'Gilroy, sans-serif' }}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -79,13 +79,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={isPassword ? (showPassword ? 'text' : 'password') : type}
             className={cn(
-              'flex h-10 w-full rounded-md border px-3 py-2 text-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+              'flex min-h-apple-touch w-full rounded-apple-md border px-apple-3 py-apple-3 text-apple-body transition-all duration-200 file:border-0 file:bg-transparent file:text-apple-body file:font-medium placeholder:text-form-placeholder focus-apple disabled:cursor-not-allowed disabled:opacity-50',
               variantClasses[variant],
-              leftIcon && 'pl-10',
-              (rightIcon || isPassword || clearable) && 'pr-10',
-              error && 'border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400',
-              success && 'border-green-500 dark:border-green-400',
-              loading && 'border-blue-500 dark:border-blue-400',
+              leftIcon && 'pl-apple-10',
+              (rightIcon || isPassword || clearable) && 'pr-apple-10',
+              error && 'border-form-border-error focus:border-form-border-error',
+              success && 'border-apple-green-500',
+              loading && 'border-apple-blue-500',
               className
             )}
             value={value}
@@ -162,17 +162,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
         
         {(error || helperText) && (
-          <motion.div
+          <motion.p
+            className={cn(
+              'text-apple-caption-2 mt-apple-1',
+              error ? 'text-form-text-error' : 'text-form-text-helper'
+            )}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={cn(
-              'text-xs',
-              error ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
-            )}
           >
             {error || helperText}
-          </motion.div>
+          </motion.p>
         )}
       </div>
     )
