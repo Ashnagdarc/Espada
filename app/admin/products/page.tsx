@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { ConfirmModal } from '@/components/admin/ui/Modal'
 import { SkeletonTable } from '@/components/admin/ui/Skeleton'
-import { useToastHelpers, ToastProvider } from '@/components/admin/ui/Toast'
+import { useToastActions } from '@/hooks/useToast'
 import Button from '@/components/admin/ui/Button'
 import SearchInput from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
@@ -26,7 +26,7 @@ const getProductStatus = (stock: number) => {
 
 function AdminProductsPageContent() {
   const router = useRouter()
-  const { success, error } = useToastHelpers()
+  const { success, error } = useToastActions()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -436,9 +436,5 @@ function AdminProductsPageContent() {
 }
 
 export default function AdminProductsPage() {
-  return (
-    <ToastProvider>
-      <AdminProductsPageContent />
-    </ToastProvider>
-  )
+  return <AdminProductsPageContent />
 }

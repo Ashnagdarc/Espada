@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Save, Store, Bell, Shield, Palette, Loader2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { ToastProvider, useToast } from '@/components/admin/ui/Toast';
+import { useToastActions } from '@/hooks/useToast';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -38,7 +38,7 @@ interface SettingsData {
 }
 
 function SettingsPageContent() {
-  const { success, error: showError } = useToast();
+  const { success, error: showError } = useToastActions();
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SettingsData>({
     general: {
@@ -91,7 +91,7 @@ function SettingsPageContent() {
       if (!session) {
         const errorMsg = 'Please log in to access settings';
         setError(errorMsg);
-        error('Authentication Required', errorMsg);
+        showError('Authentication Required', errorMsg);
         return;
       }
 
@@ -118,7 +118,7 @@ function SettingsPageContent() {
       console.error('Error loading settings:', err);
       const errorMsg = 'Failed to load settings. Using default values.';
       setError(errorMsg);
-      error('Load Failed', errorMsg);
+      showError('Load Failed', errorMsg);
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ function SettingsPageContent() {
       if (!session) {
         const errorMsg = 'Please log in to save settings';
         setError(errorMsg);
-        error('Authentication Required', errorMsg);
+        showError('Authentication Required', errorMsg);
         return;
       }
 
@@ -155,7 +155,7 @@ function SettingsPageContent() {
     } catch (err) {
       console.error('Error saving settings:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to save settings. Please try again.';
-      error('Save Failed', errorMessage);
+      showError('Save Failed', errorMessage);
       setError(errorMessage);
     } finally {
       setSaving(false);
@@ -473,9 +473,5 @@ function SettingsPageContent() {
 }
 
 export default function SettingsPage() {
-  return (
-    <ToastProvider>
-      <SettingsPageContent />
-    </ToastProvider>
-  );
+  return <SettingsPageContent />;
 }

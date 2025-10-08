@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import OrderSummary from '@/components/checkout/OrderSummary'
-import { useToastActions } from '@/contexts/ToastContext'
+import { useToastActions } from '@/hooks/useToast'
 
 // Loading component for better UX
 function CheckoutLoading() {

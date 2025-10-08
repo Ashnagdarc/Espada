@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { useToastActions } from '@/hooks/useToast';
 import { useRouter } from 'next/navigation';
 
 export function CustomerProfile() {
   const { user, profile, updateProfile, isLoading, signOut } = useAuth();
+  const { success, error } = useToastActions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: profile?.first_name || '',
@@ -56,10 +57,10 @@ export function CustomerProfile() {
         country: formData.country,
       });
       setIsEditing(false);
-      toast.success('Profile updated successfully!');
+      success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      error('Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -81,11 +82,11 @@ export function CustomerProfile() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success('Signed out successfully');
+      success('Signed out successfully');
       router.push('/');
     } catch (error) {
       console.error('Sign out error:', error);
-      toast.error('Failed to sign out');
+      error('Failed to sign out');
     }
   };
 

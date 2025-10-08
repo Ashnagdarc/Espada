@@ -6,7 +6,7 @@ import { Package, Truck, CheckCircle, Clock, AlertCircle, ArrowLeft, Eye } from 
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { useAuth, SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext'
-import { useToastActions } from '@/contexts/ToastContext'
+import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
 import Image from 'next/image'
 

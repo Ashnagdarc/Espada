@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { ToastProvider, useToast } from '@/components/admin/Toast';
+import { useToastActions } from '@/hooks/useToast';
 
 interface ApproachImage {
   id?: string;
@@ -49,7 +49,7 @@ interface ApproachSection {
 function ApproachEditorContent() {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const { success, error: showError } = useToast();
+  const { success, error } = useToastActions();
   const [approachSection, setApproachSection] = useState<ApproachSection>({
     content: {
       title: '',
@@ -104,7 +104,7 @@ function ApproachEditorContent() {
         console.error('Error fetching approach section:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load approach section';
         setError(errorMessage);
-        showError('Loading Failed', errorMessage);
+        error('Loading Failed', errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -158,7 +158,7 @@ function ApproachEditorContent() {
     } catch (err) {
       const errorMessage = 'Failed to upload image';
       setError(errorMessage);
-      showError('Upload Failed', errorMessage);
+      error('Upload Failed', errorMessage);
     }
   };
 
@@ -256,7 +256,7 @@ function ApproachEditorContent() {
       console.error('Error saving approach section:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to save approach section';
       setError(errorMessage);
-      showError('Save Failed', errorMessage);
+      error('Save Failed', errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -570,9 +570,5 @@ function ApproachEditorContent() {
 }
 
 export default function ApproachEditor() {
-  return (
-    <ToastProvider>
-      <ApproachEditorContent />
-    </ToastProvider>
-  );
+  return <ApproachEditorContent />;
 }

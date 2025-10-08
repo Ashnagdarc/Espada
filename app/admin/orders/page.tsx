@@ -6,7 +6,7 @@ import { RefreshCw, Eye, ShoppingCart } from 'lucide-react'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
-import toast from 'react-hot-toast'
+import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/admin/ui/Button'
 import { SearchInput } from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
@@ -36,6 +36,7 @@ interface Order {
 
 export default function AdminOrdersPage() {
   const router = useRouter()
+  const { success, error: showError } = useToastActions()
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,7 +63,7 @@ export default function AdminOrdersPage() {
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
             setOrders(prevOrders => [newOrder, ...prevOrders]);
-            toast.success('New order received!');
+            success('New order received!');
           } else if (payload.eventType === 'UPDATE') {
             const updatedOrder = payload.new as Order;
             setOrders(prevOrders =>
@@ -119,11 +120,11 @@ export default function AdminOrdersPage() {
       setOrders(data.orders || data)
 
       if (showRefreshToast) {
-        toast.success('Orders refreshed successfully')
+        success('Orders refreshed successfully')
       }
     } catch (error) {
       console.error('Failed to load orders:', error)
-      toast.error('Failed to load orders. Please try again.')
+      showError('Failed to load orders. Please try again.')
     } finally {
       setLoading(false)
       setIsRefreshing(false)
@@ -174,10 +175,10 @@ export default function AdminOrdersPage() {
         )
       )
 
-      toast.success(`Order status updated to ${newStatus}`)
+      success(`Order status updated to ${newStatus}`)
     } catch (error) {
       console.error('Failed to update order status:', error)
-      toast.error('Failed to update order status. Please try again.')
+      showError('Failed to update order status. Please try again.')
     }
   }
 

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Send, Mail, Phone, MapPin } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
-import { useToast } from "@/contexts/ToastContext";
+import { useToastActions } from '@/hooks/useToast';
 
 interface FormData {
   name: string;
@@ -27,7 +27,7 @@ export default function ContactPage() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { success, error } = useToast();
+  const { success, error } = useToastActions();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -77,7 +77,7 @@ export default function ContactPage() {
 
       // Reset form
       setFormData({ name: "", email: "", message: "" });
-    } catch (err) {
+    } catch {
       error(
         "Failed to send message",
         "Please try again or contact us directly"

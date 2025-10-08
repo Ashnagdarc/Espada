@@ -5,7 +5,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import { Search, Filter, UserPlus, Mail, Phone, MapPin, Eye, Edit, Trash2, X, Calendar, ShoppingBag, DollarSign, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
-import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
+import { useToastActions } from '@/hooks/useToast';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 
 interface Customer {
@@ -47,7 +47,7 @@ interface CustomersApiResponse {
 }
 
 function CustomersPageContent() {
-  const { success, error: showError } = useToastHelpers();
+  const { success, error: showError } = useToastActions();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
@@ -804,9 +804,5 @@ function CustomersPageContent() {
 }
 
 export default function CustomersPage() {
-  return (
-    <ToastProvider>
-      <CustomersPageContent />
-    </ToastProvider>
-  );
+  return <CustomersPageContent />;
 }

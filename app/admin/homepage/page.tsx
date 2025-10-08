@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
+import { useToastActions } from '@/hooks/useToast';
 
 interface HomepageSection {
   id: string;
@@ -58,7 +58,7 @@ function HomepageManagementContent() {
   const [sections, setSections] = useState<HomepageSections>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { success, error: showError } = useToastHelpers();
+  const { success, error: showError } = useToastActions();
 
   // Redirect if not admin
   useEffect(() => {
@@ -363,11 +363,6 @@ function HomepageManagementContent() {
   );
 }
 
-// Wrap with ToastProvider
 export default function HomepageManagement() {
-  return (
-    <ToastProvider>
-      <HomepageManagementContent />
-    </ToastProvider>
-  );
+  return <HomepageManagementContent />;
 }

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import AdminLayout from '@/components/admin/AdminLayout'
-import { useToastHelpers, ToastProvider } from '@/components/admin/ui/Toast'
+import { useToastActions } from '@/hooks/useToast'
 import Button from '@/components/admin/ui/Button'
 import Input from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
@@ -90,7 +90,7 @@ const generateSKU = (name: string, category: string): string => {
 
 function NewProductPageContent() {
   const router = useRouter()
-  const { success, error } = useToastHelpers()
+  const { success, error } = useToastActions()
   
   const [currentStep, setCurrentStep] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
@@ -1437,9 +1437,5 @@ function NewProductPageContent() {
 }
 
 export default function NewProductPage() {
-  return (
-    <ToastProvider>
-      <NewProductPageContent />
-    </ToastProvider>
-  )
+  return <NewProductPageContent />
 }

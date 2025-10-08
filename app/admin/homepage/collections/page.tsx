@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
+import { useToastActions } from '@/hooks/useToast';
 
 interface Product {
   id: string;
@@ -78,7 +78,7 @@ function CollectionsManagerContent() {
   const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const { success, error: showError } = useToastHelpers();
+  const { success, error } = useToastActions();
 
   // Redirect if not admin
   useEffect(() => {
@@ -130,7 +130,7 @@ function CollectionsManagerContent() {
         console.error('Error fetching data:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
         setError(errorMessage);
-        showError('Loading Failed', errorMessage);
+        error('Loading Failed', errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -175,7 +175,7 @@ function CollectionsManagerContent() {
     if (isAlreadyAdded) {
       const errorMessage = 'Product is already in the collection';
       setError(errorMessage);
-      showError('Duplicate Product', errorMessage);
+      error('Duplicate Product', errorMessage);
       return;
     }
 
@@ -249,7 +249,7 @@ function CollectionsManagerContent() {
       console.error('Error saving collection:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to save collection';
       setError(errorMessage);
-      showError('Save Failed', errorMessage);
+      error('Save Failed', errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -611,9 +611,5 @@ function CollectionsManagerContent() {
 }
 
 export default function CollectionsManager() {
-  return (
-    <ToastProvider>
-      <CollectionsManagerContent />
-    </ToastProvider>
-  );
+  return <CollectionsManagerContent />;
 }

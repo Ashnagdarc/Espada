@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { ToastProvider, useToastHelpers } from '@/components/admin/ui/Toast';
+import { useToastActions } from '@/hooks/useToast';
 
 interface HeroImage {
   id?: string;
@@ -61,7 +61,7 @@ function HeroEditorContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
-  const { success, error: showError } = useToastHelpers();
+  const { success, error: showError } = useToastActions();
 
   // Redirect if not admin
   useEffect(() => {
@@ -527,11 +527,6 @@ function HeroEditorContent() {
   );
 }
 
-// Wrap with ToastProvider
 export default function HeroEditor() {
-  return (
-    <ToastProvider>
-      <HeroEditorContent />
-    </ToastProvider>
-  );
+  return <HeroEditorContent />;
 }

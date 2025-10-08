@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { toast } from 'sonner';
+import { useToastActions } from '@/hooks/useToast';
 
 interface WishlistItem {
   id: string;
@@ -10,6 +10,7 @@ interface WishlistItem {
 
 export function useWishlist() {
   const { user, session } = useAuth();
+  const { success, error, info } = useToastActions();
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +40,7 @@ export function useWishlist() {
   // Add item to wishlist
   const addToWishlist = async (productId: string) => {
     if (!user || !session) {
-      toast.error('Please log in to add items to your wishlist');
+      error('Authentication Required', 'Please log in to add items to your wishlist');
       return false;
     }
 
@@ -57,19 +58,19 @@ export function useWishlist() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Added to wishlist!');
+        success('Success', 'Added to wishlist!');
         await fetchWishlist(); // Refresh wishlist
         return true;
       } else if (response.status === 409) {
-        toast.info('Item already in wishlist');
+        info('Already Added', 'Item already in wishlist');
         return false;
       } else {
-        toast.error(data.error || 'Failed to add to wishlist');
+        error('Add Failed', data.error || 'Failed to add to wishlist');
         return false;
       }
-    } catch (error) {
-      console.error('Error adding to wishlist:', error);
-      toast.error('Failed to add to wishlist');
+    } catch (err) {
+      console.error('Error adding to wishlist:', err);
+      error('Add Failed', 'Failed to add to wishlist');
       return false;
     } finally {
       setLoading(false);
@@ -79,7 +80,7 @@ export function useWishlist() {
   // Remove item from wishlist
   const removeFromWishlist = async (productId: string) => {
     if (!user || !session) {
-      toast.error('Please log in to manage your wishlist');
+      error('Authentication Required', 'Please log in to manage your wishlist');
       return false;
     }
 
@@ -95,17 +96,17 @@ export function useWishlist() {
       });
 
       if (response.ok) {
-        toast.success('Removed from wishlist');
+        success('Success', 'Removed from wishlist');
         await fetchWishlist(); // Refresh wishlist
         return true;
       } else {
         const data = await response.json();
-        toast.error(data.error || 'Failed to remove from wishlist');
+        error('Remove Failed', data.error || 'Failed to remove from wishlist');
         return false;
       }
-    } catch (error) {
-      console.error('Error removing from wishlist:', error);
-      toast.error('Failed to remove from wishlist');
+    } catch (err) {
+      console.error('Error removing from wishlist:', err);
+      error('Remove Failed', 'Failed to remove from wishlist');
       return false;
     } finally {
       setLoading(false);

@@ -3,7 +3,6 @@ import localFont from 'next/font/local';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LocaleProvider } from "@/contexts/LocaleContext";
-import { ToastProvider } from "@/contexts/ToastContext";
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
@@ -92,12 +91,14 @@ export default function RootLayout({
                 </div>
               }>
                 <SupabaseAuthProvider>
-                  <ToastProvider>{children}</ToastProvider>
+                  {children}
                   <Toaster 
                     position="top-right"
                     richColors
                     closeButton
                     theme="system"
+                    expand={true}
+                    visibleToasts={5}
                   />
                 </SupabaseAuthProvider>
               </Suspense>

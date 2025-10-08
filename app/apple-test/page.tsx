@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { AppleButton, AppleInput, AppleCard, AppleHeader } from '@/components/apple';
 import { Search, ShoppingCart, User, Heart, Star, Mail, Lock } from 'lucide-react';
-import { ToastProvider } from '@/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
 
 function AppleTestPageContent() {
@@ -381,9 +380,5 @@ function AppleTestPageContent() {
 }
 
 export default function AppleTestPage() {
-  return (
-    <ToastProvider>
-      <AppleTestPageContent />
-    </ToastProvider>
-  );
+  return <AppleTestPageContent />;
 }

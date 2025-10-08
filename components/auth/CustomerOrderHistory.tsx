@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Package, Calendar, CreditCard, Eye, Download, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { useToastActions } from '@/hooks/useToast';
 import { supabase } from '@/lib/supabase';
 
 interface Order {
@@ -33,6 +33,7 @@ interface OrderItem {
 
 export function CustomerOrderHistory() {
   const { user, profile, isLoading: authLoading } = useAuth();
+  const { success, error } = useToastActions();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -75,7 +76,7 @@ export function CustomerOrderHistory() {
       setOrders(formattedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast.error('Failed to load order history');
+      error('Failed to load order history');
     } finally {
       setIsLoading(false);
     }

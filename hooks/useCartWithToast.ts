@@ -1,7 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
-import { useToastActions } from '@/contexts/ToastContext'
+import { useToastActions } from '@/hooks/useToast'
 import { CartItem } from '@/contexts/CartContext'
 
 export function useCartWithToast() {

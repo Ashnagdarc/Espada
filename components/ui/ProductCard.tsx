@@ -34,17 +34,23 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { addItem } = useCartWithToast();
-  const { toggleWishlist, isInWishlist, loading: wishlistLoading } = useWishlist();
+  const {
+    toggleWishlist,
+    isInWishlist,
+    loading: wishlistLoading,
+  } = useWishlist();
 
   const isLiked = isInWishlist(String(product.id));
 
   // Helper function to normalize colors
-  const normalizeColors = (colors?: Array<{ name: string; value: string }> | string[]) => {
+  const normalizeColors = (
+    colors?: Array<{ name: string; value: string }> | string[]
+  ) => {
     if (!colors || colors.length === 0) return [];
-    if (typeof colors[0] === 'string') {
-      return (colors as string[]).map(color => ({
+    if (typeof colors[0] === "string") {
+      return (colors as string[]).map((color) => ({
         name: color,
-        value: getColorValue(color)
+        value: getColorValue(color),
       }));
     }
     return colors as Array<{ name: string; value: string }>;
@@ -54,100 +60,100 @@ export default function ProductCard({
   const getColorValue = (colorName: string) => {
     const colorMap: Record<string, string> = {
       // Basic colors
-      'Black': '#000000',
-      'White': '#FFFFFF',
-      'Gray': '#808080',
-      'Grey': '#808080',
+      Black: "#000000",
+      White: "#FFFFFF",
+      Gray: "#808080",
+      Grey: "#808080",
 
       // Earth tones
-      'Brown': '#8B4513',
-      'Tan': '#D2B48C',
-      'Beige': '#F5F5DC',
-      'Khaki': '#F0E68C',
-      'Olive': '#808000',
-      'Sand': '#C2B280',
-      'Cream': '#FFFDD0',
-      'Ivory': '#FFFFF0',
+      Brown: "#8B4513",
+      Tan: "#D2B48C",
+      Beige: "#F5F5DC",
+      Khaki: "#F0E68C",
+      Olive: "#808000",
+      Sand: "#C2B280",
+      Cream: "#FFFDD0",
+      Ivory: "#FFFFF0",
 
       // Blues
-      'Blue': '#0066CC',
-      'Navy': '#000080',
-      'Royal Blue': '#4169E1',
-      'Sky Blue': '#87CEEB',
-      'Teal': '#008080',
-      'Turquoise': '#40E0D0',
-      'Cyan': '#00FFFF',
-      'Steel Blue': '#4682B4',
-      'Powder Blue': '#B0E0E6',
+      Blue: "#0066CC",
+      Navy: "#000080",
+      "Royal Blue": "#4169E1",
+      "Sky Blue": "#87CEEB",
+      Teal: "#008080",
+      Turquoise: "#40E0D0",
+      Cyan: "#00FFFF",
+      "Steel Blue": "#4682B4",
+      "Powder Blue": "#B0E0E6",
 
       // Reds
-      'Red': '#DC2626',
-      'Crimson': '#DC143C',
-      'Burgundy': '#800020',
-      'Maroon': '#800000',
-      'Cherry': '#DE3163',
-      'Rose': '#FF007F',
-      'Coral': '#FF7F50',
-      'Salmon': '#FA8072',
+      Red: "#DC2626",
+      Crimson: "#DC143C",
+      Burgundy: "#800020",
+      Maroon: "#800000",
+      Cherry: "#DE3163",
+      Rose: "#FF007F",
+      Coral: "#FF7F50",
+      Salmon: "#FA8072",
 
       // Greens
-      'Green': '#16A34A',
-      'Forest Green': '#228B22',
-      'Lime': '#32CD32',
-      'Mint': '#98FB98',
-      'Sage': '#9CAF88',
-      'Emerald': '#50C878',
-      'Jade': '#00A86B',
-      'Pine': '#01796F',
+      Green: "#16A34A",
+      "Forest Green": "#228B22",
+      Lime: "#32CD32",
+      Mint: "#98FB98",
+      Sage: "#9CAF88",
+      Emerald: "#50C878",
+      Jade: "#00A86B",
+      Pine: "#01796F",
 
       // Purples
-      'Purple': '#7C3AED',
-      'Violet': '#8A2BE2',
-      'Lavender': '#E6E6FA',
-      'Plum': '#DDA0DD',
-      'Indigo': '#4B0082',
-      'Magenta': '#FF00FF',
-      'Orchid': '#DA70D6',
+      Purple: "#7C3AED",
+      Violet: "#8A2BE2",
+      Lavender: "#E6E6FA",
+      Plum: "#DDA0DD",
+      Indigo: "#4B0082",
+      Magenta: "#FF00FF",
+      Orchid: "#DA70D6",
 
       // Yellows/Oranges
-      'Yellow': '#EAB308',
-      'Gold': '#FFD700',
-      'Orange': '#EA580C',
-      'Amber': '#FFBF00',
-      'Peach': '#FFCBA4',
-      'Apricot': '#FBCEB1',
-      'Mustard': '#FFDB58',
-      'Honey': '#FFC30B',
+      Yellow: "#EAB308",
+      Gold: "#FFD700",
+      Orange: "#EA580C",
+      Amber: "#FFBF00",
+      Peach: "#FFCBA4",
+      Apricot: "#FBCEB1",
+      Mustard: "#FFDB58",
+      Honey: "#FFC30B",
 
       // Pinks
-      'Pink': '#EC4899',
-      'Hot Pink': '#FF69B4',
-      'Blush': '#DE5D83',
-      'Fuchsia': '#FF00FF',
-      'Mauve': '#E0B0FF',
-      'Dusty Rose': '#DCAE96',
+      Pink: "#EC4899",
+      "Hot Pink": "#FF69B4",
+      Blush: "#DE5D83",
+      Fuchsia: "#FF00FF",
+      Mauve: "#E0B0FF",
+      "Dusty Rose": "#DCAE96",
 
       // Neutrals
-      'Charcoal': '#36454F',
-      'Slate': '#708090',
-      'Silver': '#C0C0C0',
-      'Platinum': '#E5E4E2',
-      'Pearl': '#F8F6F0',
-      'Ash': '#B2BEB5',
-      'Stone': '#928E85',
-      'Taupe': '#483C32',
+      Charcoal: "#36454F",
+      Slate: "#708090",
+      Silver: "#C0C0C0",
+      Platinum: "#E5E4E2",
+      Pearl: "#F8F6F0",
+      Ash: "#B2BEB5",
+      Stone: "#928E85",
+      Taupe: "#483C32",
 
       // Modern colors
-      'Mint Green': '#00FF7F',
-      'Electric Blue': '#7DF9FF',
-      'Neon Pink': '#FF6EC7',
-      'Lime Green': '#32CD32',
-      'Sunset Orange': '#FF8C69',
-      'Deep Purple': '#663399',
-      'Forest': '#355E3B',
-      'Ocean': '#006994',
+      "Mint Green": "#00FF7F",
+      "Electric Blue": "#7DF9FF",
+      "Neon Pink": "#FF6EC7",
+      "Lime Green": "#32CD32",
+      "Sunset Orange": "#FF8C69",
+      "Deep Purple": "#663399",
+      Forest: "#355E3B",
+      Ocean: "#006994",
     };
-    return colorMap[colorName] || '#808080';
+    return colorMap[colorName] || "#808080";
   };
 
   const normalizedColors = normalizeColors(product.colors);
@@ -259,7 +265,9 @@ export default function ProductCard({
           {/* Color Options Preview */}
           {normalizedColors && normalizedColors.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Colors:</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Colors:
+              </span>
               <div className="flex gap-1.5">
                 {normalizedColors.slice(0, 4).map((color, index) => (
                   <motion.div
@@ -287,10 +295,7 @@ export default function ProductCard({
 
       {/* Add to Cart Button */}
       <div className="p-6 pt-0">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
             variant="default"
             size="lg"
