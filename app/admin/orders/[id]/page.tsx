@@ -28,7 +28,7 @@ export default function OrderDetailPage() {
       
       const adminSession = sessionStorage.getItem('adminAuth');
       if (!adminSession) {
-        router.push('/admin/login');
+        router.push('/signin?redirect=/admin');
         return;
       }
 
@@ -41,7 +41,7 @@ export default function OrderDetailPage() {
       if (!response.ok) {
         if (response.status === 401) {
           sessionStorage.removeItem('adminAuth');
-          router.push('/admin/login');
+          router.push('/signin?redirect=/admin');
           return;
         }
         throw new Error('Failed to load order');
@@ -63,7 +63,7 @@ export default function OrderDetailPage() {
       
       const adminSession = sessionStorage.getItem('adminAuth');
       if (!adminSession) {
-        router.push('/admin/login');
+        router.push('/signin?redirect=/admin');
         return;
       }
 
@@ -79,7 +79,7 @@ export default function OrderDetailPage() {
       if (!response.ok) {
         if (response.status === 401) {
           sessionStorage.removeItem('adminAuth');
-          router.push('/admin/login');
+          router.push('/signin?redirect=/admin');
           return;
         }
         const errorData = await response.json();

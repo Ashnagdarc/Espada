@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Lock, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-export default function SignInForm() {
+interface SignInFormProps {
+  redirectTo?: string;
+}
+
+export default function SignInForm({ redirectTo = '/account' }: SignInFormProps) {
   const router = useRouter();
   const { signIn, isLoading } = useAuth();
   const [formData, setFormData] = useState({

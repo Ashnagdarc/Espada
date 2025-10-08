@@ -39,7 +39,7 @@ export default function ProductEditPage() {
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        router.push('/admin/login');
+        router.push('/signin?redirect=/admin');
         return;
       }
 
@@ -52,7 +52,7 @@ export default function ProductEditPage() {
       if (!response.ok) {
         if (response.status === 401) {
           await supabase.auth.signOut();
-          router.push('/admin/login');
+          router.push('/signin?redirect=/admin');
           return;
         }
         if (response.status === 404) {
@@ -189,7 +189,7 @@ export default function ProductEditPage() {
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        router.push('/admin/login');
+        router.push('/signin?redirect=/admin');
         return;
       }
 
@@ -205,7 +205,7 @@ export default function ProductEditPage() {
       if (!response.ok) {
         if (response.status === 401) {
           await supabase.auth.signOut();
-          router.push('/admin/login');
+          router.push('/signin?redirect=/admin');
           return;
         }
         const errorData = await response.json();

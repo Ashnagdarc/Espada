@@ -144,34 +144,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [hasRedirected, setHasRedirected] = useState(false);
 
-  // Show loading screen while auth is being checked
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-            Verifying access...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading screen while checking admin status
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-            Checking permissions...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+  // All hooks must be called before any conditional returns
   useEffect(() => {
     console.log('Admin page useEffect - Auth state:', { 
       user: !!user, 

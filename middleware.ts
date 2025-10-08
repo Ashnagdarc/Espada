@@ -31,10 +31,10 @@ export async function middleware(request: NextRequest) {
       }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-    // If no session, redirect to signin
-    if (!session) {
+    // If no user or error, redirect to signin
+    if (!user || error) {
       return NextResponse.redirect(new URL('/signin', request.url));
     }
 
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
     const { data: adminData } = await supabase
       .from('admins')
       .select('email')
-      .eq('email', session.user.email)
+      .eq('email', user.email)
       .single();
 
     // If not admin, redirect to home

@@ -63,9 +63,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       console.error('Logout error:', error)
       // Continue with cleanup even if Supabase logout fails
     } finally {
-      // Always redirect to login after cleanup
+      // Always redirect to signin after cleanup
       setTimeout(() => {
-        window.location.href = '/admin/login'
+        window.location.href = '/signin?redirect=/admin'
       }, 100)
     }
   }

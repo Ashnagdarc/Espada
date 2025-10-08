@@ -244,7 +244,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  // Sign out function
+  // Sign out function with improved error handling
   const signOut = async () => {
     try {
       // Clear local state first to prevent UI issues
@@ -252,11 +252,33 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       setSession(null);
       setProfile(null);
       
-      // Attempt to sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.warn('Supabase signOut error (continuing with local cleanup):', error);
+      // Attempt to sign out from Supabase with timeout
+       const signOutPromise = supabase.auth.signOut();
+       const timeoutPromise = new Promise<never>((_, reject) => 
+         setTimeout(() => reject(new Error('Logout timeout')), 5000)
+       );
+       
+       try {
+         const result = await Promise.race([signOutPromise, timeoutPromise]);
+         if (result.error) {
+           console.warn('Supabase signOut error (continuing with local cleanup):', result.error);
+         }
+       } catch (networkError) {
+         // Handle network errors or timeouts gracefully
+         console.warn('Network error during logout (local state cleared):', networkError);
+         // Continue with local cleanup - this is not critical for user experience
+       }
+      
+      // Clear any stored tokens or session data
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('supabase.auth.token');
+          sessionStorage.removeItem('supabase.auth.token');
+        } catch (storageError) {
+          console.warn('Error clearing storage during logout:', storageError);
+        }
       }
+      
     } catch (error) {
       console.warn('SignOut error (local state cleared):', error);
       // Local state is already cleared, so this is not critical

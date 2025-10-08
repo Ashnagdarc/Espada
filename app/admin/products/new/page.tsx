@@ -503,7 +503,7 @@ function NewProductPageContent() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         error('Authentication Error', 'Please log in again')
-        setTimeout(() => router.push('/admin/login'), 1000)
+        setTimeout(() => router.push('/signin?redirect=/admin'), 1000)
         return
       }
 
@@ -541,7 +541,7 @@ function NewProductPageContent() {
         if (response.status === 401) {
           await supabase.auth.signOut()
           error('Authentication Error', 'Session expired. Please log in again')
-          setTimeout(() => router.push('/admin/login'), 1000)
+          setTimeout(() => router.push('/signin?redirect=/admin'), 1000)
           return
         }
         throw new Error(responseData.error || `Server error: ${response.status}`)

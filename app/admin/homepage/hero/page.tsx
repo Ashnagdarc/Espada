@@ -66,7 +66,7 @@ function HeroEditorContent() {
   // Redirect if not admin
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      router.push('/admin/login');
+      router.push('/signin?redirect=/admin');
     }
   }, [user, isAdmin, authLoading, router]);
 
