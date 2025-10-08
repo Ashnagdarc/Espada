@@ -26,12 +26,19 @@ export default function SignInForm({ redirectTo = '/account' }: SignInFormProps)
     setIsSubmitting(true);
 
     try {
-      const { error } = await signIn(formData.email, formData.password);
+      const { error, profile } = await signIn(formData.email, formData.password);
       
       if (error) {
         setError(error);
+      } else if (profile) {
+        // Immediate role-based redirect
+        if (profile.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/account');
+        }
       } else {
-        // Redirect will be handled by the auth context
+        // Fallback redirect if no profile
         router.push(redirectTo);
       }
     } catch (err) {

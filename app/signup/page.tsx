@@ -7,18 +7,22 @@ import SignUpForm from '@/components/auth/SignUpForm';
 
 function SignUpContent() {
   const router = useRouter();
-  const { user, profile, isLoading, handleRoleBasedRedirect } = useAuth();
+  const { user, profile, isLoading } = useAuth();
 
   useEffect(() => {
     if (user && !isLoading && profile) {
       // User is already signed in and has a profile, redirect based on role
-      handleRoleBasedRedirect('/account');
+      if (profile.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/account');
+      }
     } else if (user && !isLoading && !profile) {
       // User is signed in but no profile yet, redirect to account to create profile
       router.push('/account');
     }
     // If no user, show the sign-up form
-  }, [user, profile, isLoading, router, handleRoleBasedRedirect]);
+  }, [user, profile, isLoading, router]);
 
   // If user is already authenticated, show loading
   if (user) {
