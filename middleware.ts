@@ -4,8 +4,11 @@ import { createServerClient } from '@supabase/ssr';
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  console.log('🔍 Middleware running for:', pathname);
+
   // Only protect admin routes
   if (pathname.startsWith('/admin')) {
+    console.log('🔒 Admin route detected, checking authentication...');
     const res = NextResponse.next();
     
     const supabase = createServerClient(

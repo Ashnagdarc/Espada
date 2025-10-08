@@ -42,43 +42,69 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [isLoading, setIsLoading] = useState(true);
 
   const isAdmin = profile?.role === 'admin';
+  
+  // Debug logging for isAdmin
+  useEffect(() => {
+    console.log('🔐 isAdmin calculation:', {
+      profile: profile ? { email: profile.email, role: profile.role } : null,
+      isAdmin,
+      calculation: `${profile?.role} === 'admin' = ${profile?.role === 'admin'}`
+    });
+  }, [profile]);
+
+
 
   // Simplified profile fetching by email
   const fetchProfileByEmail = useCallback(async (email: string): Promise<UserProfile | null> => {
+    console.log('🔍 fetchProfileByEmail called for:', email);
     try {
       // Check admin table first
-      const { data: adminData } = await supabase
+      const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select('*')
         .eq('email', email)
         .single();
 
+      if (adminError && adminError.code !== 'PGRST116') {
+        console.error('❌ Error checking admins table:', adminError);
+      }
+
       if (adminData) {
-        return {
+        console.log('✅ Found admin profile:', adminData);
+        const profile = {
           id: adminData.id,
           email: adminData.email,
           first_name: adminData.first_name,
           last_name: adminData.last_name,
-          role: 'admin',
+          role: 'admin' as const,
           created_at: adminData.created_at,
           updated_at: adminData.updated_at,
         };
+        console.log('🎯 Returning admin profile with role:', profile.role);
+        return profile;
       }
 
+      console.log('❌ Not found in admins table, checking customer_profiles...');
+
       // Check customer profiles
-      const { data: customerData } = await supabase
+      const { data: customerData, error: customerError } = await supabase
         .from('customer_profiles')
         .select('*')
         .eq('email', email)
         .single();
 
+      if (customerError && customerError.code !== 'PGRST116') {
+        console.error('❌ Error checking customer_profiles table:', customerError);
+      }
+
       if (customerData) {
-        return {
+        console.log('✅ Found customer profile:', customerData);
+        const profile = {
           id: customerData.id,
           email: customerData.email,
           first_name: customerData.first_name,
           last_name: customerData.last_name,
-          role: 'customer',
+          role: customerData.role || 'customer', // Use the actual role from database
           phone: customerData.phone,
           address: customerData.address,
           city: customerData.city,
@@ -89,11 +115,14 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
           created_at: customerData.created_at,
           updated_at: customerData.updated_at,
         };
+        console.log('🎯 Returning customer profile with role:', profile.role);
+        return profile;
       }
 
+      console.log('❌ No profile found for email:', email);
       return null;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('❌ Error fetching profile:', error);
       return null;
     }
   }, []);
@@ -137,20 +166,61 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
   // Sign in function with immediate profile fetching
   const signIn = async (email: string, password: string) => {
+    const startTime = Date.now();
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 SupabaseAuthContext signIn: Starting authentication for:', email);
+      
+      const authStart = Date.now();
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      const authEnd = Date.now();
+      console.log(`🔐 SupabaseAuthContext signIn: Auth took ${authEnd - authStart}ms`);
 
       if (error) {
+        console.error('🔐 SupabaseAuthContext signIn: Auth error:', error.message);
         return { error: error.message };
       }
 
+      console.log('🔐 SupabaseAuthContext signIn: Auth successful, setting session cookies for SSR...');
+      
+      // Set session cookies for SSR by calling our API route
+      if (data.session) {
+        try {
+          const sessionStart = Date.now();
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          });
+          const sessionEnd = Date.now();
+          console.log(`🔐 SupabaseAuthContext signIn: Session cookies set successfully in ${sessionEnd - sessionStart}ms`);
+        } catch (sessionError) {
+          console.warn('🔐 SupabaseAuthContext signIn: Failed to set session cookies:', sessionError);
+        }
+      }
+      
+      console.log('🔐 SupabaseAuthContext signIn: Fetching profile...');
+      
       // Immediately fetch profile after successful sign in
+      const profileStart = Date.now();
       const userProfile = await fetchProfileByEmail(email);
-      return { profile: userProfile };
+      const profileEnd = Date.now();
+      
+      console.log(`🔐 SupabaseAuthContext signIn: Profile fetch took ${profileEnd - profileStart}ms, result:`, userProfile);
+      
+      const totalTime = Date.now() - startTime;
+      console.log(`🔐 SupabaseAuthContext signIn: Total signin process took ${totalTime}ms`);
+      
+      return { profile: userProfile || undefined };
     } catch (error) {
+      console.error('🔐 SupabaseAuthContext signIn: Unexpected error:', error);
       return { error: 'An unexpected error occurred' };
     }
   };
@@ -218,23 +288,28 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   // Simplified auth state initialization
   useEffect(() => {
     let mounted = true;
+    console.log('🚀 SupabaseAuthContext useEffect initialized');
     
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       
+      console.log('📱 Initial session check:', session ? `User: ${session.user.email}` : 'No session');
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user?.email) {
+        console.log('👤 Fetching profile for initial session user:', session.user.email);
         const userProfile = await fetchProfileByEmail(session.user.email);
         if (mounted) {
           setProfile(userProfile);
+          console.log('✅ Profile set:', userProfile ? `Role: ${userProfile.role}` : 'No profile');
         }
       }
       
       if (mounted) {
         setIsLoading(false);
+        console.log('✅ Initial auth loading complete');
       }
     });
 
@@ -243,22 +318,27 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       async (event, session) => {
         if (!mounted) return;
         
+        console.log('🔄 Auth state change:', event, session ? `User: ${session.user.email}` : 'No session');
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user?.email) {
+          console.log('👤 Fetching profile for auth change user:', session.user.email);
           const userProfile = await fetchProfileByEmail(session.user.email);
           if (mounted) {
             setProfile(userProfile);
+            console.log('✅ Profile updated:', userProfile ? `Role: ${userProfile.role}` : 'No profile');
           }
         } else {
           if (mounted) {
             setProfile(null);
+            console.log('❌ Profile cleared (no session)');
           }
         }
         
         if (mounted) {
           setIsLoading(false);
+          console.log('✅ Auth change loading complete');
         }
       }
     );

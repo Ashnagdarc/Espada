@@ -93,7 +93,7 @@ function ReportsPageContent() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const reportTypes = [
     { id: 'sales', name: 'Sales Report', icon: DollarSign, description: 'Revenue and sales analytics' },
@@ -109,7 +109,7 @@ function ReportsPageContent() {
   const fetchReportData = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setFetchError(null);
 
       // Fetch analytics data from the API
       const analytics = await adminAPI.getAnalytics(dateRange);
@@ -153,7 +153,7 @@ function ReportsPageContent() {
     } catch (err) {
       console.error('Failed to fetch report data:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load report data. Please try again.';
-      setError(errorMessage);
+      setFetchError(errorMessage);
       error('Loading Failed', errorMessage);
     } finally {
       setLoading(false);
@@ -262,13 +262,13 @@ function ReportsPageContent() {
     }).format(amount);
   };
 
-  if (error) {
+  if (fetchError) {
     return (
       <AdminLayout>
         <div className="space-y-6 text-white">
           <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 text-center">
             <p className="text-red-400 mb-2">Error loading reports</p>
-            <p className="text-white/70 text-sm">{error}</p>
+            <p className="text-white/70 text-sm">{fetchError}</p>
             <button
               onClick={fetchReportData}
               className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"

@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Lock, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-interface SignInFormProps {
-  redirectTo?: string;
-}
-
-export default function SignInForm({ redirectTo = '/account' }: SignInFormProps) {
+export default function SignInForm() {
   const router = useRouter();
   const { signIn, isLoading } = useAuth();
   const [formData, setFormData] = useState({
@@ -25,25 +21,28 @@ export default function SignInForm({ redirectTo = '/account' }: SignInFormProps)
     setError('');
     setIsSubmitting(true);
 
+    console.log('🔐 SignInForm: Starting signin process for:', formData.email);
+
     try {
+      console.log('🔐 SignInForm: Calling signIn function...');
       const { error, profile } = await signIn(formData.email, formData.password);
       
+      console.log('🔐 SignInForm: SignIn result:', { error, profile });
+      
       if (error) {
+        console.error('🔐 SignInForm: SignIn error:', error);
         setError(error);
-      } else if (profile) {
-        // Immediate role-based redirect
-        if (profile.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/account');
-        }
+        setIsSubmitting(false);
       } else {
-        // Fallback redirect if no profile
-        router.push(redirectTo);
+        console.log('🔐 SignInForm: SignIn successful, profile:', profile);
+        // Don't redirect here - let the signin page handle it
+        // The auth context will update and trigger the redirect in the page component
+        console.log('🔐 SignInForm: Letting signin page handle redirect...');
+        // Keep submitting state true to show loading until redirect happens
       }
     } catch (err) {
+      console.error('🔐 SignInForm: Unexpected error during signin:', err);
       setError('An unexpected error occurred');
-    } finally {
       setIsSubmitting(false);
     }
   };

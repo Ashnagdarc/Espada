@@ -8,12 +8,9 @@ import {
   Menu,
   ShoppingCart,
   User,
-  LogOut,
   Sun,
   Moon,
-  LogIn,
-  Search,
-  X
+  Search
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -37,8 +34,10 @@ const Header: React.FC = React.memo(() => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, signOut, profile, isAdmin } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { state: cartState } = useCart();
+
+
 
   // Prevent hydration mismatch for theme toggle
   useEffect(() => {

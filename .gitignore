@@ -130,3 +130,34 @@ yarn.lock
 *.njsproj
 *.sln
 *.sw?
+
+# Test and debug files (should not be committed)
+test_*.js
+test_*.cjs
+test_*.ts
+test-*.js
+test-*.cjs
+test-*.ts
+debug_*.js
+debug_*.cjs
+debug_*.ts
+debug-*.js
+debug-*.cjs
+debug-*.ts
+*_debug.*
+*-debug.*
+
+# Private documentation and audit reports
+*AUDIT_REPORT*.md
+*_AUDIT_*.md
+*-AUDIT-*.md
+.private-docs/
+private-docs/
+
+# Temporary and experimental files
+*.experimental.*
+*.temp.*
+*.tmp.*
+experimental_*
+temp_*
+tmp_*
