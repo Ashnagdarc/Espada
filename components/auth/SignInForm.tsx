@@ -43,6 +43,13 @@ export default function SignInForm({ redirectTo = '/account' }: SignInFormProps)
         // The auth context will update and trigger the redirect in the page component
         console.log('🔐 SignInForm: Letting signin page handle redirect...');
         // Keep submitting state true to show loading until redirect happens
+        // Set a fallback timeout in case redirect doesn't happen
+        setTimeout(() => {
+          if (isSubmitting) {
+            console.log('🔐 SignInForm: Fallback timeout - resetting submitting state');
+            setIsSubmitting(false);
+          }
+        }, 10000); // 10 second fallback
       }
     } catch (err) {
       console.error('🔐 SignInForm: Unexpected error during signin:', err);

@@ -45,12 +45,21 @@ function SignInContent() {
           profileTimeout.current = null;
         }
         
-        // Determine redirect destination using utility function
-        const destination = getRedirectDestination(profile.role, redirectTo, '/account');
+        // Determine redirect destination with improved role handling
+        let destination: string;
+        if (profile.role === 'admin') {
+          destination = redirectTo?.startsWith('/admin') ? redirectTo : '/admin';
+        } else {
+          // For customer or any other role, redirect to account or intended destination
+          destination = redirectTo?.startsWith('/admin') ? '/account' : (redirectTo || '/account');
+        }
+        
         console.log('🔐 SignInPage: Redirecting', profile.role, 'to:', destination);
         
-        // Use safe redirect utility
-        safeRedirect(router, destination, '/account', true);
+        // Use safe redirect utility with a small delay to ensure state is stable
+        setTimeout(() => {
+          safeRedirect(router, destination, '/account', true);
+        }, 100);
       } else {
         // User is authenticated but no profile yet - this might be a timing issue
         console.log('🔐 SignInPage: User authenticated but no profile found');
@@ -62,11 +71,13 @@ function SignInContent() {
             console.log('🔐 SignInPage: Profile timeout, redirecting to account');
             hasRedirected.current = true;
             safeRedirect(router, '/account', '/account', true);
-          }, 3000); // 3 second timeout
+          }, 5000); // Increased timeout to 5 seconds
         }
       }
     } else if (!isLoading && !user) {
       console.log('🔐 SignInPage: No user found, showing signin form');
+      // Reset redirect flag when no user
+      hasRedirected.current = false;
     } else {
       console.log('🔐 SignInPage: Still loading authentication state...');
     }

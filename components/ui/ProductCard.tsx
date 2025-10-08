@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "./Button";
+import AppleButton from "../apple/AppleButton";
 import { useCartWithToast } from "@/hooks/useCartWithToast";
 import { useWishlist } from "@/hooks/useWishlist";
 
@@ -211,7 +211,7 @@ export default function ProductCard({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <Button
+            <AppleButton
               variant="ghost"
               size="sm"
               onClick={(e) => {
@@ -238,7 +238,7 @@ export default function ProductCard({
                   )}
                 />
               </motion.div>
-            </Button>
+            </AppleButton>
           </motion.div>
         </div>
 
@@ -296,24 +296,25 @@ export default function ProductCard({
       {/* Add to Cart Button */}
       <div className="p-6 pt-0">
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            variant="default"
+          <AppleButton
+            variant="primary"
             size="lg"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleAddToCart();
             }}
-            isLoading={isLoading}
+            loading={isLoading}
+            fullWidth={true}
+            leftIcon={<ShoppingBag className="h-5 w-5" />}
             className={cn(
-              "w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
+              "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
               "shadow-lg hover:shadow-xl transition-all duration-300 font-semibold",
               "border border-primary/20 backdrop-blur-sm"
             )}
           >
-            <ShoppingBag className="mr-2 h-5 w-5" />
             Add to Cart
-          </Button>
+          </AppleButton>
         </motion.div>
       </div>
     </motion.div>

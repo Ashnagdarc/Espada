@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import Header from "@/components/layout/Header";
-import { Button } from "@/components/ui/Button";
+import AppleButton from "@/components/apple/AppleButton";
 import { useTranslations } from "@/contexts/LocaleContext";
 import { HomepageSkeleton } from "@/components/ui/OptimizedLoader";
 
@@ -97,7 +97,7 @@ export default function HomePage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={fetchHomepageData}>Try Again</Button>
+            <AppleButton onClick={fetchHomepageData}>Try Again</AppleButton>
           </div>
         </div>
       </div>
@@ -165,13 +165,13 @@ export default function HomePage() {
 
               {/* CTA Button */}
               <Link href="/products">
-                <Button
+                <AppleButton
                   variant="secondary"
                   size="lg"
                   className="w-full sm:w-auto min-w-[200px]"
                 >
                   Shop Collections
-                </Button>
+                </AppleButton>
               </Link>
             </div>
 
@@ -568,13 +568,13 @@ export default function HomePage() {
                   placeholder="Enter your email"
                   className="flex-1 px-4 py-3 bg-transparent border border-separator text-white placeholder-label-tertiary text-callout focus:outline-none focus:border-white transition-colors rounded-lg focus-ring"
                 />
-                <Button
+                <AppleButton
                   variant="default"
                   size="default"
                   className="whitespace-nowrap"
                 >
                   Subscribe
-                </Button>
+                </AppleButton>
               </div>
             </div>
           </div>
