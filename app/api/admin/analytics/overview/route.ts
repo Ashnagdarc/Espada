@@ -77,11 +77,12 @@ async function isAdmin(authHeader: string | null): Promise<boolean> {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !user) return false;
 
-    // Check if user exists in admins table
+    // Check if user exists in customer_profiles table with admin role
     const { data: admin } = await supabaseAdmin
-      .from('admins')
+      .from('customer_profiles')
       .select('id')
       .eq('email', user.email)
+      .eq('role', 'admin')
       .single();
 
     return !!admin;

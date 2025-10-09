@@ -44,10 +44,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     setIsLoggingOut(true)
     
     try {
-      // Clear admin session storage first
-      sessionStorage.removeItem('adminAuth')
-      localStorage.removeItem('adminAuth')
-      
       // Attempt Supabase logout with timeout
       const logoutPromise = signOut()
       const timeoutPromise = new Promise((_, reject) => 

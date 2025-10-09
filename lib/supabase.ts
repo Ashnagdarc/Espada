@@ -3,6 +3,44 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+// Custom storage implementation with debugging
+const customStorage = {
+  getItem: (key: string) => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const value = localStorage.getItem(key);
+      console.log(`[Storage] GET ${key}:`, !!value ? 'found' : 'null');
+      return value;
+    } catch (error) {
+      console.error(`[Storage] GET ERROR ${key}:`, error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, value);
+      console.log(`[Storage] SET ${key}: success (${value.length} chars)`);
+      // Verify immediately
+      const verification = localStorage.getItem(key);
+      if (verification !== value) {
+        console.error(`[Storage] VERIFICATION FAILED for ${key}`);
+      }
+    } catch (error) {
+      console.error(`[Storage] SET ERROR ${key}:`, error);
+    }
+  },
+  removeItem: (key: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(key);
+      console.log(`[Storage] REMOVE ${key}: success`);
+    } catch (error) {
+      console.error(`[Storage] REMOVE ERROR ${key}:`, error);
+    }
+  }
+};
+
 // Client for frontend use (with anon key and proper auth config)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -13,7 +51,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     // Add storage key prefix to avoid conflicts
     storageKey: 'espada-auth-token',
     // Add debug mode for better error tracking
-    debug: process.env.NODE_ENV === 'development'
+    debug: process.env.NODE_ENV === 'development',
+    // Use custom storage with debugging
+    storage: customStorage
   }
 })
 

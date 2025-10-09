@@ -33,13 +33,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create admin profile in Supabase
+    // Create admin profile in customer_profiles table
     const { data: profile, error: profileError } = await supabaseAdmin
-      .from('admins')
+      .from('customer_profiles')
       .insert([{
+        auth_user_id: authData.user.id,
         email: email,
         first_name: firstName || 'Admin',
-        last_name: lastName || 'User'
+        last_name: lastName || 'User',
+        role: 'admin'
       }])
       .select()
       .single();

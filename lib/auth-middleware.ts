@@ -49,14 +49,15 @@ export async function authenticateAdmin(request: NextRequest): Promise<{
       };
     }
 
-    // Verify user is an admin
-    const { data: adminProfile, error: adminError } = await supabaseAdmin
-      .from('admins')
+    // Verify user is an admin by checking customer_profiles table
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from('customer_profiles')
       .select('*')
       .eq('email', user.email)
+      .eq('role', 'admin')
       .single();
 
-    if (adminError || !adminProfile) {
+    if (profileError || !userProfile) {
       return {
         success: false,
         response: NextResponse.json(
@@ -67,11 +68,11 @@ export async function authenticateAdmin(request: NextRequest): Promise<{
     }
 
     const admin: AdminUser = {
-      id: adminProfile.id,
-      email: adminProfile.email,
+      id: userProfile.id,
+      email: userProfile.email,
       role: 'admin',
-      first_name: adminProfile.first_name,
-      last_name: adminProfile.last_name
+      first_name: userProfile.first_name,
+      last_name: userProfile.last_name
     };
 
     return {

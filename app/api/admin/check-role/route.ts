@@ -28,9 +28,10 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin
     const { data: adminData } = await supabaseAdmin
-      .from('admins')
+      .from('customer_profiles')
       .select('id')
       .eq('email', user.email)
+      .eq('role', 'admin')
       .single();
 
     const isAdmin = !!adminData;

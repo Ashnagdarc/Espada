@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, handleAuthError } from '@/lib/supabase';
+import { debugLocalStorage } from '@/lib/storage-debug';
 
 interface UserProfile {
   id: string;
@@ -54,68 +55,41 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
 
 
-  // Simplified profile fetching by email
+  // Unified profile fetching by email from customer_profiles table
   const fetchProfileByEmail = useCallback(async (email: string): Promise<UserProfile | null> => {
     console.log('🔍 fetchProfileByEmail called for:', email);
     try {
-      // Check admin table first
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (adminError && adminError.code !== 'PGRST116') {
-        console.error('❌ Error checking admins table:', adminError);
-      }
-
-      if (adminData) {
-        console.log('✅ Found admin profile:', adminData);
-        const profile = {
-          id: adminData.id,
-          email: adminData.email,
-          first_name: adminData.first_name,
-          last_name: adminData.last_name,
-          role: 'admin' as const,
-          created_at: adminData.created_at,
-          updated_at: adminData.updated_at,
-        };
-        console.log('🎯 Returning admin profile with role:', profile.role);
-        return profile;
-      }
-
-      console.log('❌ Not found in admins table, checking customer_profiles...');
-
-      // Check customer profiles
-      const { data: customerData, error: customerError } = await supabase
+      // Check customer_profiles table for both customers and admins
+      const { data: profileData, error: profileError } = await supabase
         .from('customer_profiles')
         .select('*')
         .eq('email', email)
         .single();
 
-      if (customerError && customerError.code !== 'PGRST116') {
-        console.error('❌ Error checking customer_profiles table:', customerError);
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('❌ Error checking customer_profiles table:', profileError);
+        return null;
       }
 
-      if (customerData) {
-        console.log('✅ Found customer profile:', customerData);
+      if (profileData) {
+        console.log('✅ Found user profile:', profileData);
         const profile = {
-          id: customerData.id,
-          email: customerData.email,
-          first_name: customerData.first_name,
-          last_name: customerData.last_name,
-          role: customerData.role || 'customer', // Use the actual role from database
-          phone: customerData.phone,
-          address: customerData.address,
-          city: customerData.city,
-          postal_code: customerData.postal_code,
-          country: customerData.country,
-          date_of_birth: customerData.date_of_birth,
-          preferences: customerData.preferences,
-          created_at: customerData.created_at,
-          updated_at: customerData.updated_at,
+          id: profileData.id,
+          email: profileData.email,
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          role: profileData.role || 'customer', // Use the actual role from database
+          phone: profileData.phone,
+          address: profileData.address,
+          city: profileData.city,
+          postal_code: profileData.postal_code,
+          country: profileData.country,
+          date_of_birth: profileData.date_of_birth,
+          preferences: profileData.preferences,
+          created_at: profileData.created_at,
+          updated_at: profileData.updated_at,
         };
-        console.log('🎯 Returning customer profile with role:', profile.role);
+        console.log('🎯 Returning user profile with role:', profile.role);
         return profile;
       }
 
@@ -127,7 +101,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Sign in function with immediate profile fetching
+  // Sign in function with proper session persistence
   const signIn = async (email: string, password: string) => {
     const startTime = Date.now();
     try {
@@ -146,27 +120,79 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         return { error: error.message };
       }
 
-      console.log('🔐 SupabaseAuthContext signIn: Auth successful, setting session cookies for SSR...');
+      if (!data.session) {
+        console.error('🔐 SupabaseAuthContext signIn: No session returned from auth');
+        return { error: 'Authentication failed - no session' };
+      }
+
+      console.log('🔐 SupabaseAuthContext signIn: Auth successful, ensuring session persistence...');
       
-      // Set session cookies for SSR by calling our API route
-      if (data.session) {
+      // Wait for session to be properly stored in localStorage with enhanced verification
+      const sessionStorageStart = Date.now();
+      let sessionStored = false;
+      let attempts = 0;
+      const maxAttempts = 20; // Increased attempts
+      
+      while (!sessionStored && attempts < maxAttempts) {
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 50)); // Reduced wait time but more attempts
+        
         try {
-          const sessionStart = Date.now();
-          await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token,
-            }),
-          });
-          const sessionEnd = Date.now();
-          console.log(`🔐 SupabaseAuthContext signIn: Session cookies set successfully in ${sessionEnd - sessionStart}ms`);
-        } catch (sessionError) {
-          console.warn('🔐 SupabaseAuthContext signIn: Failed to set session cookies:', sessionError);
+          // Check both the Supabase session and direct localStorage access
+          const { data: currentSession } = await supabase.auth.getSession();
+          const directStorageCheck = localStorage.getItem('espada-auth-token');
+          
+          if (currentSession.session?.access_token === data.session.access_token) {
+            sessionStored = true;
+            console.log(`🔐 SupabaseAuthContext signIn: Session verified in storage after ${attempts} attempts`);
+          } else if (directStorageCheck) {
+            console.log(`🔐 SupabaseAuthContext signIn: Direct storage check found data on attempt ${attempts}, but session mismatch`);
+          }
+        } catch (storageError) {
+          console.warn(`🔐 SupabaseAuthContext signIn: Session check attempt ${attempts} failed:`, storageError);
         }
+      }
+      
+      if (!sessionStored) {
+        console.warn('🔐 SupabaseAuthContext signIn: Session storage verification timed out, forcing manual storage...');
+        
+        // Force manual session storage as fallback
+        try {
+          const sessionData = JSON.stringify({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_at: data.session.expires_at,
+            expires_in: data.session.expires_in,
+            token_type: data.session.token_type,
+            user: data.session.user
+          });
+          localStorage.setItem('espada-auth-token', sessionData);
+          console.log('🔐 SupabaseAuthContext signIn: Manual session storage completed');
+        } catch (manualStorageError) {
+          console.error('🔐 SupabaseAuthContext signIn: Manual session storage failed:', manualStorageError);
+        }
+      }
+      
+      const sessionStorageEnd = Date.now();
+      console.log(`🔐 SupabaseAuthContext signIn: Session storage verification took ${sessionStorageEnd - sessionStorageStart}ms`);
+      
+      // Set session cookies for SSR
+      try {
+        const sessionStart = Date.now();
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          }),
+        });
+        const sessionEnd = Date.now();
+        console.log(`🔐 SupabaseAuthContext signIn: Session cookies set successfully in ${sessionEnd - sessionStart}ms`);
+      } catch (sessionError) {
+        console.warn('🔐 SupabaseAuthContext signIn: Failed to set session cookies:', sessionError);
       }
       
       console.log('🔐 SupabaseAuthContext signIn: Fetching profile...');
@@ -177,6 +203,18 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       const profileEnd = Date.now();
       
       console.log(`🔐 SupabaseAuthContext signIn: Profile fetch took ${profileEnd - profileStart}ms, result:`, userProfile);
+      
+
+      
+      // Update local state immediately to prevent race conditions
+      setSession(data.session);
+      setUser(data.session.user);
+      setProfile(userProfile);
+      setIsLoading(false);
+      
+      // Debug storage state after successful sign-in
+      console.log('🔐 SupabaseAuthContext signIn: Debugging storage after successful sign-in...');
+      debugLocalStorage();
       
       const totalTime = Date.now() - startTime;
       console.log(`🔐 SupabaseAuthContext signIn: Total signin process took ${totalTime}ms`);
@@ -211,6 +249,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const signOut = async () => {
     try {
       console.log('🚪 Starting logout process...');
+      
+
       
       // Clear local state first to prevent UI issues
       setUser(null);
@@ -257,14 +297,13 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  // Update profile function
+  // Update profile function - unified for all users
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!profile) return { error: 'No profile found' };
 
     try {
-      const table = profile.role === 'admin' ? 'admins' : 'customer_profiles';
       const { error } = await supabase
-        .from(table)
+        .from('customer_profiles')
         .update(updates)
         .eq('id', profile.id);
 
@@ -279,17 +318,27 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  // Simplified auth state initialization
+  // Enhanced auth state initialization with session persistence debugging
   useEffect(() => {
     let mounted = true;
     console.log('🚀 SupabaseAuthContext useEffect initialized');
     
-    // Get initial session with error handling
+    // Debug session storage state
+    if (typeof window !== 'undefined') {
+      debugLocalStorage();
+    }
+    
+    // Get initial session with enhanced error handling
     supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (!mounted) return;
       
       if (error) {
         console.error('❌ Error getting initial session:', error);
+        console.error('❌ Session error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         // Use the utility function to handle auth errors
         await handleAuthError(error);
         setSession(null);
@@ -299,7 +348,31 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         return;
       }
       
-      console.log('📱 Initial session check:', session ? `User: ${session.user.email}` : 'No session');
+      console.log('📱 Initial session check:', session ? `User: ${session.user.email}, Expires: ${new Date(session.expires_at! * 1000).toISOString()}` : 'No session');
+      
+      // Verify session validity
+      if (session) {
+        const now = Math.floor(Date.now() / 1000);
+        const expiresAt = session.expires_at || 0;
+        const isExpired = now >= expiresAt;
+        
+        console.log('🔍 Session validity check:', {
+          now,
+          expiresAt,
+          isExpired,
+          timeUntilExpiry: expiresAt - now
+        });
+        
+        if (isExpired) {
+          console.warn('⚠️ Initial session is expired, clearing...');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsLoading(false);
+          return;
+        }
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -309,6 +382,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         if (mounted) {
           setProfile(userProfile);
           console.log('✅ Profile set:', userProfile ? `Role: ${userProfile.role}` : 'No profile');
+          
+
         }
       }
       
@@ -318,6 +393,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       }
     }).catch((error) => {
       console.error('❌ Unexpected error in getSession:', error);
+      console.error('❌ getSession error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       if (mounted) {
         setSession(null);
         setUser(null);
@@ -342,6 +422,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
           return;
         } else if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out');
+          
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -359,6 +440,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
             if (mounted) {
               setProfile(userProfile);
               console.log('✅ Profile set after sign in:', userProfile ? `Role: ${userProfile.role}` : 'No profile');
+              
+
             }
           }
           

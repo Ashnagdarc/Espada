@@ -23,32 +23,16 @@ export default function SignInForm() {
     setError('');
     setIsSubmitting(true);
 
-    console.log('🔐 SignInForm: Starting signin process for:', formData.email);
-
     try {
-      console.log('🔐 SignInForm: Calling signIn function...');
       const { error, profile } = await signIn(formData.email, formData.password);
       
-      console.log('🔐 SignInForm: SignIn result:', { error, profile });
-      
       if (error) {
-        console.error('🔐 SignInForm: SignIn error:', error);
         setError(error);
         setIsSubmitting(false);
       } else {
-        console.log('🔐 SignInForm: SignIn successful, profile:', profile);
-        // Keep submitting state true to show loading until redirect happens
-        // The auth context will update and trigger the redirect in the page component
-        console.log('🔐 SignInForm: Authentication successful, waiting for redirect...');
-        
-        // Set a shorter fallback timeout since auth should be faster now
-        setTimeout(() => {
-          if (isSubmitting) {
-            console.log('🔐 SignInForm: Fallback timeout - forcing page refresh to ensure redirect');
-            // Force a page refresh to ensure the auth state is properly updated
-            window.location.reload();
-          }
-        }, 3000); // Reduced to 3 seconds
+        // Authentication successful - the auth context will update
+        // and the page component will handle the redirect
+        // Keep submitting state true to show loading until redirect
       }
     } catch (err) {
       console.error('🔐 SignInForm: Unexpected error during signin:', err);
