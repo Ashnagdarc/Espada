@@ -37,7 +37,6 @@ const AppleInput = forwardRef<HTMLInputElement, AppleInputProps>(
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
     const generatedId = useId();
     
     const inputId = id || `apple-input-${generatedId}`;
@@ -162,8 +161,6 @@ const AppleInput = forwardRef<HTMLInputElement, AppleInputProps>(
             type={inputType}
             className={inputClasses}
             disabled={disabled}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
             {...props}
           />
           

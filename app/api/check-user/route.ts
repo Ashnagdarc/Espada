@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       console.log('❌ User not found in customer_profiles table');
       
       // Also check if user exists in auth.users table
-      const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
       
       const authUser = authUsers?.users?.find(user => 
         user.email === email || 

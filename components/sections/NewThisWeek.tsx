@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
 import { ArrowRight } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/Button'
 
 const newProducts = [
   {
@@ -108,7 +108,7 @@ export default function NewThisWeek() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
         >
-          {newProducts.map((product, index) => (
+          {newProducts.map((product) => (
             <motion.div
               key={product.id}
               variants={itemVariants}

@@ -51,7 +51,7 @@ export const GET = withAuth(async (request, admin) => {
 });
 
 // POST /api/admin/products - Create a new product
-export const POST = withAuth(async (request, admin) => {
+export const POST = withAuth(async (request) => {
   try {
     const body = await request.json();
     

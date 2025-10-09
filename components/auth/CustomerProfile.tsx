@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 export function CustomerProfile() {
   const { user, profile, updateProfile, isLoading, signOut } = useAuth();
-  const { success, error } = useToastActions();
+  const { success } = useToastActions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: profile?.first_name || '',

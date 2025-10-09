@@ -152,7 +152,7 @@ function HeroEditorContent() {
         images: [...prev.images, newImage]
       }));
       success('Image uploaded successfully');
-    } catch (err) {
+    } catch {
       const errorMessage = 'Failed to upload image';
       setError(errorMessage);
       showError('Upload Failed', errorMessage);

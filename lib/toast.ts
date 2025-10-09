@@ -29,9 +29,9 @@ export interface Toast {
     options: {
       loading: string;
       success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
+      error: string | ((error: Error | unknown) => string);
     }
-  ) => Promise<T>;
+  ) => string | number;
   dismiss: (toastId?: string | number) => void;
   message: ToastFunction;
 }
@@ -93,7 +93,7 @@ export const toast: Toast = {
     options: {
       loading: string;
       success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
+      error: string | ((error: Error | unknown) => string);
     }
   ) => {
     return sonnerToast.promise(promise, options);

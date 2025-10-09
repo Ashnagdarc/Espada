@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/Button'
 import { Filter, Grid, List } from 'lucide-react'
 
 const collections = [

@@ -153,8 +153,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>((
     value,
     defaultValue,
     onChange,
-    maxSelectedDisplay = 2,
-    ...props
+    maxSelectedDisplay = 2
   },
   ref
 ) => {
@@ -175,7 +174,6 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>((
   const helperTextColorClass = getHelperTextColor(state);
   
   const displayHelperText = errorText || successText || helperText;
-  const currentState = errorText ? 'error' : successText ? 'success' : state;
 
   // Filter options based on search term
   const filteredOptions = searchable && searchTerm

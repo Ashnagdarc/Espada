@@ -14,18 +14,6 @@ interface CollectionItem {
   display_order: number;
 }
 
-interface HomepageSection {
-  id?: string;
-  section_type: 'hero' | 'collections' | 'featured' | 'banner';
-  content: Record<string, unknown>;
-  status: 'draft' | 'published' | 'scheduled';
-  scheduled_publish_at?: string | null;
-  homepage_images?: HomepageImage[];
-  collection_items?: CollectionItem[];
-  created_at?: string;
-  updated_at?: string;
-}
-
 interface TransformedSections {
   [key: string]: {
     id: string | null;
@@ -51,14 +39,11 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Create Supabase client with error handling
-let supabase: ReturnType<typeof createClient> | null = null;
-
-try {
-  if (supabaseUrl && supabaseServiceKey) {
-    supabase = createClient(supabaseUrl, supabaseServiceKey);
+function getSupabaseClient() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase configuration');
   }
-} catch (error) {
-  console.error('Failed to create Supabase client:', error);
+  return createClient(supabaseUrl, supabaseServiceKey);
 }
 
 // GET - Fetch all homepage sections
@@ -67,25 +52,9 @@ export async function GET() {
   console.log('[API] GET /api/admin/homepage/sections - Request started');
 
   try {
-    // Validate Supabase client
-    if (!supabase) {
-      console.error('[API] Supabase client not initialized');
-      return NextResponse.json(
-        { error: 'Database connection not available' },
-        { status: 503 }
-      );
-    }
-
-    // Validate environment variables
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('[API] Missing environment variables');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
-
     console.log('[API] Fetching homepage sections from database...');
+
+    const supabase = getSupabaseClient();
 
     // Fetch all homepage sections with their images and collection items
     const { data: sections, error: sectionsError } = await supabase
@@ -139,15 +108,15 @@ export async function GET() {
         // Safely sort images with null checks
         const sortedImages = Array.isArray(section.homepage_images) 
           ? section.homepage_images
-              .filter(img => img && typeof img.display_order === 'number')
-              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+              .filter((img: HomepageImage) => img && typeof img.display_order === 'number')
+              .sort((a: HomepageImage, b: HomepageImage) => (a.display_order || 0) - (b.display_order || 0))
           : [];
 
         // Safely sort collection items with null checks
         const sortedCollectionItems = Array.isArray(section.collection_items)
           ? section.collection_items
-              .filter(item => item && typeof item.display_order === 'number')
-              .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+              .filter((item: CollectionItem) => item && typeof item.display_order === 'number')
+              .sort((a: CollectionItem, b: CollectionItem) => (a.display_order || 0) - (b.display_order || 0))
           : [];
 
         acc[section.section_type] = {
@@ -213,6 +182,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const supabase = getSupabaseClient();
+
     // Update the homepage section
     const { data: section, error: sectionError } = await supabase
       .from('homepage_sections')
@@ -244,7 +215,7 @@ export async function PUT(request: NextRequest) {
 
       // Insert new images
       if (images.length > 0) {
-        const imageData = images.map((img: any, index: number) => ({
+        const imageData = images.map((img: HomepageImage, index: number) => ({
           section_id: section.id,
           image_url: img.image_url,
           alt_text: img.alt_text || '',
@@ -275,7 +246,7 @@ export async function PUT(request: NextRequest) {
 
       // Insert new collection items
       if (collection_items.length > 0) {
-        const collectionData = collection_items.map((item: any, index: number) => ({
+        const collectionData = collection_items.map((item: CollectionItem, index: number) => ({
           section_id: section.id,
           product_id: item.product_id,
           display_order: index
@@ -321,6 +292,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabase = getSupabaseClient();
 
     // Check if section already exists
     const { data: existingSection } = await supabase

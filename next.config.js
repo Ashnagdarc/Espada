@@ -28,14 +28,13 @@ const nextConfig = {
     ],
     formats: ['image/webp', 'image/avif']
   },
-  typescript: {
-    ignoreBuildErrors: true
-  },
-  eslint: {
-    // Allow production builds to succeed even if ESLint reports problems.
-    // Long-term: fix the lint issues instead of disabling this.
-    ignoreDuringBuilds: true
-  }
+  // TypeScript and ESLint error checking re-enabled after fixing issues
+  // typescript: {
+  //   ignoreBuildErrors: true
+  // },
+  // eslint: {
+  //   ignoreDuringBuilds: true
+  // }
 }
 
 export default nextConfig

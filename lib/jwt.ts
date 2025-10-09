@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 // Validate JWT secret is properly configured
 const JWT_SECRET = process.env.JWT_SECRET || process.env.ADMIN_SESSION_SECRET;

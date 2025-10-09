@@ -144,14 +144,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((
   },
   ref
 ) => {
-  const [isFocused, setIsFocused] = useState(false);
   const sizeClasses = getSizeClasses(size);
   const variantClasses = getVariantClasses(variant, state);
   const stateIcon = getStateIcon(state);
   const helperTextColorClass = getHelperTextColor(state);
   
   const displayHelperText = errorText || successText || helperText;
-  const currentState = errorText ? 'error' : successText ? 'success' : state;
 
   const handleClear = () => {
     if (onClear) {
@@ -368,7 +366,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>((
   const helperTextColorClass = getHelperTextColor(state);
   
   const displayHelperText = errorText || successText || helperText;
-  const currentState = errorText ? 'error' : successText ? 'success' : state;
 
   return (
     <motion.div

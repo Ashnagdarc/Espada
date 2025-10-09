@@ -162,7 +162,7 @@ function SettingsPageContent() {
     }
   };
 
-  const updateSettings = (section: keyof SettingsData, field: string, value: any) => {
+  const updateSettings = (section: keyof SettingsData, field: string, value: string | number | boolean) => {
     setSettings(prev => ({
       ...prev,
       [section]: {

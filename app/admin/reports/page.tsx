@@ -6,57 +6,7 @@ import { adminAPI } from '@/lib/admin/api';
 import { Download, Calendar, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, FileText, BarChart3, Loader2 } from 'lucide-react';
 import { useToastActions } from '@/hooks/useToast';
 
-interface AnalyticsData {
-  totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
-  pendingOrders: number;
-  completedOrders: number;
-  cancelledOrders: number;
-  lowStockProducts: number;
-  outOfStockProducts: number;
-  uniqueCustomers: number;
-  newCustomers: number;
-  averageOrderValue: number;
-  avgCustomerLifetimeValue: number;
-  revenueChange: number;
-  ordersChange: number;
-  aovChange: number;
-  topProducts: Array<{
-    productId: string;
-    productName: string;
-    totalSold: number;
-    revenue: number;
-    averageRating: number;
-    imageUrl: string;
-  }>;
-  topCustomers: Array<{
-    customerId: string;
-    customerName: string;
-    customerEmail: string;
-    totalSpent: number;
-    totalOrders: number;
-    averageOrderValue: number;
-    lastOrderDate: string;
-  }>;
-  recentOrders: Array<{
-    id: string;
-    orderNumber: string;
-    customerName: string;
-    customerEmail: string;
-    total: number;
-    status: string;
-    createdAt: string;
-    itemCount: number;
-  }>;
-  statusDistribution: Record<string, number>;
-  revenueByStatus: Record<string, number>;
-  timeRange: {
-    from: string;
-    to: string;
-    days: number;
-  };
-}
+
 
 interface ReportData {
   salesReport: {
@@ -90,7 +40,7 @@ function ReportsPageContent() {
   const [selectedReport, setSelectedReport] = useState('sales');
   const [dateRange, setDateRange] = useState('30');
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -113,7 +63,6 @@ function ReportsPageContent() {
 
       // Fetch analytics data from the API
       const analytics = await adminAPI.getAnalytics(dateRange);
-      setAnalyticsData(analytics);
 
       // Transform analytics data into report format
       const transformedData: ReportData = {
@@ -230,7 +179,7 @@ function ReportsPageContent() {
     title: string;
     value: string | number;
     change?: number;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     trend?: 'up' | 'down';
   }) => (
     <div className="bg-white p-6 rounded-lg shadow">
@@ -462,7 +411,7 @@ function ReportsPageContent() {
                 <div className="bg-black rounded-lg border border-white/10 p-6">
                   <h3 className="text-lg font-semibold mb-4">Category Performance</h3>
                   <div className="space-y-4">
-                    {reportData.productReport.categoryPerformance.map((category, index) => (
+                    {reportData.productReport.categoryPerformance.map((category) => (
                       <div key={category.name} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                         <span className="font-medium">{category.name}</span>
                         <span className="text-white/70">{formatCurrency(category.sales)}</span>

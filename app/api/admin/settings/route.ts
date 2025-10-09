@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Transform to expected format
-    const transformedSettings = settings.reduce((acc: any, setting) => {
+    const transformedSettings = settings.reduce((acc: Record<string, unknown>, setting) => {
       if (!acc[setting.category]) acc[setting.category] = {};
       acc[setting.category] = { ...acc[setting.category], ...setting.value };
       return acc;

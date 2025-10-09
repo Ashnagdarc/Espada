@@ -332,7 +332,14 @@ function calculateEnhancedAnalytics(
     acc[customerId].totalPageViews += item.page_views || 0;
     acc[customerId].totalTimeSpent += item.time_spent || 0;
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, {
+    customerId: string;
+    customerName: string;
+    customerEmail: string;
+    totalSessions: number;
+    totalPageViews: number;
+    totalTimeSpent: number;
+  }>);
 
   // Get customer spending data from orders
   const customerSpending = orders.reduce((acc, order) => {

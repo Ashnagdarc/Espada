@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { withAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/orders - Get all orders with filtering and pagination
-export const GET = withAuth(async (request, admin) => {
+export const GET = withAuth(async (request) => {
   try {
 
     const { searchParams } = new URL(request.url);

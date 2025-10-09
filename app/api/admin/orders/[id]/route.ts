@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Order } from '@/lib/admin/data';
+// import { Order } from '@/lib/admin/data';
 import { withAuthParams } from '@/lib/auth-middleware';
 
 // GET /api/admin/orders/[id] - Get order by ID

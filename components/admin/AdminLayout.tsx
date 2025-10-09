@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -14,7 +13,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Menu,
   X,
   Users,
   User,
@@ -30,7 +28,6 @@ interface AdminLayoutProps {
 
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const router = useRouter()
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const { signOut } = useAuth()

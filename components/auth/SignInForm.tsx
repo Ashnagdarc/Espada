@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Lock, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
-interface SignInFormProps {
-  redirectTo?: string;
-}
 
-export default function SignInForm({ redirectTo = '/account' }: SignInFormProps) {
+
+export default function SignInForm() {
   const router = useRouter();
   const { signIn, isLoading } = useAuth();
   const [formData, setFormData] = useState({
@@ -39,17 +37,18 @@ export default function SignInForm({ redirectTo = '/account' }: SignInFormProps)
         setIsSubmitting(false);
       } else {
         console.log('🔐 SignInForm: SignIn successful, profile:', profile);
-        // Don't redirect here - let the signin page handle it
-        // The auth context will update and trigger the redirect in the page component
-        console.log('🔐 SignInForm: Letting signin page handle redirect...');
         // Keep submitting state true to show loading until redirect happens
-        // Set a fallback timeout in case redirect doesn't happen
+        // The auth context will update and trigger the redirect in the page component
+        console.log('🔐 SignInForm: Authentication successful, waiting for redirect...');
+        
+        // Set a shorter fallback timeout since auth should be faster now
         setTimeout(() => {
           if (isSubmitting) {
-            console.log('🔐 SignInForm: Fallback timeout - resetting submitting state');
-            setIsSubmitting(false);
+            console.log('🔐 SignInForm: Fallback timeout - forcing page refresh to ensure redirect');
+            // Force a page refresh to ensure the auth state is properly updated
+            window.location.reload();
           }
-        }, 10000); // 10 second fallback
+        }, 3000); // Reduced to 3 seconds
       }
     } catch (err) {
       console.error('🔐 SignInForm: Unexpected error during signin:', err);

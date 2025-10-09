@@ -29,7 +29,7 @@ interface ProductCardProps {
 
 export default function ProductCard({
   product,
-  layout = "grid",
+  layout = "grid", // eslint-disable-line @typescript-eslint/no-unused-vars
   className,
 }: ProductCardProps) {
   const [isLoading, setIsLoading] = useState(false);

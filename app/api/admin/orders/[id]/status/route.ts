@@ -86,7 +86,7 @@ export const PUT = withAuthParams(async (
 });
 
 // Business logic for valid status transitions
-function validateStatusTransition(currentStatus: Order['status'], newStatus: Order['status']): boolean {
+/* function validateStatusTransition(currentStatus: Order['status'], newStatus: Order['status']): boolean {
   // Define valid transitions
   const validTransitions: Record<Order['status'], Order['status'][]> = {
     pending: ['processing', 'cancelled'],
@@ -102,4 +102,4 @@ function validateStatusTransition(currentStatus: Order['status'], newStatus: Ord
   }
 
   return validTransitions[currentStatus]?.includes(newStatus) || false;
-}
+} */
