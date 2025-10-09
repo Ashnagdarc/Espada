@@ -21,7 +21,7 @@ import { useToastActions } from '@/hooks/useToast';
 
 interface HomepageSection {
   id: string;
-  content: any;
+  content: Record<string, unknown>;
   status: 'draft' | 'published' | 'scheduled';
   scheduled_publish_at?: string;
   images: Array<{

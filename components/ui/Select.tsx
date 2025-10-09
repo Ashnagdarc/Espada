@@ -37,7 +37,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     variant = 'default',
     clearable = false,
     searchable = false,
-    loading = false,
+
     value,
     disabled,
     onChange,

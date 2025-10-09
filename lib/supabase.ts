@@ -9,9 +9,27 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     flowType: 'pkce',
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    // Add storage key prefix to avoid conflicts
+    storageKey: 'espada-auth-token',
+    // Add debug mode for better error tracking
+    debug: process.env.NODE_ENV === 'development'
   }
 })
+
+// Utility function to handle auth errors gracefully
+export const handleAuthError = async (error: Error | null) => {
+  console.error('Auth error:', error);
+  
+  if (error?.message?.includes('refresh') || error?.message?.includes('token')) {
+    console.log('Refresh token error detected, clearing session');
+    try {
+      await supabase.auth.signOut();
+    } catch (signOutError) {
+      console.warn('Error during signOut:', signOutError);
+    }
+  }
+}
 
 // Database types
 export interface Product {

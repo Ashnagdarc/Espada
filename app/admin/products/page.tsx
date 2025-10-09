@@ -8,7 +8,7 @@ import AdminLayout from '@/components/admin/AdminLayout'
 import { ConfirmModal } from '@/components/admin/ui/Modal'
 import { SkeletonTable } from '@/components/admin/ui/Skeleton'
 import { useToastActions } from '@/hooks/useToast'
-import Button from '@/components/admin/ui/Button'
+import { Button } from '@/components/admin/ui/Button'
 import SearchInput from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
 import Table from '@/components/admin/ui/Table'
@@ -233,7 +233,7 @@ function AdminProductsPageContent() {
               {
                 key: 'product',
                 title: 'Product',
-                render: (value: any, product: Product, index: number) => {
+                render: (value: unknown, product: Product) => {
                   // Add null/undefined checks for product and its properties
                   if (!product) {
                     return (
@@ -294,7 +294,7 @@ function AdminProductsPageContent() {
               {
                 key: 'category',
                 title: 'Category',
-                render: (value: any, product: Product, index: number) => (
+                render: (value: unknown, product: Product) => (
                   <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
                     {product?.category || 'Unknown'}
                   </span>
@@ -303,7 +303,7 @@ function AdminProductsPageContent() {
               {
                 key: 'price',
                 title: 'Price',
-                render: (value: any, product: Product, index: number) => (
+                render: (value: unknown, product: Product) => (
                   <span className="text-sm font-semibold text-black dark:text-white">
                     ${product?.price || '0.00'}
                   </span>
@@ -312,7 +312,7 @@ function AdminProductsPageContent() {
               {
                 key: 'stock',
                 title: 'Stock',
-                render: (value: any, product: Product, index: number) => (
+                render: (value: unknown, product: Product) => (
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {product?.stock_quantity ?? product?.stock ?? 0}
                   </span>
@@ -321,7 +321,7 @@ function AdminProductsPageContent() {
               {
                 key: 'status',
                 title: 'Status',
-                render: (value: any, product: Product, index: number) => {
+                render: (value: unknown, product: Product) => {
                   const stock = product?.stock_quantity ?? product?.stock ?? 0;
                   return <StatusBadge status={getProductStatus(stock)} />;
                 }
@@ -330,7 +330,7 @@ function AdminProductsPageContent() {
                 key: 'actions',
                 title: 'Actions',
                 align: 'right' as const,
-                render: (value: any, product: Product, index: number) => {
+                render: (value: unknown, product: Product) => {
                   if (!product || !product.id) {
                     return <div className="text-sm text-gray-500">No actions available</div>;
                   }

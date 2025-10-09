@@ -55,7 +55,11 @@ export default function TestToastPage() {
   const testPromiseToast = () => {
     const promise = new Promise((resolve, reject) => {
       setTimeout(() => {
-        Math.random() > 0.5 ? resolve('Success!') : reject('Failed!');
+        if (Math.random() > 0.5) {
+          resolve('Success!');
+        } else {
+          reject('Failed!');
+        }
       }, 2000);
     });
 

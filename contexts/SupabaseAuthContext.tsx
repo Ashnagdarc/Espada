@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, handleAuthError } from '@/lib/supabase';
 
 interface UserProfile {
   id: string;
@@ -16,7 +16,7 @@ interface UserProfile {
   postal_code?: string;
   country?: string;
   date_of_birth?: string;
-  preferences?: any;
+  preferences?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +27,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string; profile?: UserProfile }>;
-  signUp: (email: string, password: string, userData?: Partial<UserProfile>) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error?: string }>;
   isAdmin: boolean;
@@ -127,43 +127,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Create profile for new users
-  const createProfile = useCallback(async (userData: Partial<UserProfile>): Promise<UserProfile | null> => {
-    if (!user?.email || !user?.id) return null;
-
-    try {
-      const profileData = {
-        auth_user_id: user.id,
-        email: user.email,
-        first_name: userData.first_name || '',
-        last_name: userData.last_name || '',
-        phone: userData.phone || '',
-        address: userData.address || '',
-        city: userData.city || '',
-        postal_code: userData.postal_code || '',
-        country: userData.country || '',
-        date_of_birth: userData.date_of_birth || null,
-        preferences: userData.preferences || {},
-      };
-
-      const { data, error } = await supabase
-        .from('customer_profiles')
-        .insert([profileData])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return {
-        ...data,
-        role: 'customer',
-      };
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      return null;
-    }
-  }, [user?.email]);
-
   // Sign in function with immediate profile fetching
   const signIn = async (email: string, password: string) => {
     const startTime = Date.now();
@@ -226,7 +189,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   // Sign up function
-  const signUp = async (email: string, password: string, userData?: Partial<UserProfile>) => {
+  const signUp = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -239,7 +202,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
       // Profile will be created after email confirmation
       return {};
-    } catch (error) {
+    } catch {
       return { error: 'An unexpected error occurred' };
     }
   };
@@ -247,40 +210,49 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   // Sign out function with improved error handling
   const signOut = async () => {
     try {
+      console.log('🚪 Starting logout process...');
+      
       // Clear local state first to prevent UI issues
       setUser(null);
       setSession(null);
       setProfile(null);
       
-      // Attempt to sign out from Supabase with timeout
-       const signOutPromise = supabase.auth.signOut();
-       const timeoutPromise = new Promise<never>((_, reject) => 
-         setTimeout(() => reject(new Error('Logout timeout')), 5000)
-       );
-       
-       try {
-         const result = await Promise.race([signOutPromise, timeoutPromise]);
-         if (result.error) {
-           console.warn('Supabase signOut error (continuing with local cleanup):', result.error);
-         }
-       } catch (networkError) {
-         // Handle network errors or timeouts gracefully
-         console.warn('Network error during logout (local state cleared):', networkError);
-         // Continue with local cleanup - this is not critical for user experience
-       }
-      
-      // Clear any stored tokens or session data
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.removeItem('supabase.auth.token');
-          sessionStorage.removeItem('supabase.auth.token');
-        } catch (storageError) {
-          console.warn('Error clearing storage during logout:', storageError);
-        }
+      // Call logout API to clear server-side session cookies
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log('✅ Server-side logout successful');
+      } catch (apiError) {
+        console.warn('⚠️ Server-side logout failed (continuing with client logout):', apiError);
       }
       
+      // Attempt to sign out from Supabase client with timeout
+      const signOutPromise = supabase.auth.signOut();
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Logout timeout')), 5000)
+      );
+      
+      try {
+        const result = await Promise.race([signOutPromise, timeoutPromise]);
+        if (result.error) {
+          console.warn('⚠️ Supabase signOut error (continuing with local cleanup):', result.error);
+        } else {
+          console.log('✅ Client-side logout successful');
+        }
+      } catch (networkError) {
+        // Handle network errors or timeouts gracefully
+        console.warn('⚠️ Network error during logout (local state cleared):', networkError);
+        // Continue with local cleanup - this is not critical for user experience
+      }
+      
+      console.log('✅ Logout process completed');
+      
     } catch (error) {
-      console.warn('SignOut error (local state cleared):', error);
+      console.warn('⚠️ SignOut error (local state cleared):', error);
       // Local state is already cleared, so this is not critical
     }
   };
@@ -312,9 +284,20 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     let mounted = true;
     console.log('🚀 SupabaseAuthContext useEffect initialized');
     
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Get initial session with error handling
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (!mounted) return;
+      
+      if (error) {
+        console.error('❌ Error getting initial session:', error);
+        // Use the utility function to handle auth errors
+        await handleAuthError(error);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsLoading(false);
+        return;
+      }
       
       console.log('📱 Initial session check:', session ? `User: ${session.user.email}` : 'No session');
       setSession(session);
@@ -333,6 +316,14 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         setIsLoading(false);
         console.log('✅ Initial auth loading complete');
       }
+    }).catch((error) => {
+      console.error('❌ Unexpected error in getSession:', error);
+      if (mounted) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setIsLoading(false);
+      }
     });
 
     // Listen for auth changes
@@ -341,6 +332,44 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         if (!mounted) return;
         
         console.log('🔄 Auth state change:', event, session ? `User: ${session.user.email}` : 'No session');
+        
+        // Handle specific auth events
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('✅ Token refreshed successfully');
+          // Don't fetch profile again for token refresh, just update session
+          setSession(session);
+          setUser(session?.user ?? null);
+          return;
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsLoading(false);
+          return; // Exit early to prevent profile fetching
+        } else if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in');
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // Only fetch profile for sign in events
+          if (session?.user?.email) {
+            console.log('👤 Fetching profile for signed in user:', session.user.email);
+            const userProfile = await fetchProfileByEmail(session.user.email);
+            if (mounted) {
+              setProfile(userProfile);
+              console.log('✅ Profile set after sign in:', userProfile ? `Role: ${userProfile.role}` : 'No profile');
+            }
+          }
+          
+          if (mounted) {
+            setIsLoading(false);
+            console.log('✅ Sign in auth change complete');
+          }
+          return;
+        }
+        
+        // For other events (like initial session), handle normally
         setSession(session);
         setUser(session?.user ?? null);
 

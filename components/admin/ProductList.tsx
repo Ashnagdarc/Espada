@@ -6,7 +6,7 @@ import { adminAPI } from '@/lib/admin/api';
 import ProductForm from './ProductForm';
 import PageTransition, { StaggerContainer, StaggerItem, HoverScale, LoadingSpinner } from './PageTransition';
 import ConfirmDialog, { Toast } from './ConfirmDialog';
-import { Edit, Trash2, Plus, Search, Filter, Star } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, Star } from 'lucide-react';
 
 interface ProductListProps {
   onProductUpdate?: () => void;
@@ -46,7 +46,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
     fetchProducts();
   }, []);
 
-  const handleCreateProduct = async (productData: any) => {
+  const handleCreateProduct = async (productData: Partial<Product>) => {
     try {
       setIsSubmitting(true);
       const response = await adminAPI.createProduct(productData);
@@ -68,7 +68,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
     }
   };
 
-  const handleUpdateProduct = async (productData: any) => {
+  const handleUpdateProduct = async (productData: Partial<Product>) => {
     if (!editingProduct) return;
 
     try {
@@ -149,7 +149,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | number, bValue: string | number;
       
       switch (sortBy) {
         case 'name':
@@ -256,7 +256,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
             <div>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'stock' | 'created')}
                 className="admin-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
                 style={{ fontFamily: 'Gilroy, sans-serif' }}
               >
@@ -271,7 +271,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
             <div>
               <select
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as any)}
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
                 className="admin-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
                 style={{ fontFamily: 'Gilroy, sans-serif' }}
               >

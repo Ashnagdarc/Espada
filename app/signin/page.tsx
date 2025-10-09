@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import SignInForm from '@/components/auth/SignInForm';
-import { safeRedirect, getRedirectDestination } from '@/lib/utils/redirect';
+import { safeRedirect } from '@/lib/utils/redirect';
 
 function SignInContent() {
   const router = useRouter();
@@ -56,28 +56,32 @@ function SignInContent() {
         
         console.log('🔐 SignInPage: Redirecting', profile.role, 'to:', destination);
         
-        // Use safe redirect utility with a small delay to ensure state is stable
-        setTimeout(() => {
-          safeRedirect(router, destination, '/account', true);
-        }, 100);
+        // Use immediate redirect without delay for better UX
+        safeRedirect(router, destination, '/account', true);
       } else {
         // User is authenticated but no profile yet - this might be a timing issue
         console.log('🔐 SignInPage: User authenticated but no profile found');
         console.log('🔐 SignInPage: Waiting for profile to load...');
         
-        // Set a timeout to redirect to account page if profile doesn't load
+        // Set a shorter timeout since auth should be faster now
         if (!profileTimeout.current) {
           profileTimeout.current = setTimeout(() => {
             console.log('🔐 SignInPage: Profile timeout, redirecting to account');
             hasRedirected.current = true;
             safeRedirect(router, '/account', '/account', true);
-          }, 5000); // Increased timeout to 5 seconds
+          }, 2000); // Reduced to 2 seconds
         }
       }
     } else if (!isLoading && !user) {
       console.log('🔐 SignInPage: No user found, showing signin form');
       // Reset redirect flag when no user
       hasRedirected.current = false;
+      
+      // Clear any pending timeout
+      if (profileTimeout.current) {
+        clearTimeout(profileTimeout.current);
+        profileTimeout.current = null;
+      }
     } else {
       console.log('🔐 SignInPage: Still loading authentication state...');
     }
@@ -120,7 +124,7 @@ function SignInContent() {
 
   // Show sign-in form for unauthenticated users
   console.log('🔐 SignInPage: Rendering signin form');
-  return <SignInForm redirectTo={redirectTo} />;
+  return <SignInForm />;
 }
 
 export default function SignInPage() {

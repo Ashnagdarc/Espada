@@ -17,7 +17,7 @@ interface Order {
   total_amount: number;
   created_at: string;
   items: OrderItem[];
-  shipping_address: any;
+  shipping_address: Record<string, unknown>;
   payment_method: string;
 }
 
@@ -33,7 +33,7 @@ interface OrderItem {
 
 export function CustomerOrderHistory() {
   const { user, profile, isLoading: authLoading } = useAuth();
-  const { success, error } = useToastActions();
+  useToastActions();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);

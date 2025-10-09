@@ -5,6 +5,8 @@
 // for payment initialization, verification, and webhooks
 // =====================================================
 
+import crypto from 'crypto';
+
 interface PaystackConfig {
   secretKey: string;
   publicKey: string;
@@ -19,7 +21,7 @@ interface InitializeTransactionRequest {
   metadata?: {
     order_id: string;
     customer_id: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean;
   };
 }
 
@@ -173,7 +175,6 @@ class PaystackService {
    * Validate webhook signature
    */
   validateWebhookSignature(payload: string, signature: string): boolean {
-    const crypto = require('crypto');
     const webhookSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
     
     if (!webhookSecret) {

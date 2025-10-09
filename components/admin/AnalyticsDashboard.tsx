@@ -8,7 +8,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   change?: number;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
 }
 
@@ -198,7 +198,7 @@ export default function AnalyticsDashboard() {
           <Calendar className="w-4 h-4 text-gray-500" />
           <select
             value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as any)}
+            onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d')}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
             style={{ fontFamily: 'Gilroy, sans-serif' }}
           >

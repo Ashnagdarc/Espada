@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { useToastActions } from '@/hooks/useToast'
-import Button from '@/components/admin/ui/Button'
+import { Button } from '@/components/admin/ui/Button'
 import Input from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
 import { supabase } from '@/lib/supabase'
@@ -152,7 +152,7 @@ function NewProductPageContent() {
       setAutoSaveStatus('saved')
       setHasUnsavedChanges(false)
       setTimeout(() => setAutoSaveStatus(null), 2000)
-    } catch (err) {
+    } catch {
       setAutoSaveStatus('error')
       setTimeout(() => setAutoSaveStatus(null), 3000)
     }
@@ -226,34 +226,40 @@ function NewProductPageContent() {
     let error = ''
     
     switch (field) {
-      case 'name':
+      case 'name': {
         const nameValue = String(value || '')
         if (!nameValue.trim()) error = 'Product name is required'
         else if (nameValue.length < 3) error = 'Product name must be at least 3 characters'
         else if (nameValue.length > 100) error = 'Product name must be less than 100 characters'
         break
-      case 'description':
+      }
+      case 'description': {
         const descValue = String(value || '')
         if (!descValue.trim()) error = 'Description is required'
         else if (descValue.length < 10) error = 'Description must be at least 10 characters'
         else if (descValue.length > 1000) error = 'Description must be less than 1000 characters'
         break
-      case 'category':
+      }
+      case 'category': {
         if (!value) error = 'Category is required'
         break
-      case 'price':
+      }
+      case 'price': {
         const priceValue = Number(value)
         if (priceValue <= 0) error = 'Price must be greater than 0'
         else if (priceValue > 999999) error = 'Price must be less than $999,999'
         break
-      case 'stock':
+      }
+      case 'stock': {
         const stockValue = Number(value)
         if (stockValue < 0) error = 'Stock cannot be negative'
         break
-      case 'metaDescription':
+      }
+      case 'metaDescription': {
         const metaValue = String(value || '')
         if (metaValue && metaValue.length > 160) error = 'Meta description should be under 160 characters'
         break
+      }
     }
     
     if (error) {
@@ -521,6 +527,7 @@ function NewProductPageContent() {
       }
 
       // Remove the nested dimensions object
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { dimensions, ...apiData } = productData
 
       console.log('Submitting product data:', apiData)

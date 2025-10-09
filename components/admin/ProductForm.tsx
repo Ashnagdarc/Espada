@@ -7,7 +7,7 @@ import { X, Plus, Minus, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface ProductFormProps {
   product?: Product;
-  onSubmit: (productData: any) => Promise<void>;
+  onSubmit: (productData: Partial<Product>) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }

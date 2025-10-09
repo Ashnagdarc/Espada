@@ -4,18 +4,18 @@ import React, { useState } from 'react'
 import { ChevronUp, ChevronDown, Search } from 'lucide-react'
 import Skeleton from './Skeleton'
 
-interface Column<T = any> {
-  key: string
+interface Column<T = Record<string, unknown>> {
+  key: keyof T
   title: string
   dataIndex?: keyof T
-  render?: (value: any, record: T, index: number) => React.ReactNode
+  render?: (value: unknown, record: T, index: number) => React.ReactNode
   sortable?: boolean
   width?: string | number
   align?: 'left' | 'center' | 'right'
   fixed?: 'left' | 'right'
 }
 
-interface TableProps<T = any> {
+interface TableProps<T = Record<string, unknown>> {
   columns: Column<T>[]
   data: T[]
   loading?: boolean
@@ -42,7 +42,7 @@ interface TableProps<T = any> {
   className?: string
 }
 
-const Table = <T extends Record<string, any>>({
+const Table = <T extends Record<string, unknown>>({
   columns,
   data,
   loading = false,
@@ -57,7 +57,7 @@ const Table = <T extends Record<string, any>>({
   className = ''
 }: TableProps<T>) => {
   const [sortConfig, setSortConfig] = useState<{
-    key: string
+    key: keyof T
     direction: 'asc' | 'desc'
   } | null>(null)
 
@@ -68,7 +68,7 @@ const Table = <T extends Record<string, any>>({
     return record[rowKey] || index.toString()
   }
 
-  const handleSort = (columnKey: string) => {
+  const handleSort = (columnKey: keyof T) => {
     let direction: 'asc' | 'desc' = 'asc'
     
     if (sortConfig && sortConfig.key === columnKey && sortConfig.direction === 'asc') {
@@ -157,7 +157,7 @@ const Table = <T extends Record<string, any>>({
                 
                 return (
                   <th
-                    key={column.key}
+                    key={String(column.key)}
                     className={`
                       ${getCellPadding()}
                       ${getSizeClasses()}
@@ -223,7 +223,7 @@ const Table = <T extends Record<string, any>>({
                     
                     return (
                       <td
-                        key={column.key}
+                        key={String(column.key)}
                         className={`
                           ${getCellPadding()}
                           ${getSizeClasses()}
@@ -293,7 +293,6 @@ const TablePagination: React.FC<TablePaginationProps> = ({
   onChange,
   showSizeChanger = true,
   pageSizeOptions = [10, 20, 50, 100],
-  showQuickJumper = false,
   showTotal
 }) => {
   const totalPages = Math.ceil(total / pageSize)

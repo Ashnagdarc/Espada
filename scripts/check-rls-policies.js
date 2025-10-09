@@ -3,12 +3,6 @@ require('dotenv').config();
 
 console.log('🔍 Checking RLS policies...');
 
-// Initialize Supabase client with service role key for admin access
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 async function checkPolicies() {
   console.log('🚀 Starting policy check...');
   try {

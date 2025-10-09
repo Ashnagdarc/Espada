@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function POST(request: NextRequest) {
-  const { access_token, refresh_token } = await request.json()
-
-  if (!access_token || !refresh_token) {
-    return NextResponse.json({ error: 'Missing tokens' }, { status: 400 })
-  }
-
   const response = NextResponse.json({ success: true })
 
   const supabase = createServerClient(
@@ -28,15 +22,8 @@ export async function POST(request: NextRequest) {
     }
   )
 
-  // Set the session using the tokens
-  const { error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
-  })
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
-  }
+  // Sign out from Supabase (this will clear the session cookies)
+  await supabase.auth.signOut()
 
   return response
 }

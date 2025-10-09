@@ -22,8 +22,8 @@ interface Order {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   total_amount: number
   currency: string
-  shipping_address: any
-  billing_address: any
+  shipping_address: Record<string, unknown>
+  billing_address: Record<string, unknown>
   payment_status: string
   payment_method: string
   notes: string
@@ -93,9 +93,9 @@ export default function AdminOrdersPage() {
       const sessionToken = sessionStorage.getItem('adminAuth')
       const cacheKey = CACHE_KEYS.ORDERS(1, selectedStatus || '')
       
-      let data;
+      let data: { orders?: Order[] } | Order[]; // eslint-disable-line prefer-const
       if (useCache && !showRefreshToast) {
-        const cachedData = cache.get(cacheKey) as any;
+        const cachedData = cache.get(cacheKey) as { orders?: Order[] } | Order[];
         if (cachedData) {
           console.log(`Cache hit for ${cacheKey}`);
           setOrders(cachedData.orders || cachedData);

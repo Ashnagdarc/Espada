@@ -15,8 +15,8 @@ interface SelectProps {
   helperText?: string
   placeholder?: string
   options: Option[]
-  value?: string | number
-  onChange?: (value: string | number) => void
+  value?: string | number | (string | number)[]
+  onChange?: (value: string | number | (string | number)[]) => void
   variant?: 'default' | 'filled' | 'outline'
   selectSize?: 'sm' | 'md' | 'lg'
   fullWidth?: boolean
@@ -133,7 +133,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>((
         : [...selectedValues, optionValue]
 
       setSelectedValues(newSelectedValues)
-      onChange?.(newSelectedValues as any)
+      onChange?.(newSelectedValues)
     } else {
       setSelectedValues([optionValue])
       onChange?.(optionValue)
@@ -145,7 +145,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>((
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation()
     setSelectedValues([])
-    onChange?.(multiple ? [] as any : '' as any)
+    onChange?.(multiple ? [] : '')
   }
 
   const hasError = !!error

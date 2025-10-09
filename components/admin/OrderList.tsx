@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Order } from '@/lib/admin/data';
-import { Package, Truck, CheckCircle, Clock, AlertCircle, Search, Filter, Eye } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, AlertCircle, Search, Eye } from 'lucide-react';
 
 interface OrderListProps {
   onOrderUpdate?: () => void;
@@ -84,7 +84,7 @@ export default function OrderList({ onOrderUpdate }: OrderListProps) {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | number, bValue: string | number;
       
       switch (sortBy) {
         case 'date':
@@ -183,7 +183,7 @@ export default function OrderList({ onOrderUpdate }: OrderListProps) {
           <div>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'date' | 'total' | 'status')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
               style={{ fontFamily: 'Gilroy, sans-serif' }}
             >
@@ -197,7 +197,7 @@ export default function OrderList({ onOrderUpdate }: OrderListProps) {
           <div>
             <select
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as any)}
+              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-black"
               style={{ fontFamily: 'Gilroy, sans-serif' }}
             >
@@ -247,7 +247,6 @@ export default function OrderList({ onOrderUpdate }: OrderListProps) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredAndSortedOrders.map(order => {
                   const statusInfo = getStatusInfo(order.status);
-                  const StatusIcon = statusInfo.icon;
                   
                   return (
                     <tr key={order.id} className="hover:bg-gray-50">
