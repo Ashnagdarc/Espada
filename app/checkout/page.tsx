@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import OrderSummary from '@/components/checkout/OrderSummary'
+import PaymentMethods, { PaymentMethod } from '@/components/checkout/PaymentMethods'
 import { useToastActions } from '@/hooks/useToast'
 
 // Loading component for better UX
@@ -104,17 +105,12 @@ function CheckoutContent() {
   })
   const [saveAddress, setSaveAddress] = useState(false)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('cash_on_delivery')
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Handle order placement
-  const handlePlaceOrder = async () => {
-    if (!user || !profile) {
-      showError('Authentication required', 'Please sign in to place an order')
-      return
-    }
-
-    // Validate required fields
+  // Validate checkout form
+  const validateCheckoutForm = () => {
     const newErrors: Record<string, string> = {}
     
     if (!contactInfo.email) newErrors.email = 'Email is required'
@@ -128,42 +124,124 @@ function CheckoutContent() {
       setErrors(newErrors)
       showError('Missing information', 'Please fill in all required fields')
       setCurrentStep('information')
+      return false
+    }
+
+    return true
+  }
+
+  // Prepare order data
+  const prepareOrderData = (paymentMethod: PaymentMethod) => {
+    return {
+      customer_id: profile?.id,
+      items: state.items.map(item => ({
+        product_id: String(item.id),
+        quantity: item.quantity,
+        unit_price: item.price,
+        color: item.color,
+        size: item.size
+      })),
+      total_amount: state.total,
+      shipping_address: {
+        street: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postal_code: shippingAddress.postalCode,
+        country: shippingAddress.country
+      },
+      billing_address: {
+        street: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postal_code: shippingAddress.postalCode,
+        country: shippingAddress.country
+      },
+      payment_method: paymentMethod,
+      notes: `Contact: ${contactInfo.phone || 'Not provided'}`
+    }
+  }
+
+  // Handle Paystack payment
+  const handlePaystackPayment = async () => {
+    if (!user || !profile) {
+      showError('Authentication required', 'Please sign in to place an order')
+      return
+    }
+
+    if (!validateCheckoutForm()) {
       return
     }
 
     setIsPlacingOrder(true)
 
     try {
-      // Prepare order data
-      const orderData = {
-        customer_id: profile.id,
-        items: state.items.map(item => ({
-          product_id: String(item.id),
-          quantity: item.quantity,
-          unit_price: item.price,
-          color: item.color,
-          size: item.size
-        })),
-        total_amount: state.total,
-        shipping_address: {
-          street: shippingAddress.address,
-          city: shippingAddress.city,
-          state: shippingAddress.state,
-          postal_code: shippingAddress.postalCode,
-          country: shippingAddress.country
+      // First create the order
+      const orderData = prepareOrderData('paystack')
+      
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        billing_address: {
-          street: shippingAddress.address,
-          city: shippingAddress.city,
-          state: shippingAddress.state,
-          postal_code: shippingAddress.postalCode,
-          country: shippingAddress.country
-        },
-        payment_method: 'cash_on_delivery',
-        notes: `Contact: ${contactInfo.phone || 'Not provided'}`
+        body: JSON.stringify(orderData),
+      })
+
+      const orderResult = await orderResponse.json()
+
+      if (!orderResponse.ok || !orderResult.success) {
+        throw new Error(orderResult.error || 'Failed to create order')
       }
 
-      // Create order
+      // Initialize Paystack payment
+      const paymentResponse = await fetch('/api/payments/initialize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: orderResult.data.id,
+          amount: state.total,
+          email: contactInfo.email,
+          callback_url: `${window.location.origin}/payment/callback`,
+        }),
+      })
+
+      const paymentResult = await paymentResponse.json()
+
+      if (!paymentResponse.ok || !paymentResult.success) {
+        throw new Error(paymentResult.error || 'Failed to initialize payment')
+      }
+
+      // Redirect to Paystack
+      window.location.href = paymentResult.data.authorization_url
+
+    } catch (err) {
+      console.error('Error processing Paystack payment:', err)
+      showError(
+        'Payment failed', 
+        err instanceof Error ? err.message : 'Please try again or contact support'
+      )
+    } finally {
+      setIsPlacingOrder(false)
+    }
+  }
+
+  // Handle Cash on Delivery order
+  const handleCashOnDeliveryOrder = async () => {
+    if (!user || !profile) {
+      showError('Authentication required', 'Please sign in to place an order')
+      return
+    }
+
+    if (!validateCheckoutForm()) {
+      return
+    }
+
+    setIsPlacingOrder(true)
+
+    try {
+      const orderData = prepareOrderData('cash_on_delivery')
+      
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
@@ -182,11 +260,11 @@ function CheckoutContent() {
       clearCart()
       success('Order placed successfully!', `Order #${result.data.order_number} has been created`)
       
-      // Redirect to order confirmation or orders page
-      router.push(`/account/orders?new_order=${result.data.order_number}`)
+      // Redirect to order confirmation
+      router.push(`/account/orders/${result.data.id}?payment=cod`)
 
     } catch (err) {
-      console.error('Error placing order:', err)
+      console.error('Error placing COD order:', err)
       showError(
         'Order failed', 
         err instanceof Error ? err.message : 'Please try again or contact support'
@@ -563,55 +641,16 @@ function CheckoutContent() {
 
             {currentStep === 'payment' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  PAYMENT
-                </h2>
-                
-                {/* Payment Method Selection */}
-                <div className="space-y-4">
-                  <div className="p-4 border border-separator bg-fill-secondary rounded-lg">
-                    <label className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="cash_on_delivery"
-                        defaultChecked
-                        className="w-4 h-4 text-label-primary"
-                      />
-                      <span className="text-label-primary font-medium" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        Cash on Delivery
-                      </span>
-                    </label>
-                    <p className="text-sm text-label-secondary mt-2 ml-7" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                      Pay when your order is delivered to your doorstep
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 border border-separator bg-fill-tertiary rounded-lg opacity-60">
-                    <label className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="credit_card"
-                        disabled
-                        className="w-4 h-4 text-label-primary"
-                      />
-                      <span className="text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        Credit Card (Coming Soon)
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Place Order Button */}
-                <button
-                  onClick={handlePlaceOrder}
-                  disabled={isPlacingOrder || !user}
-                  className="w-full h-12 bg-label-primary text-white font-medium text-sm tracking-wider transition-all duration-200 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: 'Gilroy, sans-serif' }}
-                >
-                  {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
-                </button>
+                <PaymentMethods
+                  selectedMethod={selectedPaymentMethod}
+                  onMethodChange={setSelectedPaymentMethod}
+                  onPaystackPayment={handlePaystackPayment}
+                  onCashOnDeliveryOrder={handleCashOnDeliveryOrder}
+                  isProcessing={isPlacingOrder}
+                  disabled={!user}
+                  totalAmount={state.total}
+                  currency="NGN"
+                />
 
                 {!user && (
                   <p className="text-sm text-label-secondary text-center" style={{ fontFamily: 'Gilroy, sans-serif' }}>

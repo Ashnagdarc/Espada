@@ -7,6 +7,9 @@ interface EnvConfig {
   NEXT_PUBLIC_SUPABASE_URL: string;
   NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: string;
+  PAYSTACK_SECRET_KEY: string;
+  PAYSTACK_WEBHOOK_SECRET: string;
   JWT_SECRET?: string;
   NODE_ENV: string;
 }
@@ -40,6 +43,28 @@ export function validateEnvironment(): EnvConfig {
     errors.push('SUPABASE_SERVICE_ROLE_KEY appears to be invalid (too short)');
   }
 
+  // Required Paystack configuration
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+  if (!paystackPublicKey) {
+    errors.push('NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY is required');
+  } else if (!paystackPublicKey.startsWith('pk_')) {
+    errors.push('NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY must start with "pk_"');
+  }
+
+  const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!paystackSecretKey) {
+    errors.push('PAYSTACK_SECRET_KEY is required');
+  } else if (!paystackSecretKey.startsWith('sk_')) {
+    errors.push('PAYSTACK_SECRET_KEY must start with "sk_"');
+  }
+
+  const paystackWebhookSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
+  if (!paystackWebhookSecret) {
+    errors.push('PAYSTACK_WEBHOOK_SECRET is required');
+  } else if (paystackWebhookSecret.length < 16) {
+    errors.push('PAYSTACK_WEBHOOK_SECRET appears to be invalid (too short)');
+  }
+
   // JWT Secret validation (optional but recommended)
   const jwtSecret = process.env.JWT_SECRET || process.env.ADMIN_SESSION_SECRET;
   if (jwtSecret && jwtSecret.length < 32) {
@@ -61,6 +86,9 @@ export function validateEnvironment(): EnvConfig {
     NEXT_PUBLIC_SUPABASE_URL: supabaseUrl!,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey!,
     SUPABASE_SERVICE_ROLE_KEY: supabaseServiceKey!,
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: paystackPublicKey!,
+    PAYSTACK_SECRET_KEY: paystackSecretKey!,
+    PAYSTACK_WEBHOOK_SECRET: paystackWebhookSecret!,
     JWT_SECRET: jwtSecret,
     NODE_ENV: nodeEnv
   };
