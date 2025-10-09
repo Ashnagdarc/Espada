@@ -24,28 +24,17 @@ interface CollectionItem {
   products: Product;
 }
 
-interface HomepageSection {
-  id: string;
-  section_type: string;
-  content: any;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  homepage_images?: HomepageImage[];
-  collection_items?: CollectionItem[];
-}
-
 interface HomepageData {
-  hero: any;
-  new_this_week: any;
-  xiv_collections: any;
-  approach: any;
+  hero: Record<string, unknown>;
+  new_this_week: Record<string, unknown>;
+  xiv_collections: Record<string, unknown>;
+  approach: Record<string, unknown>;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check cache first
-    const cachedData = cache.get<any>(CACHE_KEYS.HOMEPAGE);
+    const cachedData = cache.get<HomepageData>(CACHE_KEYS.HOMEPAGE);
     if (cachedData) {
       console.log('📦 Serving homepage data from cache');
       const headers = new Headers({

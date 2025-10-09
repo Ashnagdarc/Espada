@@ -14,18 +14,6 @@ interface CollectionItem {
   display_order: number;
 }
 
-interface HomepageSection {
-  id?: string;
-  section_type: 'hero' | 'collections' | 'featured' | 'banner';
-  content: Record<string, unknown>;
-  status: 'draft' | 'published' | 'scheduled';
-  scheduled_publish_at?: string | null;
-  homepage_images?: HomepageImage[];
-  collection_items?: CollectionItem[];
-  created_at?: string;
-  updated_at?: string;
-}
-
 interface TransformedSections {
   [key: string]: {
     id: string | null;

@@ -93,12 +93,11 @@ export default function AdminOrdersPage() {
       const sessionToken = sessionStorage.getItem('adminAuth')
       const cacheKey = CACHE_KEYS.ORDERS(1, selectedStatus || '')
       
-      let data: { orders?: Order[] } | Order[]; // eslint-disable-line prefer-const
       if (useCache && !showRefreshToast) {
         const cachedData = cache.get(cacheKey) as { orders?: Order[] } | Order[];
         if (cachedData) {
           console.log(`Cache hit for ${cacheKey}`);
-          setOrders(cachedData.orders || cachedData);
+          setOrders(Array.isArray(cachedData) ? cachedData : cachedData.orders || []);
           setLoading(false);
           return;
         }
@@ -115,9 +114,9 @@ export default function AdminOrdersPage() {
         throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}`)
       }
 
-      data = await response.json()
-      cache.set(cacheKey, data, CACHE_TTL.ORDERS);
-      setOrders(data.orders || data)
+      const responseData = await response.json()
+      cache.set(cacheKey, responseData, CACHE_TTL.ORDERS);
+      setOrders(Array.isArray(responseData) ? responseData : responseData.orders || [])
 
       if (showRefreshToast) {
         success('Orders refreshed successfully')

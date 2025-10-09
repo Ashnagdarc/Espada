@@ -34,6 +34,21 @@ interface Product {
   stock: number;
 }
 
+// Interface for API product data
+interface ApiProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  images?: string[];
+  category: string;
+  colors?: Array<{ name: string; value: string }>;
+  sizes?: string[];
+  stock: number;
+  featured?: boolean;
+  rating?: number;
+}
+
 const priceRanges = [
   { label: "$0 - $50", min: 0, max: 50 },
   { label: "$50 - $100", min: 50, max: 100 },
@@ -107,11 +122,6 @@ function ProductsPageContent() {
     return uniqueColors;
   };
 
-  const getAvailableCategories = () => {
-    const allCategories = products.map(product => product.category).filter(Boolean);
-    return [...new Set(allCategories)].sort();
-  };
-
   const getAvailableCollections = () => {
     const allCollections = products.map(product => product.collection).filter(Boolean);
     return [...new Set(allCollections)].sort();
@@ -125,7 +135,6 @@ function ProductsPageContent() {
   // Get dynamic filter arrays (calculated after products are loaded)
   const sizes = products.length > 0 ? getAvailableSizes() : [];
   const colors = products.length > 0 ? getAvailableColors() : [];
-  const categories = products.length > 0 ? getAvailableCategories() : [];
   const collections = products.length > 0 ? getAvailableCollections() : [];
   const tags = products.length > 0 ? getAvailableTags() : [];
 
@@ -152,7 +161,7 @@ function ProductsPageContent() {
         const data = await response.json();
         
         // Transform admin products to match shop format
-        const transformedProducts = data.map((product: any) => ({
+        const transformedProducts = data.map((product: ApiProduct) => ({
           ...product,
           image: product.images?.[0] || "/images/placeholder.jpg", // Use first image
           inStock: product.stock > 0,
@@ -261,9 +270,6 @@ function ProductsPageContent() {
   
   const getCategoryCount = (category: string) => 
     products.filter(p => p.category === category).length;
-  
-  const getColorCount = (colorName: string) =>
-    products.filter(p => p.colors?.some(c => c.name === colorName)).length;
   
   const getPriceRangeCount = (rangeLabel: string) => {
     const range = priceRanges.find(r => r.label === rangeLabel);

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
 // Helper function to get color hex values
@@ -102,7 +102,7 @@ function getColorValue(colorName: string): string {
 }
 
 // GET /api/products - Get all products for the shop
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Fetch products from Supabase
     const { data: products, error } = await supabase
