@@ -641,21 +641,67 @@ function CheckoutContent() {
 
             {currentStep === 'payment' && (
               <div className="space-y-6">
-                <PaymentMethods
-                  selectedMethod={selectedPaymentMethod}
-                  onMethodChange={setSelectedPaymentMethod}
-                  onPaystackPayment={handlePaystackPayment}
-                  onCashOnDeliveryOrder={handleCashOnDeliveryOrder}
-                  isProcessing={isPlacingOrder}
-                  disabled={!user}
-                  totalAmount={state.total}
-                  currency="NGN"
-                />
-
-                {!user && (
-                  <p className="text-sm text-label-secondary text-center" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                    Please sign in to place an order
-                  </p>
+                {!user ? (
+                  <div className="space-y-6">
+                    {/* Authentication Required Notice */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                      <LogIn className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-blue-900 mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                        Sign In Required
+                      </h3>
+                      <p className="text-blue-700 mb-4" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                        Please sign in to your account to complete your order and access payment options.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Button
+                          onClick={() => router.push('/signin?redirect=/checkout')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                          style={{ fontFamily: 'Gilroy, sans-serif' }}
+                        >
+                          Sign In
+                        </Button>
+                        <Button
+                          onClick={() => router.push('/signup?redirect=/checkout')}
+                          className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2"
+                          style={{ fontFamily: 'Gilroy, sans-serif' }}
+                        >
+                          Create Account
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Preview of Payment Methods (Disabled) */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gray-100 bg-opacity-75 rounded-lg z-10 flex items-center justify-center">
+                        <div className="text-center">
+                          <p className="text-gray-600 font-medium" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                            Payment options available after sign in
+                          </p>
+                        </div>
+                      </div>
+                      <PaymentMethods
+                        selectedMethod={selectedPaymentMethod}
+                        onMethodChange={setSelectedPaymentMethod}
+                        onPaystackPayment={handlePaystackPayment}
+                        onCashOnDeliveryOrder={handleCashOnDeliveryOrder}
+                        isProcessing={isPlacingOrder}
+                        disabled={true}
+                        totalAmount={state.total}
+                        currency="NGN"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <PaymentMethods
+                    selectedMethod={selectedPaymentMethod}
+                    onMethodChange={setSelectedPaymentMethod}
+                    onPaystackPayment={handlePaystackPayment}
+                    onCashOnDeliveryOrder={handleCashOnDeliveryOrder}
+                    isProcessing={isPlacingOrder}
+                    disabled={false}
+                    totalAmount={state.total}
+                    currency="NGN"
+                  />
                 )}
               </div>
             )}

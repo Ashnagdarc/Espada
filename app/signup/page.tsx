@@ -1,28 +1,30 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import SignUpForm from '@/components/auth/SignUpForm';
 
 function SignUpContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, profile, isLoading } = useAuth();
+  const redirectTo = searchParams.get('redirect') || '/account';
 
   useEffect(() => {
     if (user && !isLoading && profile) {
-      // User is already signed in and has a profile, redirect based on role
+      // User is already signed in and has a profile, redirect to intended destination or based on role
       if (profile.role === 'admin') {
         router.push('/admin');
       } else {
-        router.push('/account');
+        router.push(redirectTo);
       }
     } else if (user && !isLoading && !profile) {
       // User is signed in but no profile yet, redirect to account to create profile
       router.push('/account');
     }
     // If no user, show the sign-up form
-  }, [user, profile, isLoading, router]);
+  }, [user, profile, isLoading, router, redirectTo]);
 
   // If user is already authenticated, show loading
   if (user) {
