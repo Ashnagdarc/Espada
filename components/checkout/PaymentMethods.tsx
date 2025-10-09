@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CreditCard, Truck, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export type PaymentMethod = 'paystack' | 'cash_on_delivery';
 
