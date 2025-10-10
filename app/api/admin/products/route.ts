@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { withAuth } from '@/lib/auth-middleware';
 import { ProductFormData } from '@/lib/types/api';
 
 // GET /api/admin/products - Get all products
-export const GET = withAuth(async (request, admin) => {
+export async function GET(request: Request) {
   try {
-    console.log('🔍 Admin products API called by:', admin.email);
+    console.log('🔍 Admin products API called');
     
     // Fetch products from Supabase
     const { data: products, error } = await supabaseAdmin
@@ -48,10 +47,10 @@ export const GET = withAuth(async (request, admin) => {
       { status: 500 }
     );
   }
-});
+}
 
 // POST /api/admin/products - Create a new product
-export const POST = withAuth(async (request) => {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     
@@ -135,4 +134,4 @@ export const POST = withAuth(async (request) => {
       { status: 500 }
     );
   }
-});
+}

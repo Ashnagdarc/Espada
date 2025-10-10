@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
-import { useAuth } from '@/contexts/SupabaseAuthContext'
 import {
   LayoutDashboard,
   Package,
@@ -30,38 +29,10 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
-  const { signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  // Handle logout functionality
-  const handleLogout = async () => {
-    // Prevent multiple logout attempts
-    if (isLoggingOut) return
-    
-    setIsLoggingOut(true)
-    
-    try {
-      // Attempt Supabase logout with timeout
-      const logoutPromise = signOut()
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Logout timeout')), 5000)
-      )
-      
-      await Promise.race([logoutPromise, timeoutPromise])
-      
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Continue with cleanup even if Supabase logout fails
-    } finally {
-      // Always redirect to signin after cleanup
-      setTimeout(() => {
-        window.location.href = '/signin?redirect=/admin'
-      }, 100)
-    }
-  }
+  
 
   // Prevent hydration mismatch for theme toggle
   useEffect(() => {
@@ -100,29 +71,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </nav>
           </div>
           <div className="p-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-white/80" />
-                </div>
-                <div>
-                  <p className="font-sans text-sm font-medium">Admin</p>
-                  <p className="font-sans text-xs text-white/60">Administrator</p>
-                </div>
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-3">
+                <User className="h-4 w-4 text-white/80" />
               </div>
-              <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className={`p-2 rounded-lg transition-colors ${
-                  isLoggingOut 
-                    ? 'text-white/30 cursor-not-allowed' 
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                }`}
-                title={isLoggingOut ? "Logging out..." : "Logout"}
-                aria-label={isLoggingOut ? "Logging out..." : "Logout"}
-              >
-                <LogOut className={`h-4 w-4 ${isLoggingOut ? 'animate-spin' : ''}`} />
-              </button>
+              <div>
+                <p className="font-sans text-sm font-medium">Admin Panel</p>
+                <p className="font-sans text-xs text-white/60">Theme & navigation</p>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -181,29 +137,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </nav>
           </div>
           <div className="p-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-white/80" />
-                </div>
-                <div>
-                  <p className="font-sans text-sm font-medium">Admin</p>
-                  <p className="font-sans text-xs text-white/60">Administrator</p>
-                </div>
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-3">
+                <User className="h-4 w-4 text-white/80" />
               </div>
-              <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className={`p-2 rounded-lg transition-colors ${
-                  isLoggingOut 
-                    ? 'text-white/30 cursor-not-allowed' 
-                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                }`}
-                title={isLoggingOut ? "Logging out..." : "Logout"}
-                aria-label={isLoggingOut ? "Logging out..." : "Logout"}
-              >
-                <LogOut className={`h-4 w-4 ${isLoggingOut ? 'animate-spin' : ''}`} />
-              </button>
+              <div>
+                <p className="font-sans text-sm font-medium">Admin Panel</p>
+                <p className="font-sans text-xs text-white/60">Theme & navigation</p>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <button

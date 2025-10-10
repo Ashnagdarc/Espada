@@ -63,12 +63,7 @@ function HeroEditorContent() {
   const [previewMode, setPreviewMode] = useState(false);
   const { success, error: showError } = useToastActions();
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      router.push('/signin?redirect=/admin');
-    }
-  }, [user, isAdmin, authLoading, router]);
+  // Auth removed: no redirects
 
   // Fetch hero section data
   useEffect(() => {
@@ -106,11 +101,8 @@ function HeroEditorContent() {
         setIsLoading(false);
       }
     };
-
-    if (user && isAdmin) {
-      fetchHeroSection();
-    }
-  }, [user, isAdmin]);
+    fetchHeroSection();
+  }, []);
 
   const handleImageUpload = async (file: File) => {
     try {

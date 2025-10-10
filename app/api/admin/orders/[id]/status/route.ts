@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { withAuthParams } from '@/lib/auth-middleware';
 
 // PUT /api/admin/orders/[id]/status - Update order status
-export const PUT = withAuthParams(async (
+export async function PUT(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   const { id } = await params;
   try {
 
@@ -83,7 +81,7 @@ export const PUT = withAuthParams(async (
       { status: 500 }
     );
   }
-});
+}
 
 // Business logic for valid status transitions
 /* function validateStatusTransition(currentStatus: Order['status'], newStatus: Order['status']): boolean {

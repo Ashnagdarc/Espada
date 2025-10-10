@@ -25,25 +25,9 @@ export default function OrderDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      
-      const adminSession = sessionStorage.getItem('adminAuth');
-      if (!adminSession) {
-        router.push('/signin?redirect=/admin');
-        return;
-      }
-
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
-        headers: {
-          'x-admin-session': adminSession,
-        },
-      });
+      const response = await fetch(`/api/admin/orders/${orderId}`);
 
       if (!response.ok) {
-        if (response.status === 401) {
-          sessionStorage.removeItem('adminAuth');
-          router.push('/signin?redirect=/admin');
-          return;
-        }
         throw new Error('Failed to load order');
       }
 
@@ -60,28 +44,15 @@ export default function OrderDetailPage() {
     try {
       setUpdating(true);
       setError(null);
-      
-      const adminSession = sessionStorage.getItem('adminAuth');
-      if (!adminSession) {
-        router.push('/signin?redirect=/admin');
-        return;
-      }
-
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-session': adminSession,
         },
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          sessionStorage.removeItem('adminAuth');
-          router.push('/signin?redirect=/admin');
-          return;
-        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update order status');
       }

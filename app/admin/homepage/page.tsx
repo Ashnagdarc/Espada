@@ -60,12 +60,7 @@ function HomepageManagementContent() {
   const [error, setError] = useState<string | null>(null);
   const { success, error: showError } = useToastActions();
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      router.push('/signin?redirect=/admin');
-    }
-  }, [user, isAdmin, authLoading, router]);
+  // Auth removed: no redirects
 
   // Fetch homepage sections
   useEffect(() => {
@@ -90,11 +85,8 @@ function HomepageManagementContent() {
         setIsLoading(false);
       }
     };
-
-    if (user && isAdmin) {
-      fetchSections();
-    }
-  }, [user, isAdmin]);
+    fetchSections();
+  }, []);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

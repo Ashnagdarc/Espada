@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { withAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/orders - Get all orders with filtering and pagination
-export const GET = withAuth(async (request) => {
+export async function GET(request: Request) {
   try {
 
     const { searchParams } = new URL(request.url);
@@ -72,4 +71,4 @@ export const GET = withAuth(async (request) => {
       { status: 500 }
     );
   }
-});
+}

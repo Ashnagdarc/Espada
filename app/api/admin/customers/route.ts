@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { withAuth } from '@/lib/auth-middleware';
 
 // GET /api/admin/customers - Fetch all customers with pagination and filtering
-export const GET = withAuth(async (request, admin) => {
+export async function GET(request: Request) {
   try {
-    console.log('🔍 Admin customers API called by:', admin.email);
+    console.log('🔍 Admin customers API called');
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -59,12 +58,12 @@ export const GET = withAuth(async (request, admin) => {
     console.error('Customers API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
 
 // POST /api/admin/customers - Create new customer
-export const POST = withAuth(async (request, admin) => {
+export async function POST(request: Request) {
   try {
-    console.log('🔍 Admin customer creation API called by:', admin.email);
+    console.log('🔍 Admin customer creation API called');
 
     const customerData = await request.json();
 
@@ -97,4 +96,4 @@ export const POST = withAuth(async (request, admin) => {
     console.error('Customer creation API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}

@@ -80,12 +80,7 @@ function CollectionsManagerContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { success, error } = useToastActions();
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      router.push('/signin?redirect=/admin');
-    }
-  }, [user, isAdmin, authLoading, router]);
+  // Auth removed: no redirects
 
   // Fetch section data and products
   useEffect(() => {
@@ -136,10 +131,8 @@ function CollectionsManagerContent() {
       }
     };
 
-    if (user && isAdmin) {
-      fetchData();
-    }
-  }, [user, isAdmin, sectionType]);
+    fetchData();
+  }, [sectionType]);
 
   // Filter products based on search and category
   useEffect(() => {

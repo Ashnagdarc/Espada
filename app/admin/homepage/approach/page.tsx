@@ -65,12 +65,7 @@ function ApproachEditorContent() {
   const [, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
 
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      router.push('/signin?redirect=/admin');
-    }
-  }, [user, isAdmin, authLoading, router]);
+  // Auth removed: no redirects
 
   // Fetch approach section data
   useEffect(() => {
@@ -110,10 +105,8 @@ function ApproachEditorContent() {
       }
     };
 
-    if (user && isAdmin) {
-      fetchApproachSection();
-    }
-  }, [user, isAdmin]);
+    fetchApproachSection();
+  }, []);
 
   const handleImageUpload = async (file: File) => {
     try {

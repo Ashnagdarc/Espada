@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 // import { Order } from '@/lib/admin/data';
-import { withAuthParams } from '@/lib/auth-middleware';
 
 // GET /api/admin/orders/[id] - Get order by ID
-export const GET = withAuthParams(async (
+export async function GET(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   const { id } = await params;
   try {
 
@@ -41,4 +39,4 @@ export const GET = withAuthParams(async (
       { status: 500 }
     );
   }
-});
+}

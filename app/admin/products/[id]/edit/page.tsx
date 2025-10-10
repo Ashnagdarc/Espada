@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Product } from '@/lib/admin/data';
 import { ArrowLeft, Save, X, Trash2, Plus } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 
 export default function ProductEditPage() {
   const params = useParams();
@@ -36,25 +35,9 @@ export default function ProductEditPage() {
     try {
       setLoading(true);
       setError(null);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        router.push('/signin?redirect=/admin');
-        return;
-      }
-
-      const response = await fetch(`/api/admin/products/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch(`/api/admin/products/${productId}`);
 
       if (!response.ok) {
-        if (response.status === 401) {
-          await supabase.auth.signOut();
-          router.push('/signin?redirect=/admin');
-          return;
-        }
         if (response.status === 404) {
           throw new Error('Product not found');
         }
@@ -186,28 +169,15 @@ export default function ProductEditPage() {
     try {
       setSaving(true);
       setError(null);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        router.push('/signin?redirect=/admin');
-        return;
-      }
-
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          await supabase.auth.signOut();
-          router.push('/signin?redirect=/admin');
-          return;
-        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save product');
       }

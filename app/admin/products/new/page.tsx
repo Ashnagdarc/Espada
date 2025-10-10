@@ -13,7 +13,6 @@ import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/admin/ui/Button'
 import Input from '@/components/admin/ui/Input'
 import Select from '@/components/admin/ui/Select'
-import { supabase } from '@/lib/supabase'
 
 interface ProductFormData {
   // Basic Info
@@ -505,14 +504,6 @@ function NewProductPageContent() {
     setIsSubmitting(true)
     
     try {
-      // Get the current Supabase session
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        error('Authentication Error', 'Please log in again')
-        setTimeout(() => router.push('/signin?redirect=/admin'), 1000)
-        return
-      }
-
       // Filter out empty images
       const validImages = formData.images.filter(img => img.trim())
       
@@ -536,7 +527,6 @@ function NewProductPageContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(apiData),
       })
@@ -545,12 +535,6 @@ function NewProductPageContent() {
       console.log('API Response:', responseData)
 
       if (!response.ok) {
-        if (response.status === 401) {
-          await supabase.auth.signOut()
-          error('Authentication Error', 'Session expired. Please log in again')
-          setTimeout(() => router.push('/signin?redirect=/admin'), 1000)
-          return
-        }
         throw new Error(responseData.error || `Server error: ${response.status}`)
       }
 
@@ -737,7 +721,10 @@ function NewProductPageContent() {
                       <Select
                         label="Category *"
                         value={formData.category}
-                        onChange={(value) => handleInputChange('category', value)}
+                        onChange={(value) => {
+                          const v = Array.isArray(value) ? String(value[0] ?? '') : String(value)
+                          handleInputChange('category', v)
+                        }}
                         options={CATEGORIES.map(cat => ({ value: cat, label: cat }))}
                         placeholder="Select category"
                         error={errors.category}
@@ -796,7 +783,11 @@ function NewProductPageContent() {
                       <Select
                         label="Product Status"
                         value={formData.status}
-                        onChange={(value) => handleInputChange('status', value)}
+                        onChange={(value) => {
+                          const vRaw = Array.isArray(value) ? String(value[0] ?? 'draft') : String(value)
+                          const v = vRaw === 'published' ? 'published' : 'draft'
+                          handleInputChange('status', v)
+                        }}
                         options={[
                           { value: 'draft', label: 'Draft' },
                           { value: 'published', label: 'Published' }

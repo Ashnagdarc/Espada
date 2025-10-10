@@ -1,19 +1,11 @@
-// Utility functions for admin API calls with authentication
-import { supabase } from '@/lib/supabase';
+// Utility functions for admin API calls without authentication
 import { cache } from '@/lib/cache';
 import { ProductFormData, Product, Order, OrderUpdateData, Customer, AnalyticsData, ApiResponse } from '@/lib/types/api';
 
 async function getAuthHeaders(): Promise<HeadersInit> {
-  // Get the current Supabase session
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session?.access_token) {
-    throw new Error('No authentication session found');
-  }
-
+  // Auth removed: return basic JSON headers only
   return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session.access_token}`
+    'Content-Type': 'application/json'
   };
 }
 
@@ -30,21 +22,11 @@ export async function adminFetch(url: string, options: RequestInit = {}) {
       headers
     });
 
-    if (response.status === 401) {
-      // Clear invalid session and redirect to signin
-      await supabase.auth.signOut();
-      window.location.href = '/signin?redirect=/admin';
-      throw new Error('Unauthorized');
-    }
+    // No auth: treat 401 like normal error
 
     // Return the raw response object so calling code can check response.ok
     return response;
   } catch (error) {
-    // If we can't get auth headers, redirect to signin
-    if (error instanceof Error && error.message === 'No authentication session found') {
-      window.location.href = '/signin?redirect=/admin';
-      throw new Error('Authentication required');
-    }
     throw error;
   }
 }

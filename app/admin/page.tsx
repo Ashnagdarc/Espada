@@ -130,7 +130,7 @@ const generateRecentActivities = (analyticsData: AnalyticsData): ActivityItem[] 
 };
 
 export default function AdminDashboard() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats>({
     totalOrders: 0,
@@ -142,16 +142,13 @@ export default function AdminDashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const [hasRedirected] = useState(false);
 
   // All hooks must be called before any conditional returns
   useEffect(() => {
     console.log('Admin page useEffect - Auth state:', { 
-      user: !!user, 
-      isAdmin, 
       authLoading, 
-      hasRedirected,
-      userEmail: user?.email 
+      hasRedirected
     });
 
     // Don't do anything while auth is still loading
@@ -160,47 +157,10 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Prevent multiple redirects
-    if (hasRedirected) {
-      console.log('Already redirected, skipping...');
-      return;
-    }
-
     const checkAdminAccess = async () => {
       try {
-        // Check if user is not authenticated
-         if (!user) {
-           console.log('No user found, redirecting to signin...');
-           setHasRedirected(true);
-           // Use window.location for more reliable navigation
-           try {
-             window.location.href = '/signin?redirect=/admin';
-           } catch (navError) {
-             console.error('Navigation error, trying router.push:', navError);
-             router.push('/signin?redirect=/admin');
-           }
-           return;
-         }
-
-         // Check if user is not admin
-         if (!isAdmin) {
-           console.log('User is not admin, redirecting to home...');
-           setHasRedirected(true);
-           // Use window.location for more reliable navigation
-           try {
-             window.location.href = '/';
-           } catch (navError) {
-             console.error('Navigation error, trying router.push:', navError);
-             router.push('/');
-           }
-           return;
-         }
-
-        // User is authenticated and is admin
-        if (user && isAdmin && !hasRedirected) {
-          console.log('User is authenticated admin, loading dashboard...');
-          await loadStats();
-        }
+        // Always load stats; auth is disabled
+        await loadStats();
       } catch (error) {
         console.error('Error in admin access check:', error);
         setError('Failed to load admin data');
@@ -210,7 +170,7 @@ export default function AdminDashboard() {
     };
 
     checkAdminAccess();
-  }, [user, isAdmin, authLoading, hasRedirected]);
+  }, [authLoading, hasRedirected]);
 
   const loadStats = async () => {
     try {

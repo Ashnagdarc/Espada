@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { withAuthParams } from '@/lib/auth-middleware';
 import { ProductFormData } from '@/lib/types/api';
 
 // GET /api/admin/products/[id] - Get product by ID
-export const GET = withAuthParams(async (
+export async function GET(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   const { id } = await params;
   try {
 
@@ -41,14 +39,13 @@ export const GET = withAuthParams(async (
       { status: 500 }
     );
   }
-});
+}
 
 // PUT /api/admin/products/[id] - Update product by ID
-export const PUT = withAuthParams(async (
+export async function PUT(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   const { id } = await params;
   try {
 
@@ -133,14 +130,13 @@ export const PUT = withAuthParams(async (
       { status: 500 }
     );
   }
-});
+}
 
 // DELETE /api/admin/products/[id] - Delete product by ID
-export const DELETE = withAuthParams(async (
+export async function DELETE(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   const { id } = await params;
   try {
 
@@ -166,4 +162,4 @@ export const DELETE = withAuthParams(async (
       { status: 500 }
     );
   }
-});
+}

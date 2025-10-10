@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { withAuthParams } from '@/lib/auth-middleware';
 
 // GET /api/admin/customers/[id] - Fetch specific customer
-export const GET = withAuthParams(async (
+export async function GET(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
-    console.log('🔍 Admin customer details API called by:', admin.email);
+    console.log('🔍 Admin customer details API called');
     const { id } = await params;
 
     const { data: customer, error } = await supabaseAdmin
@@ -46,16 +44,15 @@ export const GET = withAuthParams(async (
     console.error('Customer API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
 
 // PUT /api/admin/customers/[id] - Update customer
-export const PUT = withAuthParams(async (
+export async function PUT(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
-    console.log('🔍 Admin customer update API called by:', admin.email);
+    console.log('🔍 Admin customer update API called');
     const { id } = await params;
 
     const customerData = await request.json();
@@ -91,16 +88,15 @@ export const PUT = withAuthParams(async (
     console.error('Customer update API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}
 
 // DELETE /api/admin/customers/[id] - Delete customer
-export const DELETE = withAuthParams(async (
+export async function DELETE(
   request: NextRequest,
-  admin,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
-    console.log('🔍 Admin customer delete API called by:', admin.email);
+    console.log('🔍 Admin customer delete API called');
     const { id } = await params;
 
     // Soft delete by updating status
@@ -122,4 +118,4 @@ export const DELETE = withAuthParams(async (
     console.error('Customer deletion API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+}

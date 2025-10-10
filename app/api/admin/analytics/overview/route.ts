@@ -65,41 +65,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-// Helper function to check if user is admin
-async function isAdmin(authHeader: string | null): Promise<boolean> {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const token = authHeader.substring(7);
-  
-  try {
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-    if (error || !user) return false;
-
-    // Check if user exists in customer_profiles table with admin role
-    const { data: admin } = await supabaseAdmin
-      .from('customer_profiles')
-      .select('id')
-      .eq('email', user.email)
-      .eq('role', 'admin')
-      .single();
-
-    return !!admin;
-  } catch (error) {
-    console.error('Admin check error:', error);
-    return false;
-  }
-}
+// Removed admin checks to allow open access to analytics
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    
-    if (!(await isAdmin(authHeader))) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Get query parameters for time filtering
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get('timeRange') || '30'; // days
