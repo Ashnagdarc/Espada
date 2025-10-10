@@ -17,6 +17,14 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
+    overrides: [
+      {
+        files: ['app/**/page.tsx', 'app/**/layout.tsx'],
+        rules: {
+          'react-refresh/only-export-components': 'off',
+        },
+      },
+    ],
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
