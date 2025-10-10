@@ -17,14 +17,6 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
-    overrides: [
-      {
-        files: ['app/**/page.tsx', 'app/**/layout.tsx'],
-        rules: {
-          'react-refresh/only-export-components': 'off',
-        },
-      },
-    ],
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
@@ -35,6 +27,12 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'warn',
+    },
+  },
+  {
+    files: ['app/**/page.tsx', 'app/**/layout.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 )

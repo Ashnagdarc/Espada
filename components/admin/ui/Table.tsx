@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { ChevronUp, ChevronDown, Search } from 'lucide-react'
 import Skeleton from './Skeleton'
 
-interface Column<T extends object = any> {
+interface Column<T extends object = object> {
   key: string
   title: string
   dataIndex?: keyof T
@@ -15,7 +15,7 @@ interface Column<T extends object = any> {
   fixed?: 'left' | 'right'
 }
 
-interface TableProps<T extends object = any> {
+interface TableProps<T extends object = object> {
   columns: Column<T>[]
   data: T[]
   loading?: boolean
@@ -82,20 +82,32 @@ const Table = <T extends object>({
     setSortConfig({ key: columnKey, direction })
   }
 
+  const compareValues = (a: unknown, b: unknown, direction: 'asc' | 'desc'): number => {
+    const dir = direction === 'asc' ? 1 : -1
+    if (a == null && b == null) return 0
+    if (a == null) return -1 * dir
+    if (b == null) return 1 * dir
+
+    if (typeof a === 'number' && typeof b === 'number') {
+      if (a < b) return -1 * dir
+      if (a > b) return 1 * dir
+      return 0
+    }
+
+    const aStr = String(a).toLowerCase()
+    const bStr = String(b).toLowerCase()
+    if (aStr < bStr) return -1 * dir
+    if (aStr > bStr) return 1 * dir
+    return 0
+  }
+
   const sortedData = React.useMemo(() => {
     if (!sortConfig) return data
     
     return [...data].sort((a, b) => {
       const aValue = a[sortConfig.key]
       const bValue = b[sortConfig.key]
-      
-      if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1
-      }
-      return 0
+      return compareValues(aValue, bValue, sortConfig.direction)
     })
   }, [data, sortConfig])
 
