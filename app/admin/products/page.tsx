@@ -233,6 +233,8 @@ function AdminProductsPageContent() {
               {
                 key: 'product',
                 title: 'Product',
+                dataIndex: 'name',
+                sortable: true,
                 render: (value: unknown, product: Product) => {
                   void value;
                   // Add null/undefined checks for product and its properties
@@ -295,6 +297,8 @@ function AdminProductsPageContent() {
               {
                 key: 'category',
                 title: 'Category',
+                dataIndex: 'category',
+                sortable: true,
                 render: (value: unknown, product: Product) => {
                   void value;
                   return (
@@ -307,6 +311,8 @@ function AdminProductsPageContent() {
               {
                 key: 'price',
                 title: 'Price',
+                dataIndex: 'price',
+                sortable: true,
                 render: (value: unknown, product: Product) => {
                   void value;
                   return (
@@ -319,6 +325,8 @@ function AdminProductsPageContent() {
               {
                 key: 'stock',
                 title: 'Stock',
+                dataIndex: 'stock_quantity',
+                sortable: true,
                 render: (value: unknown, product: Product) => {
                   void value;
                   return (
