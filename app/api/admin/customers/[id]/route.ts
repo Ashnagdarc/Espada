@@ -7,6 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    void request;
     console.log('🔍 Admin customer details API called');
     const { id } = await params;
 
@@ -96,6 +97,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    void request;
     console.log('🔍 Admin customer delete API called');
     const { id } = await params;
 

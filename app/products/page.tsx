@@ -148,11 +148,17 @@ function ProductsPageContent() {
 
   // Fetch products from API
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("/api/products");
+        const response = await fetch("/api/products", {
+          signal: controller.signal,
+          cache: "no-store",
+        });
         
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
@@ -172,17 +178,37 @@ function ProductsPageContent() {
           colors: product.colors || [{ name: "Default", value: "#000000" }], // Default color
         }));
         
-        setProducts(transformedProducts);
+        if (isMounted) {
+          setProducts(transformedProducts);
+        }
       } catch (error) {
+        // Ignore abort errors triggered by unmount/navigation/HMR in dev
+        if ((error as any)?.name === "AbortError") {
+          return;
+        }
         console.error("Error fetching products:", error);
-        setError(error instanceof Error ? error.message : "Failed to load products");
-        setProducts([]);
+        if (isMounted) {
+          setError(error instanceof Error ? error.message : "Failed to load products");
+          setProducts([]);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchProducts();
+    return () => {
+      isMounted = false;
+      if (!controller.signal.aborted) {
+        // Provide an abort reason to avoid noisy logs in some runtimes
+        try {
+          controller.abort("unmount");
+        } catch (_) {
+          // Fallback for environments without reason support
+          controller.abort();
+        }
+      }
+    };
   }, []);
 
   const toggleSize = (size: string) => {

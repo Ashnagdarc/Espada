@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, XCircle, AlertCircle, ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Link from 'next/link';
 
 interface PaymentVerificationResult {
@@ -36,7 +36,6 @@ export default function PaymentCallbackPage() {
   // Get URL parameters
   const reference = searchParams.get('reference');
   const trxref = searchParams.get('trxref');
-  const status = searchParams.get('status');
 
   useEffect(() => {
     const verifyPayment = async () => {

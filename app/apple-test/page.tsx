@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { AppleButton, AppleInput, AppleCard, AppleHeader } from '@/components/apple';
-import { Search, ShoppingCart, User, Heart, Star, Mail, Lock } from 'lucide-react';
+import { Search, ShoppingCart, Heart, Star, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 function AppleTestPageContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { addToast } = useToast();
+  const { success, error, warning, info } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,11 +17,7 @@ function AppleTestPageContent() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
-    addToast({
-      type: 'success',
-      title: 'Form Submitted',
-      message: 'Your form has been successfully submitted!'
-    });
+    success('Form Submitted', { description: 'Your form has been successfully submitted!' });
   };
 
   const showToastDemo = (type: 'success' | 'error' | 'warning' | 'info') => {
@@ -32,11 +28,16 @@ function AppleTestPageContent() {
       info: { title: 'Info', message: 'This is an info toast notification.' }
     };
     
-    addToast({
-      type,
-      title: messages[type].title,
-      message: messages[type].message
-    });
+    const { title, message } = messages[type];
+    if (type === 'success') {
+      success(title, { description: message });
+    } else if (type === 'error') {
+      error(title, { description: message });
+    } else if (type === 'warning') {
+      warning(title, { description: message });
+    } else {
+      info(title, { description: message });
+    }
   };
 
   return (

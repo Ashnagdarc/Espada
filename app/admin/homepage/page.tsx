@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
@@ -53,8 +52,7 @@ interface HomepageSections {
 }
 
 function HomepageManagementContent() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { isLoading: authLoading } = useAuth();
   const [sections, setSections] = useState<HomepageSections>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

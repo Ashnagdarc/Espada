@@ -32,6 +32,7 @@ interface Order {
   // Joined fields from customer_profiles
   customer_name?: string
   customer_email?: string
+  [key: string]: unknown
 }
 
 export default function AdminOrdersPage() {
@@ -208,82 +209,100 @@ export default function AdminOrdersPage() {
       key: 'order_number',
       title: 'Order Number',
       width: '140px',
-      render: (order: Order) => (
-        <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
-          {order.order_number}
-        </span>
-      )
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
+            {order.order_number}
+          </span>
+        )
+      }
     },
     {
       key: 'customer',
       title: 'Customer',
-      render: (order: Order) => (
-        <div>
-          <div className="font-medium text-gray-900 dark:text-white">
-            {order.customer_name || 'Unknown Customer'}
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              {order.customer_name || 'Unknown Customer'}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {order.customer_email || 'No email'}
+            </div>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {order.customer_email || 'No email'}
-          </div>
-        </div>
-      )
+        )
+      }
     },
     {
       key: 'date',
       title: 'Date',
       width: '120px',
-      render: (order: Order) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          {formatDate(order.created_at)}
-        </span>
-      )
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {formatDate(order.created_at)}
+          </span>
+        )
+      }
     },
     {
       key: 'total',
       title: 'Total',
       width: '100px',
       align: 'right' as const,
-      render: (order: Order) => (
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {formatCurrency(order.total_amount)}
-        </span>
-      )
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {formatCurrency(order.total_amount)}
+          </span>
+        )
+      }
     },
     {
       key: 'status',
       title: 'Status',
       width: '140px',
-      render: (order: Order) => (
-        <Select
-          value={order.status}
-          onChange={(value) => updateOrderStatus(order.id, value as string)}
-          options={[
-            { value: 'pending', label: 'Pending' },
-            { value: 'processing', label: 'Processing' },
-            { value: 'shipped', label: 'Shipped' },
-            { value: 'delivered', label: 'Delivered' },
-            { value: 'cancelled', label: 'Cancelled' }
-          ]}
-        />
-      )
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <Select
+            value={order.status}
+            onChange={(v) => updateOrderStatus(order.id, v as string)}
+            options={[
+              { value: 'pending', label: 'Pending' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'shipped', label: 'Shipped' },
+              { value: 'delivered', label: 'Delivered' },
+              { value: 'cancelled', label: 'Cancelled' }
+            ]}
+          />
+        )
+      }
     },
     {
       key: 'actions',
       title: 'Actions',
       width: '100px',
       align: 'center' as const,
-      render: (order: Order) => (
-        <div className="flex items-center justify-center space-x-2">
-          <Button
-            variant="ghost"
-            className="p-2"
-            onClick={() => router.push(`/admin/orders/${order.id}`)}
-            title="View Details"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-        </div>
-      )
+      render: (value: unknown, order: Order) => {
+        void value
+        return (
+          <div className="flex items-center justify-center space-x-2">
+            <Button
+              variant="ghost"
+              className="p-2"
+              onClick={() => router.push(`/admin/orders/${order.id}`)}
+              title="View Details"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        )
+      }
     }
   ]
 

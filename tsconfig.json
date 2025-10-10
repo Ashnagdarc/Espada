@@ -41,6 +41,8 @@
     "strictNullChecks": true
   },
   "include": [
+    "next-env.d.ts",
+    "global.d.ts",
     "api",
     "app",
     "components",

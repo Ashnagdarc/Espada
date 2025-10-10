@@ -1,15 +1,15 @@
+import React from 'react'
 import { toast as sonnerToast } from 'sonner';
+
+type ToastAction = React.ReactNode | {
+  label: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
 
 export interface ToastOptions {
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-  cancel?: {
-    label: string;
-    onClick?: () => void;
-  };
+  action?: ToastAction;
+  cancel?: ToastAction;
   duration?: number;
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
 }
@@ -31,7 +31,7 @@ export interface Toast {
       success: string | ((data: T) => string);
       error: string | ((error: Error | unknown) => string);
     }
-  ) => string | number;
+  ) => string | number | { unwrap: () => Promise<T> };
   dismiss: (toastId?: string | number) => void;
   message: ToastFunction;
 }

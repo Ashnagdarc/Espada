@@ -5,6 +5,7 @@ import { ProductFormData } from '@/lib/types/api';
 // GET /api/admin/products - Get all products
 export async function GET(request: Request) {
   try {
+    void request;
     console.log('🔍 Admin products API called');
     
     // Fetch products from Supabase
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
     }
 
     // Prepare product data for database
-    const productData: Partial<ProductFormData> & { 
+    const productData: Omit<Partial<ProductFormData>, 'status'> & { 
       stock_quantity: number; 
       status: string; 
       original_price?: number; 

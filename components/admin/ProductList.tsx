@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product } from '@/lib/admin/data';
+import { Product } from '@/lib/types/api';
 import { adminAPI } from '@/lib/admin/api';
 import ProductForm from './ProductForm';
 import PageTransition, { StaggerContainer, StaggerItem, HoverScale, LoadingSpinner } from './PageTransition';
@@ -30,9 +30,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await adminAPI.getProducts();
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
+      const data = await adminAPI.getProducts();
       setProducts(data.products || []);
     } catch (err) {
       setError('Failed to load products');
@@ -49,12 +47,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
   const handleCreateProduct = async (productData: Partial<Product>) => {
     try {
       setIsSubmitting(true);
-      const response = await adminAPI.createProduct(productData);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create product');
-      }
+      await adminAPI.createProduct(productData);
 
       await fetchProducts();
       setShowForm(false);
@@ -73,12 +66,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
 
     try {
       setIsSubmitting(true);
-      const response = await adminAPI.updateProduct(editingProduct.id, productData);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update product');
-      }
+      await adminAPI.updateProduct(editingProduct.id, productData);
 
       await fetchProducts();
       setShowForm(false);
@@ -103,12 +91,7 @@ export default function ProductList({ onProductUpdate }: ProductListProps) {
     
     setIsSubmitting(true);
     try {
-      const response = await adminAPI.deleteProduct(productToDelete.id);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete product');
-      }
+      await adminAPI.deleteProduct(productToDelete.id);
 
       await fetchProducts();
       setShowDeleteDialog(false);

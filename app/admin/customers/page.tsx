@@ -117,11 +117,7 @@ function CustomersPageContent() {
       setLoading(true);
       setError(null);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setError('Please log in to access customers');
-        return;
-      }
+      // Auth disabled: do not require a client session
 
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -146,11 +142,7 @@ function CustomersPageContent() {
       }
 
       console.log(`Cache miss for ${cacheKey}, fetching from API`);
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error('Failed to load customers');

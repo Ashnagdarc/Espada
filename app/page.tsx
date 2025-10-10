@@ -55,6 +55,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Safely render text from unknown content fields
+  const getText = (val: unknown, fallback: string): string =>
+    typeof val === 'string' && val.trim().length > 0 ? val : fallback;
+
   useEffect(() => {
     console.log("HomePage mounted");
     fetchHomepageData();
@@ -66,8 +70,19 @@ export default function HomePage() {
       console.log('🚀 Starting homepage data fetch');
       const startTime = performance.now();
       
-      const response = await fetch('/api/homepage');
-      const result = await response.json();
+      const response = await fetch('/api/homepage', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Homepage API error: ${response.status} ${response.statusText}`);
+      }
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Homepage API returned non-JSON content-type: ${contentType}`);
+      }
+      const text = await response.text();
+      if (!text || text.trim().length === 0) {
+        throw new Error('Homepage API returned empty response body');
+      }
+      const result = JSON.parse(text);
 
       const endTime = performance.now();
       console.log(`📊 Homepage API took ${Math.round(endTime - startTime)}ms`);
@@ -156,10 +171,10 @@ export default function HomePage() {
               {/* Hero Title */}
               <div className="space-y-4">
                 <h1 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase">
-                  {homepageData?.hero?.content?.title || t.home.hero.title}
+                  {getText(homepageData?.hero?.content?.title, t.home.hero.title)}
                 </h1>
                 <p className="text-callout text-label-secondary">
-                  {homepageData?.hero?.content?.subtitle || t.home.hero.subtitle}
+                  {getText(homepageData?.hero?.content?.subtitle, t.home.hero.subtitle)}
                 </p>
               </div>
 
@@ -205,7 +220,7 @@ export default function HomePage() {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12">
             <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-4 sm:mb-0">
-              {homepageData?.new_this_week?.content?.title || t.home.newThisWeek}
+              {getText(homepageData?.new_this_week?.content?.title, t.home.newThisWeek)}
             </h2>
             <p className="text-title-3 font-bold text-primary uppercase">
               ({homepageData?.new_this_week?.collection_items?.length || 0})
@@ -289,7 +304,7 @@ export default function HomePage() {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12">
             <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-4 sm:mb-0">
-              {homepageData?.xiv_collections?.content?.title || t.home.xivCollections}
+              {getText(homepageData?.xiv_collections?.content?.title, t.home.xivCollections)}
             </h2>
             <p className="text-title-3 font-bold text-primary uppercase">
               ({homepageData?.xiv_collections?.collection_items?.length || 50})
@@ -372,7 +387,7 @@ export default function HomePage() {
         {/* Our Approach Section */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-12">
-            {homepageData?.approach?.content?.title || "Our Approach"}
+            {getText(homepageData?.approach?.content?.title, "Our Approach")}
           </h2>
 
           {/* Approach Images */}
@@ -397,14 +412,17 @@ export default function HomePage() {
           {/* Approach Text */}
           <div className="max-w-4xl space-y-6">
             <p className="text-body text-label-primary leading-relaxed">
-              {homepageData?.approach?.content?.description || "We believe in creating timeless pieces that transcend seasonal trends. Our approach to fashion is rooted in sustainability, quality craftsmanship, and innovative design. Each piece in our collection is carefully curated to ensure it meets our high standards for both style and durability."}
+              {getText(
+                homepageData?.approach?.content?.description,
+                "We believe in creating timeless pieces that transcend seasonal trends. Our approach to fashion is rooted in sustainability, quality craftsmanship, and innovative design. Each piece in our collection is carefully curated to ensure it meets our high standards for both style and durability."
+              )}
             </p>
-            {homepageData?.approach?.content?.additional_text && (
+            {typeof homepageData?.approach?.content?.additional_text === 'string' &&
+            (homepageData?.approach?.content?.additional_text as string).trim().length > 0 ? (
               <p className="text-body text-label-primary leading-relaxed">
-                {homepageData.approach.content.additional_text}
+                {homepageData.approach.content.additional_text as string}
               </p>
-            )}
-            {!homepageData?.approach?.content?.additional_text && (
+            ) : (
               <p className="text-body text-label-primary leading-relaxed">
                 From the initial concept to the final product, we work closely
                 with skilled artisans and use only the finest materials. Our
@@ -569,8 +587,8 @@ export default function HomePage() {
                   className="flex-1 px-4 py-3 bg-transparent border border-separator text-white placeholder-label-tertiary text-callout focus:outline-none focus:border-white transition-colors rounded-lg focus-ring"
                 />
                 <AppleButton
-                  variant="default"
-                  size="default"
+                  variant="primary"
+                  size="md"
                   className="whitespace-nowrap"
                 >
                   Subscribe

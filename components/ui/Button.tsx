@@ -26,7 +26,7 @@ const buttonVariants = {
 const sizeVariants = {
   xs: 'min-h-apple-touch px-apple-2 text-apple-caption-1',
   sm: 'min-h-apple-touch px-apple-3 text-apple-footnote',
-  default: 'min-h-apple-touch px-apple-4 py-apple-3 text-apple-body',
+  default: 'min-h-apple-touch px-apple-5 py-apple-4 text-apple-body',
   lg: 'min-h-apple-touch px-apple-6 py-apple-4 text-apple-headline',
   icon: 'min-h-apple-touch min-w-apple-touch',
 }
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         className={cn(
-          'relative inline-flex items-center justify-center rounded-apple-md font-medium transition-all duration-200 focus-apple disabled:pointer-events-none disabled:opacity-50 overflow-hidden select-none transform-gpu will-change-transform',
+          'relative inline-flex items-center justify-center btn-apple-base rounded-apple-md font-medium transition-all duration-200 focus-apple disabled:pointer-events-none disabled:opacity-50 overflow-hidden select-none transform-gpu will-change-transform active:animate-apple-press',
           buttonVariants[variant],
           sizeVariants[size],
           className

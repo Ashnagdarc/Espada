@@ -146,19 +146,29 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Update product stock quantities
+    // Update product stock quantities (retrieve current stock then decrement)
     for (const item of body.items) {
+      const { data: productStock, error: fetchStockError } = await supabaseAdmin
+        .from('products')
+        .select('stock_quantity')
+        .eq('id', item.product_id)
+        .single();
+
+      if (fetchStockError) {
+        console.error('Error fetching stock for product:', item.product_id, fetchStockError);
+        continue;
+      }
+
+      const currentStock = Number(productStock?.stock_quantity ?? 0);
+      const newStock = Math.max(0, currentStock - Number(item.quantity));
+
       const { error: stockError } = await supabaseAdmin
         .from('products')
-        .update({
-          stock_quantity: supabaseAdmin.raw(`stock_quantity - ${item.quantity}`)
-        })
+        .update({ stock_quantity: newStock })
         .eq('id', item.product_id);
 
       if (stockError) {
         console.error('Error updating stock for product:', item.product_id, stockError);
-        // Note: We don't rollback here as the order is already created
-        // This should be handled by a background job or manual intervention
       }
     }
 

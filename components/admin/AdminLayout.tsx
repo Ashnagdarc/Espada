@@ -11,7 +11,6 @@ import {
   ShoppingCart,
   BarChart3,
   Settings,
-  LogOut,
   X,
   Users,
   User,

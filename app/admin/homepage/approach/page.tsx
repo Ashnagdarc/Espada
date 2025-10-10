@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -47,8 +46,7 @@ interface ApproachSection {
 }
 
 function ApproachEditorContent() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { isLoading: authLoading } = useAuth();
   const { success, error } = useToastActions();
   const [approachSection, setApproachSection] = useState<ApproachSection>({
     content: {

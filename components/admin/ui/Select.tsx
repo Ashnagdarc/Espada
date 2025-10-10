@@ -49,9 +49,21 @@ const Select = forwardRef<HTMLDivElement, SelectProps>((
 ) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedValues, setSelectedValues] = useState<(string | number)[]>(
-    multiple ? (Array.isArray(value) ? value : value ? [value] : []) : (value ? [value] : [])
-  )
+  const initialSelectedValues: (string | number)[] = (() => {
+    if (multiple) {
+      if (Array.isArray(value)) return value as (string | number)[]
+      if (value !== undefined && value !== null && !Array.isArray(value)) {
+        return [value as string | number]
+      }
+      return []
+    } else {
+      if (value !== undefined && value !== null && !Array.isArray(value)) {
+        return [value as string | number]
+      }
+      return []
+    }
+  })()
+  const [selectedValues, setSelectedValues] = useState<(string | number)[]>(initialSelectedValues)
 
   const selectRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)

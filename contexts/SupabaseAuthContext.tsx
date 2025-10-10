@@ -7,9 +7,19 @@ interface UserProfile {
   id: string;
   email: string;
   role: "customer" | "admin";
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
+  created_at?: string;
 }
 
-interface Session {}
+interface Session {
+  access_token?: string;
+}
 interface User {
   id: string;
   email?: string;

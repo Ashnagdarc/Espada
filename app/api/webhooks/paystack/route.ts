@@ -126,6 +126,8 @@ export async function POST(request: NextRequest) {
 async function handleChargeSuccess(data: PaystackWebhookEvent['data']) {
   try {
     const { reference, status, gateway_response, paid_at, amount } = data;
+    void status;
+    void amount;
 
     // Get payment record
     const { data: payment, error: paymentError } = await supabaseAdmin

@@ -10,25 +10,21 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 }
 
 export async function adminFetch(url: string, options: RequestInit = {}) {
-  try {
-    const authHeaders = await getAuthHeaders();
-    const headers = {
-      ...authHeaders,
-      ...options.headers
-    };
+  const authHeaders = await getAuthHeaders();
+  const headers = {
+    ...authHeaders,
+    ...options.headers
+  };
 
-    const response = await fetch(url, {
-      ...options,
-      headers
-    });
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
 
-    // No auth: treat 401 like normal error
+  // No auth: treat 401 like normal error
 
-    // Return the raw response object so calling code can check response.ok
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  // Return the raw response object so calling code can check response.ok
+  return response;
 }
 
 // Cached version of adminFetch for GET requests
@@ -60,12 +56,12 @@ export async function adminFetchCached(url: string, cacheKey: string, ttl: numbe
 // Specific API functions
 export const adminAPI = {
   // Products
-  getProducts: async (): Promise<Product[]> => {
+  getProducts: async (): Promise<{ products: Product[] }> => {
     const response = await adminFetch('/api/admin/products');
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   },
-  createProduct: async (data: ProductFormData): Promise<ApiResponse<Product>> => {
+  createProduct: async (data: Partial<ProductFormData>): Promise<ApiResponse<Product>> => {
     const response = await adminFetch('/api/admin/products', {
       method: 'POST',
       body: JSON.stringify(data)

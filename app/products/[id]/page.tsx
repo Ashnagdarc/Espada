@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, ShoppingCart, Star, ArrowLeft, Plus, Minus, Upload, Camera } from 'lucide-react'
+import { Heart, ShoppingCart, Star, ArrowLeft, Plus, Minus, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/badge'
 import Header from '@/components/layout/Header'
@@ -30,13 +30,13 @@ interface Product {
   colors: string[];
   createdAt: string;
   updatedAt: string;
+  features?: string[];
+  materials?: string;
 }
 
 
 
-interface ProductDetailPageProps {
-  params: Promise<{ id: string }>
-}
+// Removed unused ProductDetailPageProps interface
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -276,7 +276,7 @@ export default function ProductDetailPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Color</h3>
                   <div className="flex space-x-2">
-                    {product.colors.map((color) => {
+                    {product.colors.map((color: any) => {
                       const colorName = typeof color === 'object' ? color.name : color;
                       return (
                         <button

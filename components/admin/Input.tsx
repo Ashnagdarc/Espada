@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, forwardRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type HTMLMotionProps } from 'framer-motion';
 import { Eye, EyeOff, Search, X, AlertCircle, CheckCircle } from 'lucide-react';
 
 type InputSize = 'sm' | 'md' | 'lg';
@@ -29,18 +29,18 @@ interface BaseInputProps {
   showClearButton?: boolean;
 }
 
-interface InputProps extends BaseInputProps, Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {}
+interface InputProps extends BaseInputProps, Omit<HTMLMotionProps<'input'>, 'size'> {}
 
-interface PasswordInputProps extends BaseInputProps, Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
+interface PasswordInputProps extends BaseInputProps, Omit<HTMLMotionProps<'input'>, 'size' | 'type'> {
   showPasswordToggle?: boolean;
 }
 
-interface SearchInputProps extends BaseInputProps, Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
+interface SearchInputProps extends BaseInputProps, Omit<HTMLMotionProps<'input'>, 'size' | 'type'> {
   onSearch?: (value: string) => void;
   showSearchIcon?: boolean;
 }
 
-interface TextAreaProps extends BaseInputProps, Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
+interface TextAreaProps extends BaseInputProps, Omit<HTMLMotionProps<'textarea'>, 'size'> {
   rows?: number;
   resize?: boolean;
 }
@@ -148,6 +148,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((
   const variantClasses = getVariantClasses(variant, state);
   const stateIcon = getStateIcon(state);
   const helperTextColorClass = getHelperTextColor(state);
+  const [, setIsFocused] = useState(false);
   
   const displayHelperText = errorText || successText || helperText;
 

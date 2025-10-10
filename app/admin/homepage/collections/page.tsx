@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -52,8 +52,7 @@ interface CollectionSection {
 }
 
 function CollectionsManagerContent() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const sectionType = searchParams.get('type') || 'xiv_collections';
   

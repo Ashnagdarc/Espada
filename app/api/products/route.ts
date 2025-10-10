@@ -135,7 +135,7 @@ export async function GET() {
       rating: 4.5, // Default rating for shop display
       sizes: product.sizes || ['S', 'M', 'L', 'XL'],
       colors: Array.isArray(product.colors)
-        ? product.colors.map(color =>
+        ? product.colors.map((color: any) =>
           typeof color === 'string'
             ? { name: color, value: getColorValue(color) }
             : color

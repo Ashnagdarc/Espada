@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 export function CustomerProfile() {
   const { user, profile, updateProfile, isLoading, signOut } = useAuth();
-  const { success } = useToastActions();
+  const { success, error: showError } = useToastActions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: profile?.first_name || '',
@@ -58,9 +58,9 @@ export function CustomerProfile() {
       });
       setIsEditing(false);
       success('Profile updated successfully!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      error('Failed to update profile');
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      showError('Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -84,9 +84,9 @@ export function CustomerProfile() {
       await signOut();
       success('Signed out successfully');
       router.push('/');
-    } catch (error) {
-      console.error('Sign out error:', error);
-      error('Failed to sign out');
+    } catch (err) {
+      console.error('Sign out error:', err);
+      showError('Failed to sign out');
     }
   };
 
@@ -216,7 +216,7 @@ export function CustomerProfile() {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="email"
-                value={user.primaryEmail || ''}
+                value={user?.email || ''}
                 disabled
                 className="pl-10 bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-60"
               />

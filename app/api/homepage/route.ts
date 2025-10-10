@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
@@ -24,15 +24,84 @@ interface CollectionItem {
   products: Product;
 }
 
+interface HomepageSection {
+  id: string;
+  content: Record<string, unknown>;
+  status: string;
+  images: HomepageImage[];
+  collection_items: CollectionItem[];
+  created_at: string;
+  updated_at: string;
+}
+
 interface HomepageData {
-  hero: Record<string, unknown>;
-  new_this_week: Record<string, unknown>;
-  xiv_collections: Record<string, unknown>;
-  approach: Record<string, unknown>;
+  hero: HomepageSection | null;
+  new_this_week: HomepageSection | null;
+  xiv_collections: HomepageSection | null;
+  approach: HomepageSection | null;
 }
 
 export async function GET() {
+  const buildFallbackData = (): HomepageData => {
+      const now = new Date().toISOString();
+      return {
+        hero: {
+          id: 'default-hero',
+          content: {
+            title: 'Elevate Your Everyday Style',
+            subtitle: 'Timeless essentials made for comfort and confidence.'
+          },
+          status: 'published',
+          images: [
+            { id: 'img-hero-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Collection item', display_order: 1 },
+            { id: 'img-hero-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Collection item', display_order: 2 }
+          ],
+          collection_items: [],
+          created_at: now,
+          updated_at: now
+        },
+        new_this_week: {
+          id: 'default-new',
+          content: { title: 'New This Week' },
+          status: 'published',
+          images: [],
+          collection_items: [],
+          created_at: now,
+          updated_at: now
+        },
+        xiv_collections: {
+          id: 'default-xiv',
+          content: { title: 'XIV Collections' },
+          status: 'published',
+          images: [],
+          collection_items: [],
+          created_at: now,
+          updated_at: now
+        },
+        approach: {
+          id: 'default-approach',
+          content: {
+            title: 'Our Approach',
+            description:
+              'We believe in creating timeless pieces that transcend seasonal trends. Our approach to fashion is rooted in sustainability, quality craftsmanship, and innovative design.'
+          },
+          status: 'published',
+          images: [
+            { id: 'img-ap-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Sustainable Materials', display_order: 1 },
+            { id: 'img-ap-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Quality Craftsmanship', display_order: 2 },
+            { id: 'img-ap-3', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Innovative Design', display_order: 3 }
+          ],
+          collection_items: [],
+          created_at: now,
+          updated_at: now
+        }
+      } as any;
+    };
+
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     // Check cache first
     const cachedData = cache.get<HomepageData>(CACHE_KEYS.HOMEPAGE);
     if (cachedData) {
@@ -56,6 +125,19 @@ export async function GET() {
     });
 
     // Optimize: Fetch sections first, then fetch related data separately to reduce join complexity
+    // Pre-check env to avoid hard failures in local/dev
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn('⚠️ Supabase env missing; serving fallback homepage data');
+      const headers = new Headers({
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'X-Cache': 'BYPASS',
+        'X-Fallback': 'true'
+      });
+      const fallback = buildFallbackData();
+      cache.set(CACHE_KEYS.HOMEPAGE, fallback, CACHE_TTL.HOMEPAGE);
+      return NextResponse.json({ success: true, data: fallback }, { headers });
+    }
+
     const { data: sections, error: sectionsError } = await supabaseAdmin
       .from('homepage_sections')
       .select('id, section_type, content, status, created_at, updated_at')
@@ -64,10 +146,14 @@ export async function GET() {
 
     if (sectionsError) {
       console.error('Error fetching homepage sections:', sectionsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch homepage data' },
-        { status: 500 }
-      );
+      const headersErr = new Headers({
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'X-Cache': 'BYPASS',
+        'X-Fallback': 'true'
+      });
+      const fallback = buildFallbackData();
+      cache.set(CACHE_KEYS.HOMEPAGE, fallback, CACHE_TTL.HOMEPAGE);
+      return NextResponse.json({ success: true, data: fallback }, { headers: headersErr });
     }
 
     // Fetch images and collection items separately for better performance
@@ -177,9 +263,13 @@ export async function GET() {
 
   } catch (error) {
     console.error('Error in homepage API:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    const headersCatch = new Headers({
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'X-Cache': 'BYPASS',
+      'X-Fallback': 'true'
+    });
+    const fallbackData: HomepageData = buildFallbackData();
+    cache.set(CACHE_KEYS.HOMEPAGE, fallbackData, CACHE_TTL.HOMEPAGE);
+    return NextResponse.json({ success: true, data: fallbackData }, { headers: headersCatch });
   }
 }

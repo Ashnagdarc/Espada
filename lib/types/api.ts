@@ -126,7 +126,10 @@ export interface AnalyticsData {
   totalOrders: number
   totalRevenue: number
   pendingOrders: number
+  completedOrders?: number
+  cancelledOrders?: number
   lowStockProducts: number
+  outOfStockProducts?: number
   uniqueCustomers: number
   newCustomers: number
   averageOrderValue: number
@@ -136,12 +139,21 @@ export interface AnalyticsData {
   aovChange: number
   dailyRevenue: Array<{ date: string; revenue: number; orders: number }>
   weeklyRevenue: Array<{ week: string; revenue: number; orders: number }>
-  monthlyRevenue: Array<{ month: string; revenue: number; orders: number }>
+  monthlyRevenue?: Array<{ month: string; revenue: number; orders: number }>
   topProducts: Array<{
     productId: string
     productName: string
     totalSold: number
     revenue: number
+  }>
+  topCustomers?: Array<{
+    customerId: string
+    customerName: string
+    customerEmail: string
+    totalSpent: number
+    totalOrders: number
+    averageOrderValue: number
+    lastOrderDate: string
   }>
   recentOrders: Array<{
     id: string

@@ -365,7 +365,7 @@ export default function OrderList({ onOrderUpdate }: OrderListProps) {
                     {selectedOrder.items.map((item, index) => (
                       <div key={index} className="bg-gray-50 p-4 rounded-md flex justify-between items-center">
                         <div>
-                          <p className="font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>{item.name}</p>
+                          <p className="font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>{item.productName}</p>
                           <p className="text-sm text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>
                             Size: {item.size} | Color: {item.color} | Qty: {item.quantity}
                           </p>

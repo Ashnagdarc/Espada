@@ -8,6 +8,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 // GET /api/admin/settings - Fetch all admin settings
 export async function GET(request: NextRequest) {
   try {
+    void request;
     const { data: settings, error } = await supabaseAdmin
       .from('admin_settings')
       .select('*');
@@ -20,7 +21,13 @@ export async function GET(request: NextRequest) {
     // Transform to expected format
     const transformedSettings = settings.reduce((acc: Record<string, unknown>, setting) => {
       if (!acc[setting.category]) acc[setting.category] = {};
-      acc[setting.category] = { ...acc[setting.category], ...setting.value };
+      const existing = typeof acc[setting.category] === 'object' && acc[setting.category] !== null
+        ? (acc[setting.category] as Record<string, unknown>)
+        : {};
+      const incoming = typeof setting.value === 'object' && setting.value !== null
+        ? (setting.value as Record<string, unknown>)
+        : {};
+      acc[setting.category] = { ...existing, ...incoming };
       return acc;
     }, {});
     

@@ -16,6 +16,7 @@ export interface Product {
   colors: string[];
   images: string[];
   stock: number;
+  stock_quantity?: number;
   featured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +26,7 @@ export interface Order {
   id: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   items: {
     productId: string;
     productName: string;
@@ -91,16 +93,18 @@ export function updateOrderData(order: Order, updates: Partial<Omit<Order, 'id' 
 }
 
 // Helper function to calculate analytics from data
-export interface Product {
+export interface AnalyticsProduct {
   id: string;
   name: string;
   price: number;
   stock: number;
+  stock_quantity?: number;
   category: string;
   created_at: string;
+  [key: string]: unknown;
 }
 
-export interface Order {
+export interface AnalyticsOrder {
   id: string;
   customer_id: string;
   total: number;
@@ -125,6 +129,8 @@ export interface AnalyticsData {
   totalOrders: number;
   totalRevenue: number;
   pendingOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
   lowStockProducts: number;
   uniqueCustomers: number;
   newCustomers: number;
@@ -162,8 +168,8 @@ export interface AnalyticsData {
 }
 
 export function calculateEnhancedAnalytics(
-  products: Product[], 
-  orders: Order[], 
+  products: AnalyticsProduct[], 
+  orders: AnalyticsOrder[], 
   orderItems: OrderItem[],
   timeRange: { from: string; to: string; days: number }
 ): AnalyticsData {
@@ -190,6 +196,8 @@ export function calculateEnhancedAnalytics(
   const totalOrders = currentOrders.length;
   const totalRevenue = currentOrders.reduce((sum, order) => sum + order.total, 0);
   const pendingOrders = currentOrders.filter(order => order.status === 'pending').length;
+  const completedOrders = currentOrders.filter(order => order.status === 'completed' || order.status === 'delivered').length;
+  const cancelledOrders = currentOrders.filter(order => order.status === 'cancelled').length;
   const lowStockProducts = products.filter(product => product.stock < 10).length;
 
   // Customer metrics
@@ -272,6 +280,8 @@ export function calculateEnhancedAnalytics(
     totalOrders,
     totalRevenue,
     pendingOrders,
+    completedOrders,
+    cancelledOrders,
     lowStockProducts,
     uniqueCustomers,
     newCustomers,
@@ -292,7 +302,7 @@ export function calculateEnhancedAnalytics(
 }
 
 export function calculateDailyTrend(
-  orders: Order[], 
+  orders: AnalyticsOrder[], 
   fromDate: Date, 
   toDate: Date
 ): Array<{ date: string; revenue: number; orders: number }> {
@@ -322,7 +332,7 @@ export function calculateDailyTrend(
 }
 
 export function calculateWeeklyTrend(
-  orders: Order[]
+  orders: AnalyticsOrder[]
 ): Array<{ week: string; revenue: number; orders: number }> {
   const weeklyData = new Map<string, { revenue: number; orders: number }>();
   
@@ -344,7 +354,7 @@ export function calculateWeeklyTrend(
 }
 
 export function calculateMonthlyTrend(
-  orders: Order[]
+  orders: AnalyticsOrder[]
 ): Array<{ month: string; revenue: number; orders: number }> {
   const monthlyData = new Map<string, { revenue: number; orders: number }>();
   
@@ -363,7 +373,7 @@ export function calculateMonthlyTrend(
     .sort((a, b) => a.month.localeCompare(b.month));
 }
 
-export function calculateRevenueByStatus(orders: Order[]): Record<string, number> {
+export function calculateRevenueByStatus(orders: AnalyticsOrder[]): Record<string, number> {
   const revenueByStatus: Record<string, number> = {};
   
   orders.forEach(order => {
@@ -373,7 +383,7 @@ export function calculateRevenueByStatus(orders: Order[]): Record<string, number
   return revenueByStatus;
 }
 
-export function calculateSalesTrend(orders: Order[], days: number = 7): Array<{ date: string; sales: number }> {
+export function calculateSalesTrend(orders: AnalyticsOrder[], days: number = 7): Array<{ date: string; sales: number }> {
   const endDate = new Date();
   const startDate = new Date();
   startDate.setDate(endDate.getDate() - days);
@@ -403,7 +413,7 @@ export function calculateSalesTrend(orders: Order[], days: number = 7): Array<{ 
 }
 
 // Legacy function for backward compatibility
-export function calculateAnalytics(products: Product[], orders: Order[]) {
+export function calculateAnalytics(products: AnalyticsProduct[], orders: AnalyticsOrder[]) {
   const totalProducts = products.length;
   const totalOrders = orders.length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);

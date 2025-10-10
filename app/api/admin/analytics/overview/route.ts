@@ -9,21 +9,32 @@ interface DailyAnalytic {
   total_revenue: number;
   unique_customers: number;
   new_customers: number;
+  average_order_value?: number;
 }
 
 interface ProductAnalytic {
   product_id: string;
-  product_name: string;
-  total_sold: number;
-  revenue: number;
+  orders?: number;
+  revenue?: number;
+  products?: {
+    name: string;
+    price?: number;
+    images?: string[];
+    stock_quantity?: number;
+  }[];
 }
 
 interface CustomerAnalytic {
   customer_id: string;
-  customer_name: string;
-  customer_email: string;
-  total_spent: number;
-  total_orders: number;
+  sessions?: number;
+  page_views?: number;
+  time_spent?: number;
+  customer_profiles?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    created_at?: string;
+  }[];
 }
 
 interface DatabaseOrder {
@@ -31,11 +42,17 @@ interface DatabaseOrder {
   order_number: string;
   customer_id: string;
   status: string;
-  total_amount: number;
+  total_amount: number | string;
   created_at: string;
   customer_name?: string;
   customer_email?: string;
   item_count?: number;
+  customer_profiles?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+  order_items?: Array<unknown>;
 }
 
 interface DatabaseProduct {
@@ -50,8 +67,8 @@ interface ProductAggregate {
   totalRevenue: number;
   products?: {
     name: string;
-    images: string[];
-  };
+    images?: string[];
+  }[];
 }
 
 interface CustomerSpending {
@@ -251,7 +268,7 @@ function calculateEnhancedAnalytics(
   // Revenue by status
   const revenueByStatus = orders.reduce((acc, order) => {
     const status = order.status;
-    acc[status] = (acc[status] || 0) + parseFloat(order.total_amount || 0);
+    acc[status] = (acc[status] || 0) + Number(order.total_amount ?? 0);
     return acc;
   }, {} as Record<string, number>);
 
@@ -267,7 +284,7 @@ function calculateEnhancedAnalytics(
       };
     }
     acc[productId].totalSold += item.orders || 0;
-    acc[productId].totalRevenue += parseFloat(item.revenue || 0);
+    acc[productId].totalRevenue += Number(item.revenue ?? 0);
     return acc;
   }, {} as Record<string, ProductAggregate>);
 
@@ -277,12 +294,12 @@ function calculateEnhancedAnalytics(
     .slice(0, 5)
     .map((product: ProductAggregate) => ({
       productId: product.product_id,
-      productName: product.products?.name || 'Unknown Product',
+      productName: (product.products && product.products[0]?.name) || 'Unknown Product',
       totalSold: product.totalSold,
       revenue: product.totalRevenue,
       averageRating: 0, // Not available in current schema
-      imageUrl: product.products?.images && Array.isArray(product.products.images) && product.products.images.length > 0 
-        ? product.products.images[0] 
+      imageUrl: (product.products && product.products[0]?.images && Array.isArray(product.products[0].images) && product.products[0].images.length > 0)
+        ? product.products[0].images[0]
         : null
     }));
 
@@ -303,9 +320,13 @@ function calculateEnhancedAnalytics(
     acc[customerId].totalTimeSpent += item.time_spent || 0;
     return acc;
   }, {} as Record<string, {
-    customerId: string;
-    customerName: string;
-    customerEmail: string;
+    customer_id: string;
+    customer_profiles?: {
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      created_at?: string;
+    }[];
     totalSessions: number;
     totalPageViews: number;
     totalTimeSpent: number;
@@ -316,12 +337,13 @@ function calculateEnhancedAnalytics(
     const customerId = order.customer_id;
     if (!acc[customerId]) {
       acc[customerId] = {
+        customer_id: customerId,
         totalSpent: 0,
         totalOrders: 0,
         lastOrderDate: order.created_at
       };
     }
-    acc[customerId].totalSpent += parseFloat(order.total_amount || 0);
+    acc[customerId].totalSpent += Number(order.total_amount ?? 0);
     acc[customerId].totalOrders += 1;
     if (new Date(order.created_at) > new Date(acc[customerId].lastOrderDate)) {
       acc[customerId].lastOrderDate = order.created_at;
@@ -335,10 +357,11 @@ function calculateEnhancedAnalytics(
     .slice(0, 5)
     .map((spending: CustomerSpending) => {
       const customerData = customerAggregates[spending.customer_id];
+      const profile = customerData?.customer_profiles && customerData.customer_profiles[0];
       return {
         customerId: spending.customer_id,
-        customerName: customerData ? `${customerData.customer_profiles?.first_name || ''} ${customerData.customer_profiles?.last_name || ''}`.trim() : 'Unknown Customer',
-        customerEmail: customerData?.customer_profiles?.email || 'Unknown Email',
+        customerName: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Unknown Customer',
+        customerEmail: profile?.email || 'Unknown Email',
         totalSpent: spending.totalSpent,
         totalOrders: spending.totalOrders,
         averageOrderValue: spending.totalOrders > 0 ? spending.totalSpent / spending.totalOrders : 0,
@@ -351,8 +374,8 @@ function calculateEnhancedAnalytics(
     id: order.id,
     orderNumber: order.order_number,
     customerName: `${order.customer_profiles?.first_name || ''} ${order.customer_profiles?.last_name || ''}`.trim(),
-    customerEmail: order.customer_profiles?.email,
-    total: parseFloat(order.total_amount || 0),
+    customerEmail: order.customer_profiles?.email ?? 'Unknown Email',
+    total: Number(order.total_amount ?? 0),
     status: order.status,
     createdAt: order.created_at,
     itemCount: order.order_items?.length || 0

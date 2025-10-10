@@ -39,6 +39,7 @@ interface BaseSelectProps {
   loadingText?: string;
   noOptionsText?: string;
   onClear?: () => void;
+  maxSelectedDisplay?: number;
 }
 
 interface SingleSelectProps extends BaseSelectProps {
@@ -55,7 +56,6 @@ interface MultiSelectProps extends BaseSelectProps {
   defaultValue?: string[];
   onChange?: (value: string[]) => void;
   options: Option[];
-  maxSelectedDisplay?: number;
 }
 
 type SelectProps = SingleSelectProps | MultiSelectProps;

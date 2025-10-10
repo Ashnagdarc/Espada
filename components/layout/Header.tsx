@@ -34,7 +34,7 @@ const Header: React.FC = React.memo(() => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const { state: cartState } = useCart();
 
 
@@ -94,11 +94,8 @@ const Header: React.FC = React.memo(() => {
 
   const handleAccountClick = () => {
     setUserMenuOpen(false);
-    if (isAdmin) {
-      router.push('/admin');
-    } else {
-      router.push('/account');
-    }
+    // Auth is disabled: route to a neutral account page
+    router.push('/account');
   };
 
   return (
@@ -220,7 +217,7 @@ const Header: React.FC = React.memo(() => {
                       className="w-full text-left px-4 py-2 text-sm text-black dark:text-white hover:opacity-70 transition-opacity"
                       onClick={handleAccountClick}
                     >
-                      {isAdmin ? 'Admin Dashboard' : 'My Account'}
+                      My Account
                     </button>
                     <button
                       className="w-full text-left px-4 py-2 text-sm text-black dark:text-white hover:opacity-70 transition-opacity"
@@ -290,7 +287,7 @@ const Header: React.FC = React.memo(() => {
                       handleAccountClick();
                     }}
                   >
-                    {isAdmin ? 'Admin Dashboard' : 'My Account'}
+                    My Account
                   </button>
 
                   <button

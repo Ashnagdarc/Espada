@@ -29,7 +29,7 @@ interface ProductCardProps {
 
 export default function ProductCard({
   product,
-  layout = "grid", // eslint-disable-line @typescript-eslint/no-unused-vars
+  layout = "grid",
   className,
 }: ProductCardProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -163,7 +163,7 @@ export default function ProductCard({
 
     try {
       addItem({
-        id: product.id,
+        id: typeof product.id === "number" ? product.id : parseInt(String(product.id), 10),
         name: product.name,
         price: product.price,
         image: product.image,
@@ -194,10 +194,11 @@ export default function ProductCard({
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       layout
+      data-layout={layout}
     >
       <Link href={`/products/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-t-2xl">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
           <Image
             src={product.image}
             alt={product.name}
@@ -207,7 +208,7 @@ export default function ProductCard({
 
           {/* Wishlist Button */}
           <motion.div
-            className="absolute top-4 right-4 z-20"
+            className="absolute top-4 right-4 z-30"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -220,11 +221,10 @@ export default function ProductCard({
                 handleToggleLike();
               }}
               disabled={wishlistLoading}
+              aria-label="Toggle wishlist"
               className={cn(
-                "h-12 w-12 rounded-full backdrop-blur-md border border-white/20 dark:border-gray-600/50 shadow-lg transition-all duration-300",
-                isLiked
-                  ? "bg-red-500/90 hover:bg-red-500 text-white"
-                  : "bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400"
+                "btn-apple-icon backdrop-blur-md transition-all duration-200",
+                isLiked ? "text-apple-red-500" : ""
               )}
             >
               <motion.div

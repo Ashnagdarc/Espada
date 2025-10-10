@@ -58,8 +58,11 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Verify customer email matches
-    if (order.customer_profiles.email !== body.customer_email) {
+    // Verify customer email matches (handle relation array)
+    const profileEmail = Array.isArray(order.customer_profiles)
+      ? order.customer_profiles[0]?.email
+      : (order as any).customer_profiles?.email;
+    if (!profileEmail || profileEmail !== body.customer_email) {
       return NextResponse.json({
         success: false,
         error: 'Customer email does not match order'

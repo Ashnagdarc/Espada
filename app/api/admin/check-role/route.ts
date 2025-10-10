@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  void request;
   try {
     // Always return admin true since auth is removed
     return NextResponse.json({

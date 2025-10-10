@@ -9,7 +9,7 @@ const customStorage = {
     if (typeof window === 'undefined') return null;
     try {
       const value = localStorage.getItem(key);
-      console.log(`[Storage] GET ${key}:`, !!value ? 'found' : 'null');
+      console.log(`[Storage] GET ${key}:`, value ? 'found' : 'null');
       return value;
     } catch (error) {
       console.error(`[Storage] GET ERROR ${key}:`, error);

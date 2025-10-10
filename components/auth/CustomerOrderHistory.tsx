@@ -33,7 +33,7 @@ interface OrderItem {
 
 export function CustomerOrderHistory() {
   const { user, profile, isLoading: authLoading } = useAuth();
-  useToastActions();
+  const { error: showError } = useToastActions();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -74,9 +74,9 @@ export function CustomerOrderHistory() {
       })) || [];
 
       setOrders(formattedOrders);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      error('Failed to load order history');
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      showError('Failed to load order history');
     } finally {
       setIsLoading(false);
     }

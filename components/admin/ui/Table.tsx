@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { ChevronUp, ChevronDown, Search } from 'lucide-react'
 import Skeleton from './Skeleton'
 
-interface Column<T = Record<string, unknown>> {
-  key: keyof T
+interface Column<T extends object = any> {
+  key: string
   title: string
   dataIndex?: keyof T
   render?: (value: unknown, record: T, index: number) => React.ReactNode
@@ -15,7 +15,7 @@ interface Column<T = Record<string, unknown>> {
   fixed?: 'left' | 'right'
 }
 
-interface TableProps<T = Record<string, unknown>> {
+interface TableProps<T extends object = any> {
   columns: Column<T>[]
   data: T[]
   loading?: boolean
@@ -42,7 +42,7 @@ interface TableProps<T = Record<string, unknown>> {
   className?: string
 }
 
-const Table = <T extends Record<string, unknown>>({
+const Table = <T extends object>({
   columns,
   data,
   loading = false,
@@ -65,7 +65,11 @@ const Table = <T extends Record<string, unknown>>({
     if (typeof rowKey === 'function') {
       return rowKey(record)
     }
-    return record[rowKey] || index.toString()
+    const key = rowKey as keyof T
+    const value = record[key]
+    if (typeof value === 'string') return value
+    if (typeof value === 'number') return String(value)
+    return index.toString()
   }
 
   const handleSort = (columnKey: keyof T) => {
@@ -152,8 +156,8 @@ const Table = <T extends Record<string, unknown>>({
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800">
               {columns.map((column) => {
-                const isSorted = sortConfig?.key === column.key
-                const sortDirection = isSorted ? sortConfig.direction : null
+                const isSorted = column.dataIndex ? sortConfig?.key === column.dataIndex : false
+                const sortDirection = isSorted && sortConfig ? sortConfig.direction : null
                 
                 return (
                   <th
@@ -170,7 +174,7 @@ const Table = <T extends Record<string, unknown>>({
                       width: column.width,
                       fontFamily: 'Gilroy, sans-serif'
                     }}
-                    onClick={() => column.sortable && handleSort(column.key)}
+                    onClick={() => column.sortable && column.dataIndex && handleSort(column.dataIndex)}
                   >
                     <div className="flex items-center space-x-1">
                       <span>{column.title}</span>
@@ -216,10 +220,10 @@ const Table = <T extends Record<string, unknown>>({
                   onDoubleClick={rowProps.onDoubleClick}
                 >
                   {columns.map((column) => {
-                    const value = column.dataIndex ? record[column.dataIndex] : record[column.key]
-                    const cellContent = column.render 
+                    const value = column.dataIndex ? record[column.dataIndex] : undefined
+                    const cellContent: React.ReactNode = column.render 
                       ? column.render(value, record, index)
-                      : value
+                      : String(value ?? '')
                     
                     return (
                       <td

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Product } from '@/lib/admin/data';
+import { Product } from '@/lib/types/api';
 import { X, Plus, Minus, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface ProductFormProps {
@@ -129,15 +129,22 @@ export default function ProductForm({ product, onSubmit, onCancel, isLoading = f
     setFormData(prev => ({ ...prev, colors: prev.colors.filter(c => c !== color) }));
   };
 
-  const addImage = () => {
-    if (newImage && !formData.images.includes(newImage)) {
-      setFormData(prev => ({ ...prev, images: [...prev.images, newImage] }));
+  const addImage = (image?: string) => {
+    const value = image ?? newImage;
+    if (value && !formData.images.includes(value)) {
+      setFormData(prev => ({ ...prev, images: [...prev.images, value] }));
       setNewImage('');
     }
   };
 
-  const removeImage = (image: string) => {
-    setFormData(prev => ({ ...prev, images: prev.images.filter(img => img !== image) }));
+  const removeImage = (imageOrIndex: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      images:
+        typeof imageOrIndex === 'number'
+          ? prev.images.filter((_, idx) => idx !== imageOrIndex)
+          : prev.images.filter(img => img !== imageOrIndex)
+    }));
   };
 
   return (

@@ -234,6 +234,7 @@ function AdminProductsPageContent() {
                 key: 'product',
                 title: 'Product',
                 render: (value: unknown, product: Product) => {
+                  void value;
                   // Add null/undefined checks for product and its properties
                   if (!product) {
                     return (
@@ -294,36 +295,52 @@ function AdminProductsPageContent() {
               {
                 key: 'category',
                 title: 'Category',
-                render: (value: unknown, product: Product) => (
-                  <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
-                    {product?.category || 'Unknown'}
-                  </span>
-                )
+                render: (value: unknown, product: Product) => {
+                  void value;
+                  return (
+                    <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
+                      {product?.category || 'Unknown'}
+                    </span>
+                  );
+                }
               },
               {
                 key: 'price',
                 title: 'Price',
-                render: (value: unknown, product: Product) => (
-                  <span className="text-sm font-semibold text-black dark:text-white">
-                    ${product?.price || '0.00'}
-                  </span>
-                )
+                render: (value: unknown, product: Product) => {
+                  void value;
+                  return (
+                    <span className="text-sm font-semibold text-black dark:text-white">
+                      ${product?.price || '0.00'}
+                    </span>
+                  );
+                }
               },
               {
                 key: 'stock',
                 title: 'Stock',
-                render: (value: unknown, product: Product) => (
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {product?.stock_quantity ?? product?.stock ?? 0}
-                  </span>
-                )
+                render: (value: unknown, product: Product) => {
+                  void value;
+                  return (
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {product?.stock_quantity ?? product?.stock ?? 0}
+                    </span>
+                  );
+                }
               },
               {
                 key: 'status',
                 title: 'Status',
                 render: (value: unknown, product: Product) => {
+                  void value;
                   const stock = product?.stock_quantity ?? product?.stock ?? 0;
-                  return <StatusBadge status={getProductStatus(stock)} />;
+                  const productStatus = getProductStatus(stock);
+                  const badgeStatus = productStatus === 'in-stock'
+                    ? 'active'
+                    : productStatus === 'low-stock'
+                      ? 'pending'
+                      : 'cancelled';
+                  return <StatusBadge status={badgeStatus} />;
                 }
               },
               {
@@ -331,6 +348,7 @@ function AdminProductsPageContent() {
                 title: 'Actions',
                 align: 'right' as const,
                 render: (value: unknown, product: Product) => {
+                  void value;
                   if (!product || !product.id) {
                     return <div className="text-sm text-gray-500">No actions available</div>;
                   }
@@ -362,7 +380,7 @@ function AdminProductsPageContent() {
               }
             ]}
             loading={isLoading}
-            hover
+            hoverable
             striped
           />
         </motion.div>
@@ -428,7 +446,7 @@ function AdminProductsPageContent() {
         title="Delete Product"
         message={`Are you sure you want to delete "${deleteModal.productName}"? This action cannot be undone.`}
         confirmText="Delete Product"
-        type="danger"
+        variant="danger"
         isLoading={isDeleting}
       />
     </AdminLayout>

@@ -1,11 +1,12 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Eye, EyeOff, Search, X, Check, Loader2 } from 'lucide-react'
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+// Use framer-motion HTMLMotionProps to align event handler types (e.g., onDrag)
+interface InputProps extends Omit<HTMLMotionProps<'input'>, 'ref'> {
   label?: string
   error?: string
   helperText?: string
@@ -201,7 +202,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 SearchInput.displayName = 'SearchInput'
 
 // Textarea Component
-interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends Omit<HTMLMotionProps<'textarea'>, 'ref'> {
   label?: string
   error?: string
   helperText?: string
