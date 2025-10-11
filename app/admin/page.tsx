@@ -7,6 +7,8 @@ import { adminAPI } from '@/lib/admin/api';
 import { AnalyticsData } from '@/lib/types/api';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Card from '@/components/admin/ui/Card';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
 import {
   Users,
   ShoppingCart,
@@ -225,7 +227,7 @@ export default function AdminDashboard() {
   if (authLoading || isLoading) {
     return (
       <AdminLayout>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-8">
+        <AdminPage className="pt-2 pb-8">
           <div className="mb-6">
             <div className="h-8 w-48 bg-gray-100 dark:bg-gray-800 animate-pulse rounded mb-2" />
             <div className="h-4 w-32 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
@@ -240,7 +242,7 @@ export default function AdminDashboard() {
               <div key={i} className="h-32 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />
             ))}
           </div>
-        </div>
+        </AdminPage>
       </AdminLayout>
     );
   }
@@ -345,26 +347,25 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="w-full h-full pt-8 pr-8 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-white/60">
-            <Calendar className="w-4 h-4" />
-            <span>{new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}</span>
-          </div>
-        </div>
+      <AdminPage>
+        <PageHeader
+          title="Admin Dashboard"
+          actions={
+            <div className="flex items-center space-x-2 text-sm text-white/60">
+              <Calendar className="w-4 h-4" />
+              <span>{new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}</span>
+            </div>
+          }
+        />
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {quickStats.map((stat, index) => (
-            <div key={index} className="bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <Card key={index} appearance="panel" className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-white/10 rounded-lg">
                   <stat.icon className="w-6 h-6 text-white" />
@@ -381,17 +382,18 @@ export default function AdminDashboard() {
                 <p className="text-white/60 text-sm mb-1">{stat.title}</p>
                 <p className="text-2xl font-bold text-white">{stat.value}</p>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {navigationCards.map((card, index) => (
-            <div
+            <Card
               key={index}
               onClick={() => router.push(card.href)}
-              className="bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer hover:bg-white/5 transition-all duration-200 group hover:border-white/20"
+              appearance="panel"
+              className="p-6 cursor-pointer hover:bg-white/5 transition-all duration-200 group hover:border-white/20"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
@@ -405,12 +407,12 @@ export default function AdminDashboard() {
                 {card.description}
               </p>
               <p className="text-xs text-white/40">{card.stats}</p>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+        <Card appearance="panel" className="p-6">
           <h3 className="text-lg font-semibold mb-6 text-white">Recent Activity</h3>
           <div className="space-y-4">
             {stats.recentActivities && stats.recentActivities.length > 0 ? (
@@ -433,8 +435,8 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </Card>
+      </AdminPage>
     </AdminLayout>
   );
 }

@@ -10,6 +10,7 @@ interface CardProps {
   border?: boolean
   hover?: boolean
   onClick?: () => void
+  appearance?: 'default' | 'panel'
 }
 
 const Card: React.FC<CardProps> = ({
@@ -19,7 +20,8 @@ const Card: React.FC<CardProps> = ({
   shadow = 'sm',
   border = true,
   hover = false,
-  onClick
+  onClick,
+  appearance = 'default'
 }) => {
   const getPaddingClasses = () => {
     switch (padding) {
@@ -65,13 +67,17 @@ const Card: React.FC<CardProps> = ({
     return onClick ? 'cursor-pointer' : ''
   }
 
+  const baseClasses = appearance === 'panel'
+    ? 'bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl'
+    : 'bg-white dark:bg-gray-900 rounded-xl'
+
   return (
     <div
       className={`
-        bg-white dark:bg-gray-900 rounded-xl
+        ${baseClasses}
         ${getPaddingClasses()}
         ${getShadowClasses()}
-        ${getBorderClasses()}
+        ${appearance === 'panel' ? '' : getBorderClasses()}
         ${getHoverClasses()}
         ${getClickableClasses()}
         ${className}

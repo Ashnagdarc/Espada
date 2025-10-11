@@ -6,6 +6,7 @@ import { LocaleProvider } from "@/contexts/LocaleContext";
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
+import NoSSR from "@/components/ui/NoSSR";
 import "./globals.css";
 
 const gilroy = localFont({
@@ -47,31 +48,33 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preload critical fonts for better performance */}
-        <link
-          rel="preload"
-          href="/font/Gilroy-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/font/Gilroy-Medium.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/font/Gilroy-Semibold.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        {/* DNS prefetch for external resources */}
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        <NoSSR>
+          {/* Preload critical fonts for better performance */}
+          <link
+            rel="preload"
+            href="/font/Gilroy-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href="/font/Gilroy-Medium.woff2"
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href="/font/Gilroy-Semibold.woff2"
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          {/* DNS prefetch for external resources */}
+          <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+          <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        </NoSSR>
       </head>
       <body className={`${gilroy.variable} font-sans antialiased`}>
         <ThemeProvider

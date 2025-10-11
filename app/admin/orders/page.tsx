@@ -13,6 +13,8 @@ import Select from '@/components/admin/ui/Select'
 import Table from '@/components/admin/ui/Table'
 import Card from '@/components/admin/ui/Card'
 import { SkeletonTable } from '@/components/admin/ui/Skeleton'
+import AdminPage from '@/components/admin/ui/AdminPage'
+import PageHeader from '@/components/admin/ui/PageHeader'
 
 // Order interface matching database schema
 interface Order {
@@ -309,40 +311,35 @@ export default function AdminOrdersPage() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="space-y-6">
+        <AdminPage>
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold">Orders Management</h1>
           </div>
           <SkeletonTable rows={8} />
-        </div>
+        </AdminPage>
       </AdminLayout>
     )
   }
 
   return (
     <AdminLayout>
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold font-gilroy">
-            Orders Management
-          </h1>
-          <Button
-            variant="outline"
-            onClick={() => loadOrders(true)}
-            disabled={isRefreshing}
-            isLoading={isRefreshing}
-            leftIcon={<RefreshCw className="h-4 w-4" />}
-          >
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div>
+      <AdminPage>
+        <PageHeader
+          title="Orders Management"
+          actions={(
+            <Button
+              variant="outline"
+              onClick={() => loadOrders(true)}
+              disabled={isRefreshing}
+              isLoading={isRefreshing}
+              leftIcon={<RefreshCw className="h-4 w-4" />}
+            >
+              Refresh
+            </Button>
+          )}
+        />
         {/* Filters */}
-        <Card className="p-4 mb-6 bg-black border border-white/10">
+        <Card appearance="panel" className="p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <SearchInput
@@ -368,7 +365,7 @@ export default function AdminOrdersPage() {
 
         {/* Orders Table */}
         {filteredOrders.length === 0 ? (
-          <Card className="p-12 text-center bg-black border border-white/10">
+          <Card appearance="panel" className="p-12 text-center">
             <ShoppingCart className="mx-auto h-12 w-12 text-white/50 mb-4" />
             <h3 className="text-lg font-medium mb-2">
               No orders found
@@ -385,7 +382,7 @@ export default function AdminOrdersPage() {
             className="hover:bg-white/5"
           />
         )}
-      </div>
+      </AdminPage>
     </AdminLayout>
   )
 }

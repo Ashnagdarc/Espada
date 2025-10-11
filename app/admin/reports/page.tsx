@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 import { adminAPI } from '@/lib/admin/api';
 import { Download, Calendar, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, FileText, BarChart3, Loader2 } from 'lucide-react';
 import { useToastActions } from '@/hooks/useToast';
@@ -214,8 +217,8 @@ function ReportsPageContent() {
   if (fetchError) {
     return (
       <AdminLayout>
-        <div className="space-y-6 text-white">
-          <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 text-center">
+        <AdminPage>
+          <Card appearance="panel" className="p-6 text-center border-red-500/50 bg-red-500/10">
             <p className="text-red-400 mb-2">Error loading reports</p>
             <p className="text-white/70 text-sm">{fetchError}</p>
             <button
@@ -224,46 +227,45 @@ function ReportsPageContent() {
             >
               Try Again
             </button>
-          </div>
-        </div>
+          </Card>
+        </AdminPage>
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-      <div className="space-y-6 text-white">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Reports</h1>
-            <p className="text-white/60">Generate and view detailed business reports</p>
-          </div>
-          <div className="flex gap-3">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="border border-white/20 bg-black text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-white/40 focus:border-transparent"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
-            <button
-              onClick={handleExportReport}
-              disabled={exportLoading}
-              className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {exportLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              {exportLoading ? 'Exporting...' : 'Export'}
-            </button>
-          </div>
-        </div>
+      <AdminPage>
+        <PageHeader
+          title="Reports"
+          subtitle="Generate and view detailed business reports"
+          actions={(
+            <div className="flex gap-3">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="border border-white/20 bg-black text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-white/40 focus:border-transparent"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+              </select>
+              <button
+                onClick={handleExportReport}
+                disabled={exportLoading}
+                className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {exportLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {exportLoading ? 'Exporting...' : 'Export'}
+              </button>
+            </div>
+          )}
+        />
 
         {/* Report Type Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -294,10 +296,10 @@ function ReportsPageContent() {
 
         {/* Report Content */}
         {loading ? (
-          <div className="bg-black rounded-lg border border-white/10 p-8 text-center">
+          <Card appearance="panel" className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/60 mx-auto"></div>
             <p className="mt-2 text-white/60">Loading report data...</p>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-6">
             {selectedReport === 'sales' && reportData && (
@@ -328,7 +330,7 @@ function ReportsPageContent() {
                   />
                 </div>
 
-                <div className="bg-black rounded-lg border border-white/10 p-6">
+                <Card appearance="panel" className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Sales Trends</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
@@ -337,7 +339,7 @@ function ReportsPageContent() {
                       <p className="text-sm text-white/60">Integration with charting library needed</p>
                     </div>
                   </div>
-                </div>
+                </Card>
               </>
             )}
 
@@ -369,7 +371,7 @@ function ReportsPageContent() {
                   />
                 </div>
 
-                <div className="bg-black rounded-lg border border-white/10 p-6">
+                <Card appearance="panel" className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Customer Acquisition</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
@@ -378,7 +380,7 @@ function ReportsPageContent() {
                       <p className="text-sm text-white/60">Shows new vs returning customers over time</p>
                     </div>
                   </div>
-                </div>
+                </Card>
               </>
             )}
 
@@ -408,17 +410,17 @@ function ReportsPageContent() {
                   />
                 </div>
 
-                <div className="bg-black rounded-lg border border-white/10 p-6">
+                <Card appearance="panel" className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Category Performance</h3>
                   <div className="space-y-4">
                     {reportData.productReport.categoryPerformance.map((category) => (
-                      <div key={category.name} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                      <Card key={category.name} appearance="panel" className="p-3 flex items-center justify-between">
                         <span className="font-medium">{category.name}</span>
                         <span className="text-white/70">{formatCurrency(category.sales)}</span>
-                      </div>
+                      </Card>
                     ))}
                   </div>
-                </div>
+                </Card>
               </>
             )}
 
@@ -449,7 +451,7 @@ function ReportsPageContent() {
                   />
                 </div>
 
-                <div className="bg-black rounded-lg border border-white/10 p-6">
+                <Card appearance="panel" className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Order Status Distribution</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
@@ -458,42 +460,42 @@ function ReportsPageContent() {
                       <p className="text-sm text-white/60">Shows distribution of order statuses</p>
                     </div>
                   </div>
-                </div>
+                </Card>
               </>
             )}
           </div>
         )}
 
         {/* Quick Actions */}
-        <div className="bg-black rounded-lg border border-white/10 p-6">
+        <Card appearance="panel" className="p-6">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex items-center gap-3 p-4 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
               <FileText className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Generate Monthly Report</p>
                 <p className="text-sm text-white/60">Create comprehensive monthly summary</p>
               </div>
-            </button>
+            </Card>
 
-            <button className="flex items-center gap-3 p-4 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
               <Calendar className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Schedule Report</p>
                 <p className="text-sm text-white/60">Set up automated report delivery</p>
               </div>
-            </button>
+            </Card>
 
-            <button className="flex items-center gap-3 p-4 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
               <Download className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Export All Data</p>
                 <p className="text-sm text-white/60">Download complete dataset</p>
               </div>
-            </button>
+            </Card>
           </div>
-        </div>
-      </div>
+        </Card>
+      </AdminPage>
     </AdminLayout>
   );
 }

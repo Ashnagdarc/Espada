@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 import { Save, Store, Bell, Shield, Palette, Loader2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useToastActions } from '@/hooks/useToast';
@@ -175,45 +178,46 @@ function SettingsPageContent() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2 text-white">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading settings...</span>
+        <AdminPage>
+          <div className="flex items-center justify-center h-64">
+            <div className="flex items-center gap-2 text-white">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading settings...</span>
+            </div>
           </div>
-        </div>
+        </AdminPage>
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-      <div className="space-y-6 text-white">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Settings</h1>
-            <p className="text-white/60">Manage your store configuration and preferences</p>
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 disabled:opacity-50 flex items-center gap-2"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
+      <AdminPage>
+        <PageHeader
+          title="Settings"
+          subtitle="Manage your store configuration and preferences"
+          actions={(
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
+        />
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
+          <Card appearance="panel" className="px-4 py-3 text-red-200 border-red-500/50 bg-red-500/10">
             {error}
-          </div>
+          </Card>
         )}
 
         <div className="flex gap-6">
           {/* Sidebar */}
-          <div className="w-64 bg-black rounded-lg border border-white/10 p-4">
+          <Card appearance="panel" className="w-64 p-4">
             <nav className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -232,10 +236,10 @@ function SettingsPageContent() {
                 );
               })}
             </nav>
-          </div>
+          </Card>
 
           {/* Content */}
-          <div className="flex-1 bg-black rounded-lg border border-white/10 p-6">
+          <Card appearance="panel" className="flex-1 p-6">
             {activeTab === 'general' && (
               <div className="space-y-6">
                 <h2 className="text-lg font-semibold">General Settings</h2>
@@ -465,9 +469,9 @@ function SettingsPageContent() {
                 </div>
               </div>
             )}
-          </div>
+          </Card>
         </div>
-      </div>
+      </AdminPage>
     </AdminLayout>
   );
 }

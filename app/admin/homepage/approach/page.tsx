@@ -19,6 +19,9 @@ import {
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToastActions } from '@/hooks/useToast';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 
 interface ApproachImage {
   id?: string;
@@ -256,72 +259,63 @@ function ApproachEditorContent() {
   if (authLoading || isLoading) {
     return (
       <AdminLayout>
-        <div className="p-8">
+        <AdminPage>
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-white/10 rounded w-1/3"></div>
             <div className="h-64 bg-white/10 rounded-lg"></div>
           </div>
-        </div>
+        </AdminPage>
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/admin/homepage"
-              className="p-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Our Approach Editor</h1>
-              <p className="text-white/70">Manage the approach section content and images</p>
+      <AdminPage>
+        <PageHeader
+          title="Our Approach Editor"
+          subtitle="Manage the approach section content and images"
+          backHref="/admin/homepage"
+          actions={(
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setPreviewMode(!previewMode)}
+                className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+              >
+                {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                {previewMode ? 'Edit Mode' : 'Preview'}
+              </button>
+              
+              <select
+                value={approachSection.status}
+                onChange={(e) => setApproachSection(prev => ({ 
+                  ...prev, 
+                  status: e.target.value as 'draft' | 'published' | 'scheduled' 
+                }))}
+                className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+              
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-              {previewMode ? 'Edit Mode' : 'Preview'}
-            </button>
-            
-            <select
-              value={approachSection.status}
-              onChange={(e) => setApproachSection(prev => ({ 
-                ...prev, 
-                status: e.target.value as 'draft' | 'published' | 'scheduled' 
-              }))}
-              className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="scheduled">Scheduled</option>
-            </select>
-            
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
+          )}
+        />
 
 
 
         {previewMode ? (
           /* Preview Mode */
-          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+          <Card appearance="panel" className="p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Content */}
               <div>
@@ -365,13 +359,13 @@ function ApproachEditorContent() {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         ) : (
           /* Edit Mode */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Content Editor */}
             <div className="space-y-6">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <Card appearance="panel" className="p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Section Content</h2>
                 
                 <div className="space-y-4">
@@ -423,10 +417,10 @@ function ApproachEditorContent() {
                     />
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Features */}
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <Card appearance="panel" className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-white">Features</h2>
                   <button
@@ -440,7 +434,7 @@ function ApproachEditorContent() {
                 
                 <div className="space-y-4">
                   {approachSection.content.features.map((feature, index) => (
-                    <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-4">
+                    <Card key={index} appearance="panel" className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="text-sm font-medium text-white/70">Feature {index + 1}</h3>
                         <button
@@ -467,7 +461,7 @@ function ApproachEditorContent() {
                           placeholder="Feature description"
                         />
                       </div>
-                    </div>
+                    </Card>
                   ))}
                   
                   {approachSection.content.features.length === 0 && (
@@ -477,11 +471,11 @@ function ApproachEditorContent() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Image Manager */}
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <Card appearance="panel" className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-white">Approach Images</h2>
                 <label className="flex items-center px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
@@ -502,9 +496,10 @@ function ApproachEditorContent() {
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 border border-white/10 rounded-lg p-4"
+                    className=""
                   >
-                    <div className="flex items-start space-x-4">
+                    <Card appearance="panel" className="p-4">
+                      <div className="flex items-start space-x-4">
                       <div className="relative w-20 h-20 bg-white/10 rounded-lg overflow-hidden">
                         <Image
                           src={image.image_url}
@@ -540,19 +535,20 @@ function ApproachEditorContent() {
                           </button>
                         </div>
                       </div>
-                    </div>
+                      </div>
+                    </Card>
                   </motion.div>
                 ))}
                 
                 {approachSection.images.length === 0 && (
-                  <div className="text-center py-8 text-white/60">
+                  <Card appearance="panel" className="text-center py-8">
                     <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No images uploaded yet</p>
                     <p className="text-sm">Upload images to showcase your approach</p>
-                  </div>
+                  </Card>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>

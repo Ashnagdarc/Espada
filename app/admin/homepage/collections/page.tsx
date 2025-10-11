@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  ArrowLeft, 
   Save, 
   Search, 
   Plus, 
@@ -23,6 +21,9 @@ import {
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToastActions } from '@/hooks/useToast';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 
 interface Product {
   id: string;
@@ -250,73 +251,64 @@ function CollectionsManagerContent() {
   if (authLoading || isLoading) {
     return (
       <AdminLayout>
-        <div className="p-8">
+        <AdminPage>
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-white/10 rounded w-1/3"></div>
             <div className="h-64 bg-white/10 rounded-lg"></div>
           </div>
-        </div>
+        </AdminPage>
       </AdminLayout>
     );
   }
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/admin/homepage"
-              className="p-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">{getSectionTitle()} Manager</h1>
-              <p className="text-white/70">Manage products in the {getSectionTitle().toLowerCase()} section</p>
+      <AdminPage>
+        <PageHeader
+          title={`${getSectionTitle()} Manager`}
+          subtitle={`Manage products in the ${getSectionTitle().toLowerCase()} section`}
+          backHref="/admin/homepage"
+          actions={(
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setPreviewMode(!previewMode)}
+                className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+              >
+                {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                {previewMode ? 'Edit Mode' : 'Preview'}
+              </button>
+              
+              <select
+                aria-label="Section status"
+                value={section.status}
+                onChange={(e) => setSection(prev => ({ 
+                  ...prev, 
+                  status: e.target.value as 'draft' | 'published' | 'scheduled' 
+                }))}
+                className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+              
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-              {previewMode ? 'Edit Mode' : 'Preview'}
-            </button>
-            
-            <select
-              aria-label="Section status"
-              value={section.status}
-              onChange={(e) => setSection(prev => ({ 
-                ...prev, 
-                status: e.target.value as 'draft' | 'published' | 'scheduled' 
-              }))}
-              className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="scheduled">Scheduled</option>
-            </select>
-            
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
+          )}
+        />
 
 
 
         {previewMode ? (
           /* Preview Mode */
-          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+          <Card appearance="panel" className="p-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-white mb-4">
                 {section.content.title || getSectionTitle()}
@@ -328,7 +320,7 @@ function CollectionsManagerContent() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {section.collection_items.map((item, index) => (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                <Card key={index} appearance="panel" className="overflow-hidden">
                   {item.products?.images?.[0] && (
                     <div className="relative h-48">
                       <Image
@@ -343,16 +335,16 @@ function CollectionsManagerContent() {
                     <h3 className="font-semibold text-white mb-2">{item.products?.name}</h3>
                     <p className="text-white/70">${item.products?.price}</p>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
-          </div>
+          </Card>
         ) : (
           /* Edit Mode */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Content Editor */}
             <div className="lg:col-span-1">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <Card appearance="panel" className="p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Section Content</h2>
                 
                 <div className="space-y-4">
@@ -404,12 +396,12 @@ function CollectionsManagerContent() {
                     />
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Collection Manager */}
             <div className="lg:col-span-2">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <Card appearance="panel" className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white">Collection Products</h2>
                   <div className="flex items-center space-x-2">
@@ -430,7 +422,7 @@ function CollectionsManagerContent() {
                 </div>
                 
                 {section.collection_items.length === 0 ? (
-                  <div className="text-center py-12 text-white/60">
+                  <Card appearance="panel" className="text-center py-12">
                     <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-semibold mb-2">No products in collection</h3>
                     <p className="mb-4">Add products to start building your collection</p>
@@ -440,7 +432,7 @@ function CollectionsManagerContent() {
                     >
                       Add First Product
                     </button>
-                  </div>
+                  </Card>
                 ) : (
                   <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}>
                     {section.collection_items.map((item, index) => (
@@ -448,60 +440,59 @@ function CollectionsManagerContent() {
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`bg-white/5 border border-white/10 rounded-lg p-4 ${
-                          viewMode === 'list' ? 'flex items-center space-x-4' : ''
-                        }`}
                       >
-                        {item.products?.images?.[0] && (
-                          <div className={`relative bg-white/10 rounded-lg overflow-hidden ${
-                            viewMode === 'list' ? 'w-16 h-16 flex-shrink-0' : 'h-32 mb-3'
-                          }`}>
-                            <Image
-                              src={item.products.images[0]}
-                              alt={item.products.name}
-                              fill
-                              className="object-cover"
-                            />
+                        <Card appearance="panel" className={`p-4 ${viewMode === 'list' ? 'flex items-center space-x-4' : ''}`}>
+                          {item.products?.images?.[0] && (
+                            <div className={`relative bg-white/10 rounded-lg overflow-hidden ${
+                              viewMode === 'list' ? 'w-16 h-16 flex-shrink-0' : 'h-32 mb-3'
+                            }`}>
+                              <Image
+                                src={item.products.images[0]}
+                                alt={item.products.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className={viewMode === 'list' ? 'flex-1' : ''}>
+                            <h3 className="font-semibold text-white mb-1">{item.products?.name}</h3>
+                            <p className="text-white/70 text-sm mb-2">${item.products?.price}</p>
+                            <p className="text-white/50 text-xs mb-3">Order: {index + 1}</p>
                           </div>
-                        )}
-                        
-                        <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                          <h3 className="font-semibold text-white mb-1">{item.products?.name}</h3>
-                          <p className="text-white/70 text-sm mb-2">${item.products?.price}</p>
-                          <p className="text-white/50 text-xs mb-3">Order: {index + 1}</p>
-                        </div>
-                        
-                        <div className={`flex items-center space-x-2 ${viewMode === 'list' ? '' : 'mt-3'}`}>
-                          <button
-                            onClick={() => index > 0 && moveItem(index, index - 1)}
-                            disabled={index === 0}
-                            className="p-1 text-white/60 hover:text-white disabled:opacity-30 text-xs"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            onClick={() => index < section.collection_items.length - 1 && moveItem(index, index + 1)}
-                            disabled={index === section.collection_items.length - 1}
-                            className="p-1 text-white/60 hover:text-white disabled:opacity-30 text-xs"
-                            aria-label="Move item down"
-                            title="Move down"
-                          >
-                            ↓
-                          </button>
-                          <button
-                            onClick={() => removeFromCollection(index)}
-                            className="p-1 text-red-400 hover:text-red-300"
-                            aria-label="Remove item"
-                            title="Remove"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                          
+                          <div className={`flex items-center space-x-2 ${viewMode === 'list' ? '' : 'mt-3'}`}>
+                            <button
+                              onClick={() => index > 0 && moveItem(index, index - 1)}
+                              disabled={index === 0}
+                              className="p-1 text-white/60 hover:text-white disabled:opacity-30 text-xs"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              onClick={() => index < section.collection_items.length - 1 && moveItem(index, index + 1)}
+                              disabled={index === section.collection_items.length - 1}
+                              className="p-1 text-white/60 hover:text-white disabled:opacity-30 text-xs"
+                              aria-label="Move item down"
+                              title="Move down"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              onClick={() => removeFromCollection(index)}
+                              className="p-1 text-red-400 hover:text-red-300"
+                              aria-label="Remove item"
+                              title="Remove"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </Card>
                       </motion.div>
                     ))}
                   </div>
                 )}
-              </div>
+              </Card>
             </div>
           </div>
         )}
@@ -555,12 +546,13 @@ function CollectionsManagerContent() {
                     const isAdded = section.collection_items.some(item => item.product_id === product.id);
                     
                     return (
-                      <div
+                      <Card
                         key={product.id}
-                        className={`bg-white/5 border rounded-lg p-4 cursor-pointer transition-colors ${
+                        appearance="panel"
+                        className={`p-4 cursor-pointer transition-colors ${
                           isAdded 
                             ? 'border-green-500/50 bg-green-500/10' 
-                            : 'border-white/10 hover:bg-white/10'
+                            : 'hover:bg-white/10'
                         }`}
                         onClick={() => !isAdded && addProductToCollection(product)}
                       >
@@ -582,7 +574,7 @@ function CollectionsManagerContent() {
                           {product.featured && <Star className="w-4 h-4 text-yellow-400" />}
                           {isAdded && <CheckCircle className="w-4 h-4 text-green-400" />}
                         </div>
-                      </div>
+                      </Card>
                     );
                   })}
                 </div>
@@ -597,7 +589,7 @@ function CollectionsManagerContent() {
             </div>
           </div>
         )}
-      </div>
+      </AdminPage>
     </AdminLayout>
   );
 }

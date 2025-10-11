@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 import { Search, Filter, UserPlus, Mail, Phone, MapPin, Eye, Edit, Trash2, X, Calendar, ShoppingBag, DollarSign, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
@@ -307,30 +310,27 @@ function CustomersPageContent() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 text-white">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Customers</h1>
-            <p className="text-white/60">
-              Manage your customer base and view customer details ({totalCustomers} total)
-            </p>
-          </div>
-          <button className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Add Customer
-          </button>
-        </div>
+      <AdminPage>
+        <PageHeader
+          title="Customers"
+          subtitle={`Manage your customer base and view customer details (${totalCustomers} total)`}
+          actions={(
+            <button className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add Customer
+            </button>
+          )}
+        />
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
+          <Card appearance="panel" className="px-4 py-3 text-red-200 border-red-500/50 bg-red-500/10">
             {error}
-          </div>
+          </Card>
         )}
 
         {/* Search and Filter */}
-        <div className="flex gap-4 items-center">
+        <Card appearance="panel" className="flex gap-4 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
             <input
@@ -353,10 +353,10 @@ function CustomersPageContent() {
               <option value="inactive">Inactive</option>
             </select>
           </div>
-        </div>
+        </Card>
 
         {/* Customers Table */}
-        <div className="bg-black rounded-lg border border-white/10 overflow-hidden">
+        <Card appearance="panel" className="overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
               <div className="flex items-center justify-center gap-2">
@@ -471,7 +471,7 @@ function CustomersPageContent() {
 
           {/* Empty State */}
           {!loading && filteredCustomers.length === 0 && (
-            <div className="text-center py-12">
+            <Card appearance="panel" className="text-center py-12">
               <UserPlus className="mx-auto h-12 w-12 text-white/60" />
               <h3 className="mt-2 text-sm font-medium">No customers found</h3>
               <p className="mt-1 text-sm text-white/60">
@@ -479,9 +479,9 @@ function CustomersPageContent() {
                   ? 'Try adjusting your search or filter criteria.'
                   : 'Get started by adding your first customer.'}
               </p>
-            </div>
+            </Card>
           )}
-        </div>
+        </Card>
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -514,7 +514,7 @@ function CustomersPageContent() {
         {/* View Customer Modal */}
         {viewModalOpen && selectedCustomer && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-black border border-white/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <Card appearance="panel" className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-white/10">
                 <h2 className="text-xl font-bold text-white">Customer Details</h2>
                 <button 
@@ -612,7 +612,7 @@ function CustomersPageContent() {
                     <h3 className="text-lg font-semibold text-white mb-4">Addresses</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {customerAddresses.map((address) => (
-                        <div key={address.id} className="p-4 border border-white/10 rounded-lg">
+                        <Card key={address.id} appearance="panel" className="p-4">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-white capitalize">{address.type}</span>
                             {address.is_default && (
@@ -625,20 +625,20 @@ function CustomersPageContent() {
                             <p>{address.city}, {address.state} {address.postal_code}</p>
                             <p>{address.country}</p>
                           </div>
-                        </div>
+                        </Card>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         )}
 
         {/* Edit Customer Modal */}
         {editModalOpen && editForm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-black border border-white/20 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <Card appearance="panel" className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-6 border-b border-white/10">
                 <h2 className="text-xl font-bold text-white">Edit Customer</h2>
                 <button 
@@ -756,7 +756,7 @@ function CustomersPageContent() {
                     </div>
                   </div>
                   
-                  <div className="flex justify-end gap-3 pt-4">
+                  <div className="flex justify-end gap-3 mt-6 border-t border-white/10 pt-4">
                     <button
                       type="button"
                       onClick={closeModals}
@@ -775,7 +775,7 @@ function CustomersPageContent() {
                   </div>
                 </form>
               </div>
-            </div>
+            </Card>
           </div>
         )}
 
@@ -790,7 +790,7 @@ function CustomersPageContent() {
           onCancel={() => setConfirmDeleteOpen(false)}
           variant="danger"
         />
-      </div>
+      </AdminPage>
     </AdminLayout>
   );
 }

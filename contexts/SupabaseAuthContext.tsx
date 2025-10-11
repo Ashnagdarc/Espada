@@ -37,8 +37,9 @@ interface AuthContextType {
   isAdmin: boolean;
 }
 
-const defaultUser: User = { id: "anon", email: "admin@local" };
-const defaultProfile: UserProfile = { id: "anon", email: "admin@local", role: "admin" };
+// When auth is disabled for local/dev, treat user as unauthenticated
+const defaultUser: User | null = null;
+const defaultProfile: UserProfile | null = null;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -52,7 +53,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     signUp: async () => ({ error: "Auth disabled" }),
     signOut: async () => Promise.resolve(),
     updateProfile: async () => ({ error: "Auth disabled" }),
-    isAdmin: true,
+    // Do not force admin; default to non-admin
+    isAdmin: false,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

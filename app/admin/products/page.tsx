@@ -16,6 +16,8 @@ import { StatusBadge } from '@/components/admin/ui/Badge'
 import Card from '@/components/admin/ui/Card'
 import { type Product } from '@/lib/admin/data'
 import { adminFetch } from '@/lib/admin/api'
+import AdminPage from '@/components/admin/ui/AdminPage'
+import PageHeader from '@/components/admin/ui/PageHeader'
 
 // Helper function to determine product status based on stock
 const getProductStatus = (stock: number) => {
@@ -133,59 +135,52 @@ function AdminProductsPageContent() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <motion.div
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <SkeletonTable rows={8} />
-        </motion.div>
+        <AdminPage>
+          <motion.div
+            className="space-y-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <SkeletonTable rows={8} />
+          </motion.div>
+        </AdminPage>
       </AdminLayout>
     )
   }
 
   return (
     <AdminLayout>
-      <motion.div
-        className="space-y-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {/* Header */}
+      <AdminPage>
         <motion.div
-          className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div>
-            <h1 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-3xl font-bold">
-              Products Management
-            </h1>
-            <p style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-white/60 mt-1">
-              Manage your product inventory and details
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              isLoading={isRefreshing}
-              leftIcon={<RefreshCw className="w-4 h-4" />}
-            >
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => router.push('/admin/products/new')}
-              leftIcon={<Plus className="w-4 h-4" />}
-            >
-              Add Product
-            </Button>
-          </div>
+          <PageHeader
+            title="Products Management"
+            subtitle="Manage your product inventory and details"
+            actions={(
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  isLoading={isRefreshing}
+                  leftIcon={<RefreshCw className="w-4 h-4" />}
+                >
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => router.push('/admin/products/new')}
+                  leftIcon={<Plus className="w-4 h-4" />}
+                >
+                  Add Product
+                </Button>
+              </div>
+            )}
+          />
         </motion.div>
 
         {/* Main Content */}
@@ -195,7 +190,7 @@ function AdminProductsPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="p-6 bg-black border border-white/10">
+          <Card appearance="panel" className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <SearchInput
@@ -395,56 +390,57 @@ function AdminProductsPageContent() {
 
         {filteredProducts.length === 0 && (
           <motion.div
-            className="text-center py-16 bg-white dark:bg-black rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <motion.div
-              className="text-gray-400 dark:text-gray-600 mb-4"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.6, type: "spring" }}
-            >
-              <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-4h-2M4 9h2" />
-              </svg>
-            </motion.div>
-            <motion.h3
-              className="text-xl font-semibold text-gray-900 dark:text-white mb-2"
-              style={{ fontFamily: 'Gilroy, sans-serif' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
-            >
-              No products found
-            </motion.h3>
-            <motion.p
-              className="text-gray-500 dark:text-gray-400 mb-6"
-              style={{ fontFamily: 'Gilroy, sans-serif' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-            >
-              {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters to find products' : 'Get started by adding your first product to the inventory'}
-            </motion.p>
-            {(!searchTerm && selectedCategory === 'all') && (
-              <motion.button
-                onClick={() => router.push('/admin/products/new')}
-                className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-black px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-sm"
-                style={{ fontFamily: 'Gilroy, sans-serif' }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.9 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <Card appearance="panel" className="text-center py-16">
+              <motion.div
+                className="text-gray-400 dark:text-gray-600 mb-4"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.6, type: "spring" }}
               >
-                Add Your First Product
-              </motion.button>
-            )}
+                <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-4h-2M4 9h2" />
+                </svg>
+              </motion.div>
+              <motion.h3
+                className="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+                style={{ fontFamily: 'Gilroy, sans-serif' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                No products found
+              </motion.h3>
+              <motion.p
+                className="text-gray-500 dark:text-gray-400 mb-6"
+                style={{ fontFamily: 'Gilroy, sans-serif' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+              >
+                {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters to find products' : 'Get started by adding your first product to the inventory'}
+              </motion.p>
+              {(!searchTerm && selectedCategory === 'all') && (
+                <motion.button
+                  onClick={() => router.push('/admin/products/new')}
+                  className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-black px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                  style={{ fontFamily: 'Gilroy, sans-serif' }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.9 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Add Your First Product
+                </motion.button>
+              )}
+            </Card>
           </motion.div>
         )}
-      </motion.div>
+      </AdminPage>
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal

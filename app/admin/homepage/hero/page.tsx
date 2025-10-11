@@ -17,6 +17,9 @@ import {
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToastActions } from '@/hooks/useToast';
+import AdminPage from '@/components/admin/ui/AdminPage';
+import PageHeader from '@/components/admin/ui/PageHeader';
+import Card from '@/components/admin/ui/Card';
 
 interface HeroImage {
   id?: string;
@@ -264,61 +267,52 @@ function HeroEditorContent() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/admin/homepage"
-              className="p-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Hero Section Editor</h1>
-              <p className="text-white/70">Manage the main hero section of your homepage</p>
+      <AdminPage>
+        <PageHeader
+          title="Hero Section Editor"
+          subtitle="Manage the main hero section of your homepage"
+          backHref="/admin/homepage"
+          actions={(
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setPreviewMode(!previewMode)}
+                className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+              >
+                {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                {previewMode ? 'Edit Mode' : 'Preview'}
+              </button>
+              
+              <select
+                value={heroSection.status}
+                onChange={(e) => setHeroSection(prev => ({ 
+                  ...prev, 
+                  status: e.target.value as 'draft' | 'published' | 'scheduled' 
+                }))}
+                className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
+                aria-label="Section status"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+              
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-            >
-              {previewMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-              {previewMode ? 'Edit Mode' : 'Preview'}
-            </button>
-            
-            <select
-              value={heroSection.status}
-              onChange={(e) => setHeroSection(prev => ({ 
-                ...prev, 
-                status: e.target.value as 'draft' | 'published' | 'scheduled' 
-              }))}
-              className="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none"
-              aria-label="Section status"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="scheduled">Scheduled</option>
-            </select>
-            
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center px-6 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
+          )}
+        />
 
 
 
         {previewMode ? (
           /* Preview Mode */
-          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+          <Card appearance="panel" className="p-8">
             <div className="relative h-96 bg-gradient-to-r from-purple-900 to-blue-900 rounded-lg overflow-hidden">
               {heroSection.images.length > 0 && (
                 <Image
@@ -345,13 +339,13 @@ function HeroEditorContent() {
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         ) : (
           /* Edit Mode */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Content Editor */}
             <div className="space-y-6">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <Card appearance="panel" className="p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Content</h2>
                 
                 <div className="space-y-4">
@@ -387,10 +381,10 @@ function HeroEditorContent() {
                     />
                   </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Categories */}
-              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <Card appearance="panel" className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-white">Category Links</h2>
                   <button
@@ -430,7 +424,7 @@ function HeroEditorContent() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Image Manager */}
@@ -455,64 +449,66 @@ function HeroEditorContent() {
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 border border-white/10 rounded-lg p-4"
+                    className=""
                   >
-                    <div className="flex items-start space-x-4">
-                      <div className="relative w-20 h-20 bg-white/10 rounded-lg overflow-hidden">
-                        <Image
-                          src={image.image_url}
-                          alt={image.alt_text || 'Hero image'}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      
-                      <div className="flex-1 space-y-2">
-                        <input
-                          type="text"
-                          value={image.alt_text}
-                          onChange={(e) => updateImageAlt(index, e.target.value)}
-                          className="w-full px-3 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none text-sm"
-                          placeholder="Alt text"
-                        />
+                    <Card appearance="panel" className="p-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative w-20 h-20 bg-white/10 rounded-lg overflow-hidden">
+                          <Image
+                            src={image.image_url}
+                            alt={image.alt_text || 'Hero image'}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                         
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => index > 0 && moveImage(index, index - 1)}
-                            disabled={index === 0}
-                            className="p-1 text-white/60 hover:text-white disabled:opacity-30"
-                            aria-label={`Move image ${index + 1} up`}
-                            title="Move up"
-                          >
-                            <Move className="w-4 h-4" />
-                          </button>
-                          <span className="text-xs text-white/60">Order: {index + 1}</span>
-                          <button
-                            onClick={() => removeImage(index)}
-                            className="p-1 text-red-400 hover:text-red-300"
-                            aria-label={`Remove image ${index + 1}`}
-                            title="Remove image"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={image.alt_text}
+                            onChange={(e) => updateImageAlt(index, e.target.value)}
+                            className="w-full px-3 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-white/40 focus:outline-none text-sm"
+                            placeholder="Alt text"
+                          />
+                          
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => index > 0 && moveImage(index, index - 1)}
+                              disabled={index === 0}
+                              className="p-1 text-white/60 hover:text-white disabled:opacity-30"
+                              aria-label={`Move image ${index + 1} up`}
+                              title="Move up"
+                            >
+                              <Move className="w-4 h-4" />
+                            </button>
+                            <span className="text-xs text-white/60">Order: {index + 1}</span>
+                            <button
+                              onClick={() => removeImage(index)}
+                              className="p-1 text-red-400 hover:text-red-300"
+                              aria-label={`Remove image ${index + 1}`}
+                              title="Remove image"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   </motion.div>
                 ))}
                 
                 {heroSection.images.length === 0 && (
-                  <div className="text-center py-8 text-white/60">
+                  <Card appearance="panel" className="text-center py-8">
                     <Upload className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No images uploaded yet</p>
                     <p className="text-sm">Upload images to display in the hero section</p>
-                  </div>
+                  </Card>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         )}
-      </div>
+      </AdminPage>
     </AdminLayout>
   );
 }
