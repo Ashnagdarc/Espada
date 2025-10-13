@@ -2,43 +2,61 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { CustomerProfile } from '@/components/auth/CustomerProfile';
 import { CustomerOrderHistory } from '@/components/auth/CustomerOrderHistory';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { User, Package, Settings, Heart, CreditCard } from 'lucide-react';
+import { User, Package, Settings, Heart, CreditCard, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 type TabType = 'profile' | 'orders' | 'wishlist' | 'settings';
 
 function AccountContent() {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading, signOut } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
 
   useEffect(() => {
+    if (isLoading) return;
+    
     if (!user) {
-      // Redirect to signin page
       router.push('/signin?redirect=/account');
-    } else if (!isLoading && isAdmin) {
-      // If user is admin, redirect to admin dashboard
-      console.log('👑 Admin detected, redirecting to /admin');
+      return;
+    }
+    
+    if (isAdmin) {
       router.push('/admin');
+      return;
     }
   }, [user, router, isLoading, isAdmin]);
 
-  if (!user) {
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      router.push('/');
+    } catch (error) {
+      toast.error('Error signing out');
+    }
+  };
+
+  // Show loading state
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-md mx-auto flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Redirecting to sign in...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading your account...</p>
         </div>
       </div>
     );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!user || isAdmin) {
+    return null;
   }
 
   const tabs = [
@@ -65,7 +83,7 @@ function AccountContent() {
               Save items you love to your wishlist and shop them later.
             </p>
             <Button
-              onClick={() => window.location.href = '/products'}
+              onClick={() => router.push('/products')}
               className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
             >
               Browse Products
@@ -79,6 +97,18 @@ function AccountContent() {
               Account Settings
             </h2>
             <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Email</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {user?.email}
+                  </p>
+                </div>
+                <Button variant="outline" className="text-gray-600 dark:text-gray-400">
+                  Change Email
+                </Button>
+              </div>
+
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">Password</h3>
@@ -143,13 +173,23 @@ function AccountContent() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            My Account
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your profile, orders, and account settings
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              My Account
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage your profile, orders, and account settings
+            </p>
+          </div>
+          <Button
+            onClick={handleSignOut}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

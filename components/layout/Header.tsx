@@ -13,7 +13,7 @@ import {
   Search
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 
 const navLinks = [
@@ -34,10 +34,8 @@ const Header: React.FC = React.memo(() => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
   const { state: cartState } = useCart();
-
-
 
   // Prevent hydration mismatch for theme toggle
   useEffect(() => {

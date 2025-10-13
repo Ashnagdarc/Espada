@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { adminAPI } from '@/lib/admin/api';
 import { AnalyticsData } from '@/lib/types/api';
 import AdminLayout from '@/components/admin/AdminLayout';

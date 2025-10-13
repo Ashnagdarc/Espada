@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  ArrowLeft, 
   Save, 
   Upload, 
   Plus, 
@@ -17,7 +16,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToastActions } from '@/hooks/useToast';
 import AdminPage from '@/components/admin/ui/AdminPage';
 import PageHeader from '@/components/admin/ui/PageHeader';
@@ -275,7 +274,6 @@ function ApproachEditorContent() {
         <PageHeader
           title="Our Approach Editor"
           subtitle="Manage the approach section content and images"
-          backHref="/admin/homepage"
           actions={(
             <div className="flex items-center space-x-4">
               <button
@@ -546,12 +544,11 @@ function ApproachEditorContent() {
                     <p>No images uploaded yet</p>
                     <p className="text-sm">Upload images to showcase your approach</p>
                   </Card>
-                )}
-              </div>
+                )}              </div>
             </Card>
           </div>
         )}
-      </div>
+      </AdminPage>
     </AdminLayout>
   );
 }

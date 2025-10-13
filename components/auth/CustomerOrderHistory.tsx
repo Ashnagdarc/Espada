@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { Package, Calendar, CreditCard, Eye, Download, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useToastActions } from '@/hooks/useToast';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 interface Order {
@@ -33,7 +33,6 @@ interface OrderItem {
 
 export function CustomerOrderHistory() {
   const { user, profile, isLoading: authLoading } = useAuth();
-  const { error: showError } = useToastActions();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -76,7 +75,7 @@ export function CustomerOrderHistory() {
       setOrders(formattedOrders);
     } catch (err) {
       console.error('Error fetching orders:', err);
-      showError('Failed to load order history');
+      toast.error('Failed to load order history');
     } finally {
       setIsLoading(false);
     }

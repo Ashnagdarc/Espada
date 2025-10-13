@@ -1,18 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, LogOut } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useToastActions } from '@/hooks/useToast';
-import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export function CustomerProfile() {
-  const { user, profile, updateProfile, isLoading, signOut } = useAuth();
-  const { success, error: showError } = useToastActions();
+  const { user, profile, updateProfile, isLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: profile?.first_name || '',
@@ -24,7 +22,6 @@ export function CustomerProfile() {
     country: profile?.country || '',
   });
   const [isSaving, setIsSaving] = useState(false);
-  const router = useRouter();
 
   React.useEffect(() => {
     if (profile) {
@@ -57,10 +54,10 @@ export function CustomerProfile() {
         country: formData.country,
       });
       setIsEditing(false);
-      success('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (err) {
       console.error('Error updating profile:', err);
-      showError('Failed to update profile');
+      toast.error('Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -77,17 +74,6 @@ export function CustomerProfile() {
       country: profile?.country || '',
     });
     setIsEditing(false);
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      success('Signed out successfully');
-      router.push('/');
-    } catch (err) {
-      console.error('Sign out error:', err);
-      showError('Failed to sign out');
-    }
   };
 
   if (isLoading) {
@@ -115,30 +101,20 @@ export function CustomerProfile() {
     >
       {/* Profile Header */}
       <Card className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-white dark:text-black" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {profile?.first_name} {profile?.last_name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
-              <div className="flex items-center mt-1 text-sm text-gray-500">
-                <Calendar className="w-4 h-4 mr-1" />
-                Member since {new Date(profile?.created_at || '').toLocaleDateString()}
-              </div>
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-black dark:bg-white rounded-full flex items-center justify-center">
+            <User className="w-8 h-8 text-white dark:text-black" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {profile?.first_name} {profile?.last_name}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+            <div className="flex items-center mt-1 text-sm text-gray-500">
+              <Calendar className="w-4 h-4 mr-1" />
+              Member since {new Date(profile?.created_at || '').toLocaleDateString()}
             </div>
           </div>
-          <Button
-            onClick={handleSignOut}
-            variant="outline"
-            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
         </div>
       </Card>
 
@@ -216,8 +192,9 @@ export function CustomerProfile() {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="email"
-                value={user?.email || ''}
-                disabled
+                placeholder="Email"
+                value={user.email || ''}
+                disabled={true}
                 className="pl-10 bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-60"
               />
             </div>
@@ -251,68 +228,41 @@ export function CustomerProfile() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="City"
                 value={formData.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
                 disabled={!isEditing}
-                className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
               />
+            </div>
+
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Postal code"
                 value={formData.postalCode}
                 onChange={(e) => handleInputChange('postalCode', e.target.value)}
                 disabled={!isEditing}
-                className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
               />
             </div>
 
-            <Input
-              type="text"
-              placeholder="Country"
-              value={formData.country}
-              onChange={(e) => handleInputChange('country', e.target.value)}
-              disabled={!isEditing}
-              className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Account Settings */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Account Settings
-        </h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">Email Notifications</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Receive updates about your orders and new products
-              </p>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Country"
+                value={formData.country}
+                onChange={(e) => handleInputChange('country', e.target.value)}
+                disabled={!isEditing}
+                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+              />
             </div>
-            <input
-              type="checkbox"
-              defaultChecked
-              className="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded focus:ring-black dark:focus:ring-white dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">Marketing Communications</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Receive promotional emails and special offers
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              className="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded focus:ring-black dark:focus:ring-white dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-            />
           </div>
         </div>
       </Card>

@@ -15,7 +15,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToastActions } from '@/hooks/useToast';
 
 interface HomepageSection {

@@ -19,7 +19,7 @@ import {
   Package
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToastActions } from '@/hooks/useToast';
 import AdminPage from '@/components/admin/ui/AdminPage';
 import PageHeader from '@/components/admin/ui/PageHeader';
@@ -267,7 +267,6 @@ function CollectionsManagerContent() {
         <PageHeader
           title={`${getSectionTitle()} Manager`}
           subtitle={`Manage products in the ${getSectionTitle().toLowerCase()} section`}
-          backHref="/admin/homepage"
           actions={(
             <div className="flex items-center space-x-4">
               <button

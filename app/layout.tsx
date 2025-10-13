@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
 import NoSSR from "@/components/ui/NoSSR";
@@ -94,7 +95,9 @@ export default function RootLayout({
                 </div>
               }>
                 <SupabaseAuthProvider>
-                  {children}
+                  <AuthGuard>
+                    {children}
+                  </AuthGuard>
                   <Toaster 
                     position="top-right"
                     richColors

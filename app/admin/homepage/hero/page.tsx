@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  ArrowLeft, 
   Save, 
   Upload, 
   Plus, 
@@ -15,7 +14,7 @@ import {
   Move
 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToastActions } from '@/hooks/useToast';
 import AdminPage from '@/components/admin/ui/AdminPage';
 import PageHeader from '@/components/admin/ui/PageHeader';
@@ -270,8 +269,7 @@ function HeroEditorContent() {
       <AdminPage>
         <PageHeader
           title="Hero Section Editor"
-          subtitle="Manage the main hero section of your homepage"
-          backHref="/admin/homepage"
+          subtitle="Manage the main hero section content and images"
           actions={(
             <div className="flex items-center space-x-4">
               <button
@@ -505,7 +503,7 @@ function HeroEditorContent() {
                   </Card>
                 )}
               </div>
-            </Card>
+            </div>
           </div>
         )}
       </AdminPage>
