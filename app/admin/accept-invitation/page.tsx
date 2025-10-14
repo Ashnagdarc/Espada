@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Shield, Eye, EyeOff, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface InvitationData {

@@ -34,7 +34,7 @@ const Header: React.FC = React.memo(() => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, signOut, isLoading } = useAuth();
+  const { user, signOut } = useAuth();
   const { state: cartState } = useCart();
 
   // Prevent hydration mismatch for theme toggle

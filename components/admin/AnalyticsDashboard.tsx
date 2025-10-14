@@ -1,8 +1,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// Using a flexible type for analytics response to accommodate evolving API shape
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, Users, Calendar, BarChart3 } from 'lucide-react';
+
+// Analytics data interfaces
+interface OrderStatus {
+  status: string;
+  count: number;
+  revenue: number;
+}
+
+interface CategoryRevenue {
+  category: string;
+  revenue: number;
+}
+
+interface SalesTrend {
+  date: string;
+  sales: number;
+}
+
+interface AnalyticsData {
+  totalRevenue: number;
+  revenueGrowth: number;
+  totalOrders: number;
+  orderGrowth: number;
+  totalProducts: number;
+  averageOrderValue: number;
+  aovGrowth: number;
+  conversionRate: number;
+  conversionGrowth: number;
+  lowStockProducts: number;
+  featuredProducts: number;
+  salesTrend: SalesTrend[];
+  ordersByStatus: OrderStatus[];
+  revenueByCategory: CategoryRevenue[];
+  totalItemsSold: number;
+}
 
 interface MetricCardProps {
   title: string;
@@ -147,7 +181,7 @@ function StatusBreakdown({ data }: StatusBreakdownProps) {
 }
 
 export default function AnalyticsDashboard() {
-  const [analytics, setAnalytics] = useState<any | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
@@ -280,8 +314,8 @@ export default function AnalyticsDashboard() {
             Revenue by Category
           </h3>
           <div className="space-y-3">
-            {analytics.revenueByCategory.slice(0, 5).map((category: any, index: number) => {
-              const maxRevenue = Math.max(...analytics.revenueByCategory.map((c: any) => c.revenue));
+            {analytics.revenueByCategory.slice(0, 5).map((category: CategoryRevenue, index: number) => {
+              const maxRevenue = Math.max(...analytics.revenueByCategory.map((c: CategoryRevenue) => c.revenue));
               const percentage = (category.revenue / maxRevenue) * 100;
               
               return (
@@ -315,25 +349,25 @@ export default function AnalyticsDashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>Pending Orders</span>
               <span className="text-sm font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                {analytics.ordersByStatus.find((s: any) => s.status === 'pending')?.count || 0}
+                {analytics.ordersByStatus.find((s: OrderStatus) => s.status === 'pending')?.count || 0}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>Processing Orders</span>
               <span className="text-sm font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                {analytics.ordersByStatus.find((s: any) => s.status === 'processing')?.count || 0}
+                {analytics.ordersByStatus.find((s: OrderStatus) => s.status === 'processing')?.count || 0}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>Shipped Orders</span>
               <span className="text-sm font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                {analytics.ordersByStatus.find((s: any) => s.status === 'shipped')?.count || 0}
+                {analytics.ordersByStatus.find((s: OrderStatus) => s.status === 'shipped')?.count || 0}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600" style={{ fontFamily: 'Gilroy, sans-serif' }}>Delivered Orders</span>
               <span className="text-sm font-medium text-black" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                {analytics.ordersByStatus.find((s: any) => s.status === 'delivered')?.count || 0}
+                {analytics.ordersByStatus.find((s: OrderStatus) => s.status === 'delivered')?.count || 0}
               </span>
             </div>
             <hr className="my-2" />

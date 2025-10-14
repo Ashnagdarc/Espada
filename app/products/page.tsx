@@ -203,7 +203,7 @@ function ProductsPageContent() {
         // Provide an abort reason to avoid noisy logs in some runtimes
         try {
           controller.abort("unmount");
-        } catch (_) {
+        } catch {
           // Fallback for environments without reason support
           controller.abort();
         }
