@@ -7,7 +7,7 @@ import { Heart } from "lucide-react";
 
 import Header from "@/components/layout/Header";
 import AppleButton from "@/components/apple/AppleButton";
-import { useTranslations } from "@/contexts/LocaleContext";
+import { useTranslations } from "@/hooks/useLocale";
 import { HomepageSkeleton } from "@/components/ui/OptimizedLoader";
 
 interface HomepageImage {

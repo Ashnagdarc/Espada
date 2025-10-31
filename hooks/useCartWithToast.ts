@@ -1,6 +1,6 @@
 'use client'
 
-import { useCart } from '@/contexts/CartContext'
+import { useCart } from '@/hooks/useCart'
 import { useToastActions } from '@/hooks/useToast'
 import { CartItem } from '@/contexts/CartContext'
 

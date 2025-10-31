@@ -1,13 +1,13 @@
 import { useContext } from 'react'
-import { SupabaseAuthContext } from '@/contexts/SupabaseAuthContext'
+import { SupabaseAuthContext } from '@/contexts/SupabaseAuthContextBase'
 
 export const useAuth = () => {
   const context = useContext(SupabaseAuthContext)
-  
+
   if (context === undefined) {
     throw new Error('useAuth must be used within a SupabaseAuthProvider')
   }
-  
+
   return context
 }
 

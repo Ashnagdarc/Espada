@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useLocale } from '@/contexts/LocaleContext';
+import { useLocale } from '@/hooks/useLocale';
 import { locales, localeNames, localeFlags, Locale } from '@/lib/i18n';
 import { Button } from '@/components/ui/Button';
 
