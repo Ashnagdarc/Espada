@@ -61,12 +61,27 @@ export async function GET(
       tags: product.featured ? ['Featured'] : [],
       rating: 4.5, // Default rating for shop display
       sizes: product.sizes || ['S', 'M', 'L', 'XL'],
-      colors: Array.isArray(product.colors) 
-        ? product.colors.map((color: any) => 
-            typeof color === 'string' 
-              ? { name: color, value: getColorValue(color) }
-              : color
-          )
+      colors: Array.isArray(product.colors)
+        ? product.colors.map(color => {
+            if (typeof color === 'string') {
+              return { name: color, value: getColorValue(color) };
+            }
+
+            if (
+              typeof color === 'object' &&
+              color !== null &&
+              'name' in color &&
+              'value' in color &&
+              typeof (color as { name: unknown }).name === 'string' &&
+              typeof (color as { value: unknown }).value === 'string'
+            ) {
+              const { name, value } = color as { name: string; value: string };
+              return { name, value };
+            }
+
+            const fallbackName = String(color);
+            return { name: fallbackName, value: getColorValue(fallbackName) };
+          })
         : [{ name: 'Black', value: '#000000' }, { name: 'White', value: '#FFFFFF' }],
       createdAt: product.created_at,
       updatedAt: product.updated_at

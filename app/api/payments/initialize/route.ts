@@ -16,6 +16,17 @@ interface InitializePaymentRequest {
   currency: string;
 }
 
+type OrderProfile = { email: string } | { email: string }[] | null;
+
+interface OrderWithProfile {
+  id: string;
+  customer_id: string;
+  order_number: string;
+  total_amount: number;
+  payment_status: string;
+  customer_profiles: OrderProfile;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: InitializePaymentRequest = await request.json();
@@ -37,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify order exists and belongs to customer
-    const { data: order, error: orderError } = await supabaseAdmin
+    const { data: orderData, error: orderError } = await supabaseAdmin
       .from('orders')
       .select(`
         id,
@@ -50,6 +61,8 @@ export async function POST(request: NextRequest) {
       .eq('id', body.order_id)
       .single();
 
+    const order = orderData as OrderWithProfile | null;
+
     if (orderError || !order) {
       console.error('Order lookup error:', orderError);
       return NextResponse.json({
@@ -59,9 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify customer email matches (handle relation array)
-    const profileEmail = Array.isArray(order.customer_profiles)
-      ? order.customer_profiles[0]?.email
-      : (order as any).customer_profiles?.email;
+    const customerProfiles = order.customer_profiles;
+    const profileEmail = Array.isArray(customerProfiles)
+      ? customerProfiles[0]?.email ?? null
+      : customerProfiles?.email ?? null;
     if (!profileEmail || profileEmail !== body.customer_email) {
       return NextResponse.json({
         success: false,

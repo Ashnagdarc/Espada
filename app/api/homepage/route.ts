@@ -13,7 +13,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
-  images: string[];
+  images: string[] | null;
   category: string;
 }
 
@@ -21,8 +21,10 @@ interface CollectionItem {
   id: string;
   product_id: string;
   display_order: number;
-  products: Product;
+  products: Product | null;
 }
+
+type HomepageSectionType = 'hero' | 'new_this_week' | 'xiv_collections' | 'approach';
 
 interface HomepageSection {
   id: string;
@@ -34,6 +36,18 @@ interface HomepageSection {
   updated_at: string;
 }
 
+interface HomepageSectionRecord extends HomepageSection {
+  section_type: HomepageSectionType;
+}
+
+interface HomepageImageRecord extends HomepageImage {
+  section_id: string;
+}
+
+interface CollectionItemRecord extends CollectionItem {
+  section_id: string;
+}
+
 interface HomepageData {
   hero: HomepageSection | null;
   new_this_week: HomepageSection | null;
@@ -43,60 +57,70 @@ interface HomepageData {
 
 export async function GET() {
   const buildFallbackData = (): HomepageData => {
-      const now = new Date().toISOString();
-      return {
-        hero: {
-          id: 'default-hero',
-          content: {
-            title: 'Elevate Your Everyday Style',
-            subtitle: 'Timeless essentials made for comfort and confidence.'
-          },
-          status: 'published',
-          images: [
-            { id: 'img-hero-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Collection item', display_order: 1 },
-            { id: 'img-hero-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Collection item', display_order: 2 }
-          ],
-          collection_items: [],
-          created_at: now,
-          updated_at: now
+    const now = new Date().toISOString();
+
+    const fallbackSection = (data: Omit<HomepageSection, 'collection_items' | 'images'> & {
+      images?: HomepageImage[];
+      collection_items?: CollectionItem[];
+    }): HomepageSection => ({
+      ...data,
+      images: data.images ?? [],
+      collection_items: data.collection_items ?? [],
+    });
+
+    return {
+      hero: fallbackSection({
+        id: 'default-hero',
+        content: {
+          title: 'Elevate Your Everyday Style',
+          subtitle: 'Timeless essentials made for comfort and confidence.'
         },
-        new_this_week: {
-          id: 'default-new',
-          content: { title: 'New This Week' },
-          status: 'published',
-          images: [],
-          collection_items: [],
-          created_at: now,
-          updated_at: now
+        status: 'published',
+        images: [
+          { id: 'img-hero-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Collection item', display_order: 1 },
+          { id: 'img-hero-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Collection item', display_order: 2 }
+        ],
+        collection_items: [],
+        created_at: now,
+        updated_at: now
+      }),
+      new_this_week: fallbackSection({
+        id: 'default-new',
+        content: { title: 'New This Week' },
+        status: 'published',
+        collection_items: [],
+        images: [],
+        created_at: now,
+        updated_at: now
+      }),
+      xiv_collections: fallbackSection({
+        id: 'default-xiv',
+        content: { title: 'XIV Collections' },
+        status: 'published',
+        collection_items: [],
+        images: [],
+        created_at: now,
+        updated_at: now
+      }),
+      approach: fallbackSection({
+        id: 'default-approach',
+        content: {
+          title: 'Our Approach',
+          description:
+            'We believe in creating timeless pieces that transcend seasonal trends. Our approach to fashion is rooted in sustainability, quality craftsmanship, and innovative design.'
         },
-        xiv_collections: {
-          id: 'default-xiv',
-          content: { title: 'XIV Collections' },
-          status: 'published',
-          images: [],
-          collection_items: [],
-          created_at: now,
-          updated_at: now
-        },
-        approach: {
-          id: 'default-approach',
-          content: {
-            title: 'Our Approach',
-            description:
-              'We believe in creating timeless pieces that transcend seasonal trends. Our approach to fashion is rooted in sustainability, quality craftsmanship, and innovative design.'
-          },
-          status: 'published',
-          images: [
-            { id: 'img-ap-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Sustainable Materials', display_order: 1 },
-            { id: 'img-ap-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Quality Craftsmanship', display_order: 2 },
-            { id: 'img-ap-3', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Innovative Design', display_order: 3 }
-          ],
-          collection_items: [],
-          created_at: now,
-          updated_at: now
-        }
-      } as any;
+        status: 'published',
+        images: [
+          { id: 'img-ap-1', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Sustainable Materials', display_order: 1 },
+          { id: 'img-ap-2', image_url: '/images/mg0ujxhg-glpb31v.png', alt_text: 'Quality Craftsmanship', display_order: 2 },
+          { id: 'img-ap-3', image_url: '/images/mg0ujxhg-rt8uqe1.png', alt_text: 'Innovative Design', display_order: 3 }
+        ],
+        collection_items: [],
+        created_at: now,
+        updated_at: now
+      })
     };
+  };
 
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -138,11 +162,13 @@ export async function GET() {
       return NextResponse.json({ success: true, data: fallback }, { headers });
     }
 
-    const { data: sections, error: sectionsError } = await supabaseAdmin
+    const { data: sectionsData, error: sectionsError } = await supabaseAdmin
       .from('homepage_sections')
       .select('id, section_type, content, status, created_at, updated_at')
       .eq('status', 'published')
       .order('created_at', { ascending: true });
+
+    const sections = (sectionsData ?? []) as HomepageSectionRecord[];
 
     if (sectionsError) {
       console.error('Error fetching homepage sections:', sectionsError);
@@ -157,7 +183,7 @@ export async function GET() {
     }
 
     // Fetch images and collection items separately for better performance
-    const sectionIds = sections?.map(s => s.id) || [];
+    const sectionIds = sections.map(section => section.id);
     
     const [imagesResult, collectionsResult] = await Promise.all([
       // Fetch all images for these sections
@@ -196,17 +222,19 @@ export async function GET() {
     }
 
     // Group images and collections by section_id for efficient lookup
-    const imagesBySection = new Map<string, any[]>();
-    const collectionsBySection = new Map<string, any[]>();
+    const imagesBySection = new Map<string, HomepageImageRecord[]>();
+    const collectionsBySection = new Map<string, CollectionItemRecord[]>();
 
-    imagesResult.data?.forEach(image => {
+    const images = (imagesResult.data ?? []) as HomepageImageRecord[];
+    images.forEach(image => {
       if (!imagesBySection.has(image.section_id)) {
         imagesBySection.set(image.section_id, []);
       }
       imagesBySection.get(image.section_id)!.push(image);
     });
 
-    collectionsResult.data?.forEach(collection => {
+    const collections = (collectionsResult.data ?? []) as CollectionItemRecord[];
+    collections.forEach(collection => {
       if (!collectionsBySection.has(collection.section_id)) {
         collectionsBySection.set(collection.section_id, []);
       }
@@ -221,9 +249,9 @@ export async function GET() {
       approach: null,
     };
 
-    sections?.forEach((section: any) => {
-      const sectionImages = imagesBySection.get(section.id) || [];
-      const sectionCollections = collectionsBySection.get(section.id) || [];
+    sections.forEach(section => {
+      const sectionImages = imagesBySection.get(section.id) ?? [];
+      const sectionCollections = collectionsBySection.get(section.id) ?? [];
 
       const sectionData = {
         id: section.id,

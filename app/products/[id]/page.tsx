@@ -12,6 +12,11 @@ import Footer from '@/components/layout/Footer'
 import { useCartWithToast } from '@/hooks/useCartWithToast'
 // Using custom toast component instead of sonner
 
+interface ColorOption {
+  name: string;
+  value: string;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -27,7 +32,7 @@ interface Product {
   tags: string[];
   rating: number;
   sizes: string[];
-  colors: string[];
+  colors: ColorOption[];
   createdAt: string;
   updatedAt: string;
   features?: string[];
@@ -74,7 +79,7 @@ export default function ProductDetailPage() {
 
         const apiProductData = await response.json()
         setProduct(apiProductData)
-        setSelectedColor(apiProductData.colors?.[0] || '')
+        setSelectedColor(apiProductData.colors?.[0]?.name ?? '')
         setSelectedSize(apiProductData.sizes?.[0] || '')
       } catch (err) {
         console.error('Error fetching product:', err)
@@ -156,7 +161,7 @@ export default function ProductDetailPage() {
           name: product.name,
           price: product.price,
           image: product.images[0] || product.image,
-          color: selectedColor || product.colors?.[0] || 'Default',
+          color: selectedColor || product.colors?.[0]?.name || 'Default',
           size: selectedSize || product.sizes?.[0] || 'M',
         })
       }
@@ -276,8 +281,8 @@ export default function ProductDetailPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Color</h3>
                   <div className="flex space-x-2">
-                    {product.colors.map((color: any) => {
-                      const colorName = typeof color === 'object' ? color.name : color;
+                    {product.colors.map(color => {
+                      const colorName = color.name;
                       return (
                         <button
                           key={colorName}

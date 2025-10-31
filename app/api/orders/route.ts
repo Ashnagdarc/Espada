@@ -32,6 +32,29 @@ interface CreateOrderRequest {
   notes?: string;
 }
 
+interface OrderItemWithProduct {
+  id: string;
+  product_id: string | null;
+  quantity: number;
+  unit_price: number;
+  color?: string | null;
+  size?: string | null;
+  products: {
+    id: string;
+    name: string;
+    images: string[] | null;
+  } | null;
+}
+
+interface OrderRecord extends Record<string, unknown> {
+  id: string;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  order_items: OrderItemWithProduct[];
+}
+
 // Generate order number
 function generateOrderNumber(): string {
   const date = new Date();
@@ -205,12 +228,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get orders with order items and product details
-    const { data: orders, error } = await supabaseAdmin
+    const { data: ordersData, error } = await supabaseAdmin
       .from('orders')
       .select(`
         *,
         order_items (
           id,
+          product_id,
           quantity,
           unit_price,
           color,
@@ -234,17 +258,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to include product details in order items
+    const orders = (ordersData ?? []) as OrderRecord[];
+
     const transformedOrders = orders.map(order => ({
       ...order,
-      items: order.order_items.map((item: any) => ({
+      items: order.order_items.map(item => ({
         id: item.id,
-        product_id: item.products.id,
-        product_name: item.products.name,
+        product_id: item.product_id ?? item.products?.id ?? null,
+        product_name: item.products?.name ?? 'Unknown Product',
         quantity: item.quantity,
         price: item.unit_price,
         color: item.color,
         size: item.size,
-        image_url: item.products.images?.[0] || null
+        image_url: item.products?.images?.[0] ?? null
       }))
     }));
 

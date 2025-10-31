@@ -37,7 +37,7 @@ function AccountContent() {
       await signOut();
       toast.success('Signed out successfully');
       router.push('/');
-    } catch (error) {
+    } catch {
       toast.error('Error signing out');
     }
   };

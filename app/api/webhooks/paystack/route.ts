@@ -47,8 +47,7 @@ interface PaystackWebhookEvent {
       order_id?: string;
       customer_id?: string;
       order_number?: string;
-      [key: string]: any;
-    };
+    } & Record<string, unknown>;
   };
 }
 
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
     let event: PaystackWebhookEvent;
     try {
       event = JSON.parse(body);
-    } catch (error) {
+    } catch {
       console.error('Webhook: Invalid JSON payload');
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }

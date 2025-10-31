@@ -58,6 +58,13 @@ const priceRanges = [
 
 const ratings = [5, 4, 3, 2, 1];
 
+const isAbortError = (error: unknown): error is { name: string } =>
+  typeof error === "object" &&
+  error !== null &&
+  "name" in error &&
+  typeof (error as { name?: unknown }).name === "string" &&
+  (error as { name: string }).name === "AbortError";
+
 // Loading component for Suspense fallback
 function ProductsPageLoading() {
   return (
@@ -183,7 +190,7 @@ function ProductsPageContent() {
         }
       } catch (error) {
         // Ignore abort errors triggered by unmount/navigation/HMR in dev
-        if ((error as any)?.name === "AbortError") {
+        if (isAbortError(error)) {
           return;
         }
         console.error("Error fetching products:", error);

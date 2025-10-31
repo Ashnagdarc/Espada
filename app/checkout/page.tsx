@@ -291,18 +291,18 @@ function CheckoutContent() {
       if (user && profile) {
         setContactInfo({
           email: user.email || '',
-          phone: (profile as any)?.phone || ''
+          phone: profile.phone ?? ''
         })
 
-        if ((profile as any)?.address) {
+        if (profile.address) {
           setShippingAddress({
-            firstName: (profile as any)?.first_name || '',
-            lastName: (profile as any)?.last_name || '',
-            country: (profile as any)?.country || 'United States',
+            firstName: profile.first_name ?? '',
+            lastName: profile.last_name ?? '',
+            country: profile.country ?? 'United States',
             state: '',
-            address: (profile as any)?.address || '',
-            city: (profile as any)?.city || '',
-            postalCode: (profile as any)?.postal_code || ''
+            address: profile.address ?? '',
+            city: profile.city ?? '',
+            postalCode: profile.postal_code ?? ''
           })
         }
       }

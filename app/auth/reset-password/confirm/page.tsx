@@ -80,17 +80,17 @@ export default function ResetPasswordConfirmPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })
 
-      if (error) {
-        toast.error(error.message)
+      if (updateError) {
+        toast.error(updateError.message)
       } else {
         toast.success('Password updated successfully!')
         router.push('/signin')
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
