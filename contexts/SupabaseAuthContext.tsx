@@ -1,38 +1,21 @@
 "use client";
 
-import { createContext, useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClientSupabaseClient } from "@/utils/auth-client";
 import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js";
+import type { AuthContextType, UserProfile } from "./SupabaseAuthTypes";
+import { SupabaseAuthContext } from "./SupabaseAuthContextBase";
 
-// User profile interface
-interface UserProfile {
-  id: string;
-  email: string;
+export type { UserProfile, AuthContextType } from "./SupabaseAuthTypes";
+
+interface CustomerProfilePayload {
+  auth_user_id: string;
+  email: string | null;
   role: "customer" | "admin";
   first_name?: string;
   last_name?: string;
   phone?: string;
-  address?: string;
-  city?: string;
-  postal_code?: string;
-  country?: string;
-  created_at?: string;
 }
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: string; profile?: UserProfile }>;
-  signUp: (email: string, password: string, userData?: { fullName?: string; phone?: string }) => Promise<{ error?: string }>;
-  signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error?: string }>;
-  isAdmin: boolean;
-  refreshProfile: () => Promise<void>;
-}
-
-export const SupabaseAuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function SupabaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -161,6 +144,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
       return { error: 'Authentication failed' };
     } catch (error) {
+      console.error('Unexpected error during sign in:', error);
       return { error: 'An unexpected error occurred' };
     } finally {
       setIsLoading(false);
@@ -193,7 +177,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       if (data.user) {
         console.log('User created successfully, creating profile for:', data.user.id);
         
-        const profileData: any = {
+        const profileData: CustomerProfilePayload = {
           auth_user_id: data.user.id,
           email: data.user.email,
           role: 'customer'
@@ -364,6 +348,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       await refreshProfile();
       return {};
     } catch (error) {
+      console.error('Unexpected error updating profile:', error);
       return { error: 'Failed to update profile' };
     }
   };

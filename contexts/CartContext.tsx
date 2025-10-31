@@ -1,48 +1,17 @@
 'use client'
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import React, { useEffect, useReducer } from 'react'
+import { CartContext } from './CartContextBase'
+import type { CartContextType, CartItem, CartState, CartAction } from './CartContextTypes'
 
-export interface CartItem {
-  id: number
-  name: string
-  price: number
-  image: string
-  color: string
-  size: string
-  quantity: number
-}
-
-interface CartState {
-  items: CartItem[]
-  total: number
-  itemCount: number
-  isLoaded: boolean
-}
-
-type CartAction =
-  | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'quantity'> }
-  | { type: 'REMOVE_ITEM'; payload: { id: number; color: string; size: string } }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: number; color: string; size: string; quantity: number } }
-  | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; payload: CartItem[] }
-  | { type: 'SET_LOADED'; payload: boolean }
-
-interface CartContextType {
-  state: CartState
-  addItem: (item: Omit<CartItem, 'quantity'>) => void
-  removeItem: (id: number, color: string, size: string) => void
-  updateQuantity: (id: number, color: string, size: string, quantity: number) => void
-  clearCart: () => void
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined)
+export type { CartItem, CartContextType } from './CartContextTypes'
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_ITEM': {
       const existingItemIndex = state.items.findIndex(
-        item => item.id === action.payload.id && 
-                item.color === action.payload.color && 
+        item => item.id === action.payload.id &&
+                item.color === action.payload.color &&
                 item.size === action.payload.size
       )
 
@@ -65,8 +34,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
     case 'REMOVE_ITEM': {
       const newItems = state.items.filter(
-        item => !(item.id === action.payload.id && 
-                  item.color === action.payload.color && 
+        item => !(item.id === action.payload.id &&
+                  item.color === action.payload.color &&
                   item.size === action.payload.size)
       )
       const total = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -84,8 +53,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
 
       const newItems = state.items.map(item =>
-        item.id === action.payload.id && 
-        item.color === action.payload.color && 
+        item.id === action.payload.id &&
+        item.color === action.payload.color &&
         item.size === action.payload.size
           ? { ...item, quantity: action.payload.quantity }
           : item
@@ -123,36 +92,25 @@ const initialState: CartState = {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState)
 
-  // Load cart from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('espada-cart')
-      if (savedCart) {
-        try {
-          const cartItems = JSON.parse(savedCart)
-          dispatch({ type: 'LOAD_CART', payload: cartItems })
-        } catch (error) {
-          console.error('Error loading cart from localStorage:', error)
-          localStorage.removeItem('espada-cart')
-          dispatch({ type: 'SET_LOADED', payload: true })
-        }
-      } else {
-        // No saved cart, mark as loaded
-        dispatch({ type: 'SET_LOADED', payload: true })
+    const storedCart = localStorage.getItem('cart')
+    if (storedCart) {
+      try {
+        const parsedCart: CartItem[] = JSON.parse(storedCart)
+        dispatch({ type: 'LOAD_CART', payload: parsedCart })
+      } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error)
       }
+    } else {
+      dispatch({ type: 'SET_LOADED', payload: true })
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('espada-cart', JSON.stringify(state.items))
-      } catch (error) {
-        console.error('Error saving cart to localStorage:', error)
-      }
+    if (state.isLoaded) {
+      localStorage.setItem('cart', JSON.stringify(state.items))
     }
-  }, [state.items])
+  }, [state.items, state.isLoaded])
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     dispatch({ type: 'ADD_ITEM', payload: item })
@@ -170,17 +128,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR_CART' })
   }
 
+  const contextValue: CartContextType = {
+    state,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart
+  }
+
   return (
-    <CartContext.Provider value={{ state, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   )
-}
-
-export function useCart() {
-  const context = useContext(CartContext)
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider')
-  }
-  return context
 }

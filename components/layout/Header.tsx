@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/useCart';
 
 const navLinks = [
   { href: "/", label: "Home" },

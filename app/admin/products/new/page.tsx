@@ -506,20 +506,18 @@ function NewProductPageContent() {
     try {
       // Filter out empty images
       const validImages = formData.images.filter(img => img.trim())
-      
-      const productData = {
-        ...formData,
+
+      const { dimensions, ...restFormData } = formData
+
+      const apiData = {
+        ...restFormData,
         images: validImages,
         status: asDraft ? 'draft' : 'published',
         // Convert dimensions object to match API expectations
-        length: formData.dimensions.length,
-        width: formData.dimensions.width,
-        height: formData.dimensions.height
+        length: dimensions.length,
+        width: dimensions.width,
+        height: dimensions.height
       }
-
-      // Remove the nested dimensions object
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { dimensions, ...apiData } = productData
 
       console.log('Submitting product data:', apiData)
 
