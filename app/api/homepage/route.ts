@@ -48,6 +48,10 @@ interface CollectionItemRecord extends CollectionItem {
   section_id: string;
 }
 
+type SupabaseCollectionItemRow = Omit<CollectionItemRecord, 'products'> & {
+  products: Product | Product[] | null;
+};
+
 interface HomepageData {
   hero: HomepageSection | null;
   new_this_week: HomepageSection | null;
@@ -233,7 +237,14 @@ export async function GET() {
       imagesBySection.get(image.section_id)!.push(image);
     });
 
-    const collections = (collectionsResult.data ?? []) as CollectionItemRecord[];
+    const collectionsRaw = (collectionsResult.data ?? []) as SupabaseCollectionItemRow[];
+    const collections = collectionsRaw.map(collection => ({
+      ...collection,
+      products: Array.isArray(collection.products)
+        ? collection.products[0] ?? null
+        : collection.products,
+    }));
+
     collections.forEach(collection => {
       if (!collectionsBySection.has(collection.section_id)) {
         collectionsBySection.set(collection.section_id, []);
