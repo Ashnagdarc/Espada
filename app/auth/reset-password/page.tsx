@@ -30,17 +30,17 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password/confirm`,
       })
 
-      if (error) {
-        setError(error.message)
+      if (resetError) {
+        setError(resetError.message)
       } else {
         setIsSubmitted(true)
         toast.success('Password reset email sent!')
       }
-    } catch (error) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
