@@ -1,470 +1,210 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { AnalyticsData } from '@/lib/types/api';
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { AnalyticsData } from "@/lib/types/api";
 
-// Database analytics interfaces
-interface DailyAnalytic {
-  date: string;
-  total_orders: number;
-  total_revenue: number;
-  unique_customers: number;
-  new_customers: number;
-  average_order_value?: number;
+function formatDateKey(date: Date) {
+  return date.toISOString().split("T")[0];
 }
 
-interface ProductAnalytic {
-  product_id: string;
-  orders?: number;
-  revenue?: number;
-  products?: {
-    name: string;
-    price?: number;
-    images?: string[];
-    stock_quantity?: number;
-  }[];
+function getWeekKey(date: Date) {
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const diffDays = Math.floor((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000));
+  const week = Math.floor(diffDays / 7) + 1;
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
-interface CustomerAnalytic {
-  customer_id: string;
-  sessions?: number;
-  page_views?: number;
-  time_spent?: number;
-  customer_profiles?: {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    created_at?: string;
-  }[];
+function getMonthKey(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-interface DatabaseOrder {
-  id: string;
-  order_number: string;
-  customer_id: string;
-  status: string;
-  total_amount: number | string;
-  created_at: string;
-  customer_name?: string;
-  customer_email?: string;
-  item_count?: number;
-  customer_profiles?: {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-  };
-  order_items?: Array<unknown>;
+function sumByStatus(orders: Array<{ status: string; totalAmount: number }>) {
+  const totals: Record<string, number> = {};
+  for (const order of orders) {
+    totals[order.status] = (totals[order.status] || 0) + order.totalAmount;
+  }
+  return totals;
 }
 
-interface DatabaseProduct {
-  id: string;
-  name: string;
-  stock_quantity: number;
+function countByStatus(orders: Array<{ status: string }>) {
+  const counts: Record<string, number> = {};
+  for (const order of orders) {
+    counts[order.status] = (counts[order.status] || 0) + 1;
+  }
+  return counts;
 }
-
-interface ProductAggregate {
-  product_id: string;
-  totalSold: number;
-  totalRevenue: number;
-  products?: {
-    name: string;
-    images?: string[];
-  }[];
-}
-
-interface CustomerSpending {
-  customer_id: string;
-  totalSpent: number;
-  totalOrders: number;
-  lastOrderDate: string;
-}
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-// Removed admin checks to allow open access to analytics
 
 export async function GET(request: NextRequest) {
   try {
-    // Get query parameters for time filtering
     const { searchParams } = new URL(request.url);
-    const timeRange = searchParams.get('timeRange') || '30'; // days
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    const timeRange = parseInt(searchParams.get("timeRange") || "30", 10);
 
-    // Calculate date range
     const now = new Date();
-    const defaultStartDate = new Date(now.getTime() - parseInt(timeRange) * 24 * 60 * 60 * 1000);
-    const fromDate = startDate ? new Date(startDate) : defaultStartDate;
-    const toDate = endDate ? new Date(endDate) : now;
+    const fromDate = new Date(now.getTime() - timeRange * 24 * 60 * 60 * 1000);
 
-    // Fetch analytics data from the new analytics tables
     const [
-      dailyAnalyticsResult,
-      productAnalyticsResult,
-      customerAnalyticsResult,
-      ordersResult,
-      productsResult
+      products,
+      orders,
+      recentOrders,
+      newCustomers
     ] = await Promise.all([
-      // Daily analytics for the time range
-      supabaseAdmin
-        .from('daily_analytics')
-        .select('*')
-        .gte('date', fromDate.toISOString().split('T')[0])
-        .lte('date', toDate.toISOString().split('T')[0])
-        .order('date', { ascending: true }),
-      
-      // Product analytics - get daily data for aggregation
-      supabaseAdmin
-        .from('product_analytics')
-        .select(`
-          product_id,
-          orders,
-          revenue,
-          products(name, price, images, stock_quantity)
-        `)
-        .gte('date', fromDate.toISOString().split('T')[0])
-        .lte('date', toDate.toISOString().split('T')[0]),
-      
-      // Customer analytics - get daily data for aggregation  
-      supabaseAdmin
-        .from('customer_analytics')
-        .select(`
-          customer_id,
-          sessions,
-          page_views,
-          time_spent,
-          customer_profiles(first_name, last_name, email, created_at)
-        `)
-        .gte('date', fromDate.toISOString().split('T')[0])
-        .lte('date', toDate.toISOString().split('T')[0]),
-      
-      // Recent orders
-      supabaseAdmin
-        .from('orders')
-        .select(`
-          *,
-          order_items(
-            id,
-            product_id,
-            quantity,
-            unit_price,
-            products(name, images)
-          ),
-          customer_profiles(first_name, last_name, email)
-        `)
-        .gte('created_at', fromDate.toISOString())
-        .lte('created_at', toDate.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(20),
-      
-      // Products for inventory metrics
-      supabaseAdmin
-        .from('products')
-        .select('*')
+      prisma.product.findMany({
+        select: { id: true, name: true, stock: true, price: true }
+      }),
+      prisma.order.findMany({
+        where: { createdAt: { gte: fromDate, lte: now } },
+        include: {
+          items: { include: { product: true } },
+          user: { include: { profile: true } }
+        },
+        orderBy: { createdAt: "desc" }
+      }),
+      prisma.order.findMany({
+        include: {
+          items: true,
+          user: { include: { profile: true } }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20
+      }),
+      prisma.user.count({
+        where: {
+          role: "customer",
+          createdAt: { gte: fromDate, lte: now }
+        }
+      })
     ]);
 
-    if (dailyAnalyticsResult.error) {
-      console.error('Error fetching daily analytics:', dailyAnalyticsResult.error);
-      return NextResponse.json({ error: 'Failed to fetch daily analytics' }, { status: 500 });
+    const totalOrders = orders.length;
+    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const pendingOrders = orders.filter((order) => order.status === "pending").length;
+    const completedOrders = orders.filter((order) => order.status === "delivered").length;
+    const cancelledOrders = orders.filter((order) => order.status === "cancelled").length;
+
+    const lowStockProducts = products.filter((product) => product.stock <= 5 && product.stock > 0).length;
+    const outOfStockProducts = products.filter((product) => product.stock === 0).length;
+
+    const uniqueCustomers = new Set(orders.map((order) => order.userId)).size;
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const avgCustomerLifetimeValue = uniqueCustomers > 0 ? totalRevenue / uniqueCustomers : 0;
+
+    const dailyMap = new Map<string, { revenue: number; orders: number }>();
+    const weeklyMap = new Map<string, { revenue: number; orders: number }>();
+    const monthlyMap = new Map<string, { revenue: number; orders: number }>();
+
+    for (const order of orders) {
+      const dayKey = formatDateKey(order.createdAt);
+      const weekKey = getWeekKey(order.createdAt);
+      const monthKey = getMonthKey(order.createdAt);
+
+      dailyMap.set(dayKey, {
+        revenue: (dailyMap.get(dayKey)?.revenue || 0) + order.totalAmount,
+        orders: (dailyMap.get(dayKey)?.orders || 0) + 1
+      });
+
+      weeklyMap.set(weekKey, {
+        revenue: (weeklyMap.get(weekKey)?.revenue || 0) + order.totalAmount,
+        orders: (weeklyMap.get(weekKey)?.orders || 0) + 1
+      });
+
+      monthlyMap.set(monthKey, {
+        revenue: (monthlyMap.get(monthKey)?.revenue || 0) + order.totalAmount,
+        orders: (monthlyMap.get(monthKey)?.orders || 0) + 1
+      });
     }
 
-    if (productAnalyticsResult.error) {
-      console.error('Error fetching product analytics:', productAnalyticsResult.error);
-      return NextResponse.json({ error: 'Failed to fetch product analytics' }, { status: 500 });
+    const dailyRevenue = Array.from(dailyMap.entries())
+      .map(([date, value]) => ({ date, revenue: value.revenue, orders: value.orders }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const weeklyRevenue = Array.from(weeklyMap.entries())
+      .map(([week, value]) => ({ week, revenue: value.revenue, orders: value.orders }))
+      .sort((a, b) => a.week.localeCompare(b.week));
+
+    const monthlyRevenue = Array.from(monthlyMap.entries())
+      .map(([month, value]) => ({ month, revenue: value.revenue, orders: value.orders }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    const productTotals = new Map<string, { productName: string; totalSold: number; revenue: number }>();
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const entry = productTotals.get(item.productId) || {
+          productName: item.product?.name || "Unknown",
+          totalSold: 0,
+          revenue: 0
+        };
+
+        entry.totalSold += item.quantity;
+        entry.revenue += item.price * item.quantity;
+        productTotals.set(item.productId, entry);
+      }
     }
 
-    if (customerAnalyticsResult.error) {
-      console.error('Error fetching customer analytics:', customerAnalyticsResult.error);
-      return NextResponse.json({ error: 'Failed to fetch customer analytics' }, { status: 500 });
-    }
+    const topProducts = Array.from(productTotals.entries())
+      .map(([productId, entry]) => ({
+        productId,
+        productName: entry.productName,
+        totalSold: entry.totalSold,
+        revenue: entry.revenue
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 6);
 
-    if (ordersResult.error) {
-      console.error('Error fetching orders:', ordersResult.error);
-      return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
-    }
+    const recentOrdersPayload = recentOrders.map((order) => {
+      const profile = order.user?.profile;
+      const customerName = profile
+        ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.email || "Unknown"
+        : order.user?.email || "Unknown";
 
-    if (productsResult.error) {
-      console.error('Error fetching products:', productsResult.error);
-      return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
-    }
-
-    const dailyAnalytics = dailyAnalyticsResult.data || [];
-    const productAnalytics = productAnalyticsResult.data || [];
-    const customerAnalytics = customerAnalyticsResult.data || [];
-    const orders = ordersResult.data || [];
-    const products = productsResult.data || [];
-
-    // Calculate comprehensive analytics
-    const analytics = calculateEnhancedAnalytics(
-      dailyAnalytics,
-      productAnalytics,
-      customerAnalytics,
-      orders,
-      products,
-      fromDate,
-      toDate
-    );
-
-    return NextResponse.json(analytics);
-  } catch (error) {
-    console.error('Analytics API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-function calculateEnhancedAnalytics(
-  dailyAnalytics: DailyAnalytic[],
-  productAnalytics: ProductAnalytic[],
-  customerAnalytics: CustomerAnalytic[],
-  orders: DatabaseOrder[],
-  products: DatabaseProduct[],
-  fromDate: Date,
-  toDate: Date
-): AnalyticsData {
-  // Calculate totals from daily analytics
-  const totalOrders = dailyAnalytics.reduce((sum, day) => sum + (day.total_orders || 0), 0);
-  const totalRevenue = dailyAnalytics.reduce((sum, day) => sum + (day.total_revenue || 0), 0);
-  const uniqueCustomers = dailyAnalytics.reduce((sum, day) => sum + (day.unique_customers || 0), 0);
-  const newCustomers = dailyAnalytics.reduce((sum, day) => sum + (day.new_customers || 0), 0);
-  const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-  // Calculate previous period for comparison
-  const periodDays = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
-  const previousFromDate = new Date(fromDate.getTime() - periodDays * 24 * 60 * 60 * 1000);
-  const previousToDate = fromDate;
-
-  // Get previous period analytics
-  const previousDailyAnalytics = dailyAnalytics.filter(day => {
-    const dayDate = new Date(day.date);
-    return dayDate >= previousFromDate && dayDate < previousToDate;
-  });
-
-  const previousRevenue = previousDailyAnalytics.reduce((sum, day) => sum + (day.total_revenue || 0), 0);
-  const previousOrderCount = previousDailyAnalytics.reduce((sum, day) => sum + (day.total_orders || 0), 0);
-  const previousAOV = previousOrderCount > 0 ? previousRevenue / previousOrderCount : 0;
-
-  // Calculate percentage changes
-  const revenueChange = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0;
-  const ordersChange = previousOrderCount > 0 ? ((totalOrders - previousOrderCount) / previousOrderCount) * 100 : 0;
-  const aovChange = previousAOV > 0 ? ((averageOrderValue - previousAOV) / previousAOV) * 100 : 0;
-
-  // Inventory metrics
-  const totalProducts = products.length;
-  const lowStockProducts = products.filter(product => (product.stock_quantity || 0) < 10).length;
-  const outOfStockProducts = products.filter(product => (product.stock_quantity || 0) === 0).length;
-
-  // Order status metrics
-  const pendingOrders = orders.filter(order => order.status === 'pending').length;
-  const completedOrders = orders.filter(order => order.status === 'completed').length;
-  const cancelledOrders = orders.filter(order => order.status === 'cancelled').length;
-
-  // Status distribution
-  const statusDistribution = orders.reduce((acc, order) => {
-    acc[order.status] = (acc[order.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Revenue by status
-  const revenueByStatus = orders.reduce((acc, order) => {
-    const status = order.status;
-    acc[status] = (acc[status] || 0) + Number(order.total_amount ?? 0);
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Aggregate product analytics by product_id
-  const productAggregates = productAnalytics.reduce((acc, item) => {
-    const productId = item.product_id;
-    if (!acc[productId]) {
-      acc[productId] = {
-        product_id: productId,
-        products: item.products,
-        totalSold: 0,
-        totalRevenue: 0
-      };
-    }
-    acc[productId].totalSold += item.orders || 0;
-    acc[productId].totalRevenue += Number(item.revenue ?? 0);
-    return acc;
-  }, {} as Record<string, ProductAggregate>);
-
-  // Top products from aggregated analytics
-  const topProducts = Object.values(productAggregates)
-    .sort((a: ProductAggregate, b: ProductAggregate) => b.totalRevenue - a.totalRevenue)
-    .slice(0, 5)
-    .map((product: ProductAggregate) => ({
-      productId: product.product_id,
-      productName: (product.products && product.products[0]?.name) || 'Unknown Product',
-      totalSold: product.totalSold,
-      revenue: product.totalRevenue,
-      averageRating: 0, // Not available in current schema
-      imageUrl: (product.products && product.products[0]?.images && Array.isArray(product.products[0].images) && product.products[0].images.length > 0)
-        ? product.products[0].images[0]
-        : null
-    }));
-
-  // Aggregate customer analytics by customer_id
-  const customerAggregates = customerAnalytics.reduce((acc, item) => {
-    const customerId = item.customer_id;
-    if (!acc[customerId]) {
-      acc[customerId] = {
-        customer_id: customerId,
-        customer_profiles: item.customer_profiles,
-        totalSessions: 0,
-        totalPageViews: 0,
-        totalTimeSpent: 0
-      };
-    }
-    acc[customerId].totalSessions += item.sessions || 0;
-    acc[customerId].totalPageViews += item.page_views || 0;
-    acc[customerId].totalTimeSpent += item.time_spent || 0;
-    return acc;
-  }, {} as Record<string, {
-    customer_id: string;
-    customer_profiles?: {
-      first_name?: string;
-      last_name?: string;
-      email?: string;
-      created_at?: string;
-    }[];
-    totalSessions: number;
-    totalPageViews: number;
-    totalTimeSpent: number;
-  }>);
-
-  // Get customer spending data from orders
-  const customerSpending = orders.reduce((acc, order) => {
-    const customerId = order.customer_id;
-    if (!acc[customerId]) {
-      acc[customerId] = {
-        customer_id: customerId,
-        totalSpent: 0,
-        totalOrders: 0,
-        lastOrderDate: order.created_at
-      };
-    }
-    acc[customerId].totalSpent += Number(order.total_amount ?? 0);
-    acc[customerId].totalOrders += 1;
-    if (new Date(order.created_at) > new Date(acc[customerId].lastOrderDate)) {
-      acc[customerId].lastOrderDate = order.created_at;
-    }
-    return acc;
-  }, {} as Record<string, CustomerSpending>);
-
-  // Top customers based on spending
-  const topCustomers = Object.values(customerSpending)
-    .sort((a: CustomerSpending, b: CustomerSpending) => b.totalSpent - a.totalSpent)
-    .slice(0, 5)
-    .map((spending: CustomerSpending) => {
-      const customerData = customerAggregates[spending.customer_id];
-      const profile = customerData?.customer_profiles && customerData.customer_profiles[0];
       return {
-        customerId: spending.customer_id,
-        customerName: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Unknown Customer',
-        customerEmail: profile?.email || 'Unknown Email',
-        totalSpent: spending.totalSpent,
-        totalOrders: spending.totalOrders,
-        averageOrderValue: spending.totalOrders > 0 ? spending.totalSpent / spending.totalOrders : 0,
-        lastOrderDate: spending.lastOrderDate
+        id: order.id,
+        orderNumber: order.id,
+        customerName,
+        customerEmail: profile?.email || order.user?.email || "",
+        total: order.totalAmount,
+        status: order.status,
+        createdAt: order.createdAt.toISOString(),
+        itemCount: order.items.length
       };
     });
 
-  // Recent orders
-  const recentOrders = orders.slice(0, 10).map(order => ({
-    id: order.id,
-    orderNumber: order.order_number,
-    customerName: `${order.customer_profiles?.first_name || ''} ${order.customer_profiles?.last_name || ''}`.trim(),
-    customerEmail: order.customer_profiles?.email ?? 'Unknown Email',
-    total: Number(order.total_amount ?? 0),
-    status: order.status,
-    createdAt: order.created_at,
-    itemCount: order.order_items?.length || 0
-  }));
-
-  // Daily revenue trend
-  const dailyRevenue = dailyAnalytics.map(day => ({
-    date: day.date,
-    revenue: day.total_revenue || 0,
-    orders: day.total_orders || 0,
-    customers: day.unique_customers || 0,
-    averageOrderValue: day.average_order_value || 0
-  }));
-
-  // Weekly aggregation
-  const weeklyRevenue = aggregateWeekly(dailyAnalytics);
-
-  // Customer lifetime value (from customer spending data)
-  const customerSpendingValues = Object.values(customerSpending);
-  const avgCustomerLifetimeValue = customerSpendingValues.length > 0
-    ? customerSpendingValues.reduce((sum: number, customer: CustomerSpending) => sum + (customer.totalSpent || 0), 0) / customerSpendingValues.length
-    : 0;
-
-  return {
-    // Basic metrics
-    totalProducts,
-    totalOrders,
-    totalRevenue,
-    pendingOrders,
-    completedOrders,
-    cancelledOrders,
-    lowStockProducts,
-    outOfStockProducts,
-    uniqueCustomers,
-    newCustomers,
-    
-    // Advanced metrics
-    averageOrderValue,
-    avgCustomerLifetimeValue,
-    
-    // Changes from previous period
-    revenueChange,
-    ordersChange,
-    aovChange,
-    
-    // Trends
-    dailyRevenue,
-    weeklyRevenue,
-    
-    // Product insights
-    topProducts,
-    
-    // Customer insights
-    topCustomers,
-    
-    // Order insights
-    recentOrders,
-    statusDistribution,
-    revenueByStatus,
-    
-    // Time range info
-    timeRange: {
-      from: fromDate.toISOString(),
-      to: toDate.toISOString(),
-      days: periodDays
-    }
-  };
-}
-
-function aggregateWeekly(dailyAnalytics: DailyAnalytic[]) {
-  const weeklyData = new Map();
-  
-  dailyAnalytics.forEach(day => {
-    const date = new Date(day.date);
-    const weekStart = new Date(date);
-    weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
-    const weekKey = weekStart.toISOString().split('T')[0];
-    
-    const existing = weeklyData.get(weekKey) || { 
-      week: weekKey, 
-      revenue: 0, 
-      orders: 0, 
-      customers: 0 
+    const analytics: AnalyticsData = {
+      totalProducts: products.length,
+      totalOrders,
+      totalRevenue,
+      pendingOrders,
+      completedOrders,
+      cancelledOrders,
+      lowStockProducts,
+      outOfStockProducts,
+      uniqueCustomers,
+      newCustomers,
+      averageOrderValue,
+      avgCustomerLifetimeValue,
+      revenueChange: 0,
+      ordersChange: 0,
+      aovChange: 0,
+      dailyRevenue,
+      weeklyRevenue,
+      monthlyRevenue,
+      topProducts,
+      topCustomers: [],
+      recentOrders: recentOrdersPayload,
+      statusDistribution: countByStatus(orders),
+      revenueByStatus: sumByStatus(orders),
+      timeRange: {
+        from: fromDate.toISOString(),
+        to: now.toISOString(),
+        days: timeRange
+      }
     };
-    existing.revenue += day.total_revenue || 0;
-    existing.orders += day.total_orders || 0;
-    existing.customers += day.unique_customers || 0;
-    weeklyData.set(weekKey, existing);
-  });
-  
-  return Array.from(weeklyData.values()).sort((a, b) => a.week.localeCompare(b.week));
+
+    return NextResponse.json(analytics);
+  } catch (error) {
+    console.error("Error fetching analytics overview:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch analytics" },
+      { status: 500 }
+    );
+  }
 }

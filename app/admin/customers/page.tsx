@@ -330,33 +330,50 @@ function CustomersPageContent() {
         )}
 
         {/* Search and Filter */}
-        <Card appearance="panel" className="flex gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
-            <input
-              type="text"
-              placeholder="Search customers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-white/20 bg-black text-white rounded-lg w-full focus:ring-2 focus:ring-white/40 focus:border-transparent"
-            />
+        <Card appearance="panel" className="p-5 bg-white/5 dark:bg-gray-900/40 border border-white/10 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-white/20 bg-black text-white rounded-lg w-full focus:ring-2 focus:ring-white/40 focus:border-transparent"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-white/60" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
+                className="border border-white/20 bg-black text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-white/40 focus:border-transparent"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-white/60" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
-              className="border border-white/20 bg-black text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-white/40 focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+          <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>{filteredCustomers.length} customers</span>
+            <span className="capitalize">
+              {filterStatus === 'all' ? 'All statuses' : filterStatus}
+            </span>
           </div>
         </Card>
 
         {/* Customers Table */}
-        <Card appearance="panel" className="overflow-hidden">
+        <Card appearance="panel" className="p-0 overflow-hidden border border-white/10 shadow-lg">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 dark:bg-gray-900/40">
+            <div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Customers</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Profiles, orders, and lifetime value</div>
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Showing {filteredCustomers.length} customers
+            </div>
+          </div>
           {loading ? (
             <div className="p-8 text-center">
               <div className="flex items-center justify-center gap-2">

@@ -49,22 +49,22 @@ export default function ResetPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-system-background flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-              <Send className="h-8 w-8 text-green-600" />
+          <div className="bg-white dark:bg-black rounded-2xl shadow-xl p-8 text-center border border-gray-200 dark:border-gray-800">
+            <div className="mx-auto w-16 h-16 bg-white dark:bg-black border border-black dark:border-white rounded-full flex items-center justify-center mb-6">
+              <Send className="h-8 w-8 text-black dark:text-white" />
             </div>
             
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Check Your Email</h1>
+            <h1 className="text-2xl font-bold text-label-primary mb-4">Check Your Email</h1>
             
-            <p className="text-gray-600 mb-6">
+            <p className="text-label-secondary mb-6">
               We&apos;ve sent a password reset link to <strong>{email}</strong>. 
               Click the link in the email to reset your password.
             </p>
             
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-label-secondary">
                 Didn&apos;t receive the email? Check your spam folder or try again.
               </p>
               
@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
                   setIsSubmitted(false)
                   setEmail('')
                 }}
-                className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                className="text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium"
               >
                 Try a different email address
               </button>
@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
             <div className="mt-8">
               <Link
                 href="/signin"
-                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="inline-flex items-center text-sm text-label-secondary hover:text-label-primary transition-colors"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back to Sign In
@@ -95,13 +95,13 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-system-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-black rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-800">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-label-primary mb-2">Reset Password</h1>
+            <p className="text-label-secondary">
               Enter your email address and we&apos;ll send you a link to reset your password.
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-label-primary mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -122,15 +122,15 @@ export default function ResetPasswordPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-colors ${
+                    error ? 'border-gray-400 bg-gray-50 dark:bg-gray-900' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-black'
                   }`}
                   placeholder="Enter your email"
                   disabled={isLoading}
                 />
               </div>
               {error && (
-                <p className="mt-1 text-sm text-red-600">{error}</p>
+                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{error}</p>
               )}
             </div>
 
@@ -138,7 +138,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white focus:ring-offset-white dark:focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
           <div className="mt-8 text-center">
             <Link
               href="/signin"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center text-sm text-label-secondary hover:text-label-primary transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back to Sign In

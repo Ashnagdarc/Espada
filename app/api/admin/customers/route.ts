@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { Prisma } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
 // GET /api/admin/customers - Fetch all customers with pagination and filtering
 export async function GET(request: Request) {
@@ -10,48 +11,71 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
-    const status = searchParams.get('status') || '';
-    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    let query = supabaseAdmin
-      .from('customer_profiles')
-      .select(`
-        *,
-        customer_addresses(*)
-      `, { count: 'exact' });
+    const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
+    const safeLimit = Number.isNaN(limit) || limit < 1 ? 10 : limit;
+    const skip = (safePage - 1) * safeLimit;
 
-    // Apply filters
-    if (search) {
-      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
-    }
+    // Build where clause for search
+    const where: Prisma.CustomerProfileWhereInput = search
+      ? {
+          OR: [
+            { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+            { lastName: { contains: search, mode: Prisma.QueryMode.insensitive } },
+            { email: { contains: search, mode: Prisma.QueryMode.insensitive } }
+          ]
+        }
+      : {};
 
-    if (status) {
-      query = query.eq('status', status);
-    }
+    // Build order by
+    const orderBy: Prisma.CustomerProfileOrderByWithRelationInput = 
+      sortBy === 'email'
+        ? { email: sortOrder === 'asc' ? 'asc' : 'desc' }
+        : sortBy === 'firstName'
+        ? { firstName: sortOrder === 'asc' ? 'asc' : 'desc' }
+        : sortBy === 'lastName'
+        ? { lastName: sortOrder === 'asc' ? 'asc' : 'desc' }
+        : { createdAt: sortOrder === 'asc' ? 'asc' : 'desc' };
 
-    // Apply sorting
-    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+    const [customers, count] = await Promise.all([
+      prisma.customerProfile.findMany({
+        where,
+        orderBy,
+        skip,
+        take: safeLimit,
+        include: {
+          user: {
+            select: { id: true, email: true, name: true }
+          }
+        }
+      }),
+      prisma.customerProfile.count({ where })
+    ]);
 
-    // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
+    const transformedCustomers = customers.map(customer => ({
+      id: customer.id,
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      fullName: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      country: customer.country,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString()
+    }));
 
-    const { data: customers, error, count } = await query;
-      
-    if (error) {
-      console.error('Error fetching customers:', error);
-      return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 });
-    }
-    
     return NextResponse.json({
-      customers,
+      customers: transformedCustomers,
       pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
+        page: safePage,
+        limit: safeLimit,
+        total: count,
+        totalPages: Math.ceil(count / safeLimit)
       }
     });
   } catch (error) {
@@ -67,31 +91,60 @@ export async function POST(request: Request) {
 
     const customerData = await request.json();
 
-    const { data: customer, error } = await supabaseAdmin
-      .from('customer_profiles')
-      .insert({
-        email: customerData.email,
-        first_name: customerData.firstName,
-        last_name: customerData.lastName,
+    // Create user first if email doesn't exist
+    let user = await prisma.user.findUnique({
+      where: { email: customerData.email }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: customerData.email,
+          name: `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
+          role: 'customer'
+        }
+      });
+    }
+
+    // Create or update customer profile
+    const customer = await prisma.customerProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
         phone: customerData.phone,
         address: customerData.address,
         city: customerData.city,
-        postal_code: customerData.postalCode,
-        country: customerData.country,
-        date_of_birth: customerData.dateOfBirth,
-        gender: customerData.gender,
-        status: customerData.status || 'active',
-        preferences: customerData.preferences || {}
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error creating customer:', error);
-      return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 });
-    }
-    
-    return NextResponse.json(customer);
+        postalCode: customerData.postalCode,
+        country: customerData.country
+      },
+      create: {
+        userId: user.id,
+        email: customerData.email,
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
+        phone: customerData.phone,
+        address: customerData.address,
+        city: customerData.city,
+        postalCode: customerData.postalCode,
+        country: customerData.country
+      }
+    });
+
+    return NextResponse.json({
+      id: customer.id,
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      fullName: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      country: customer.country,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString()
+    });
   } catch (error) {
     console.error('Customer creation API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

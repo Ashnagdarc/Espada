@@ -1,50 +1,54 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
-import { ProductFormData } from '@/lib/types/api';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+async function createUniqueSlug(name: string) {
+  const base = slugify(name) || `product-${Date.now()}`;
+  let slug = base;
+  let count = 0;
+
+  while (await prisma.product.findUnique({ where: { slug } })) {
+    count += 1;
+    slug = `${base}-${count}`;
+  }
+
+  return slug;
+}
 
 // GET /api/admin/products - Get all products
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    void request;
-    console.log('🔍 Admin products API called');
-    
-    // Fetch products from Supabase
-    const { data: products, error } = await supabaseAdmin
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: "desc" }
+    });
 
-
-
-    if (error) {
-      console.error('Error fetching products from Supabase:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch products', details: error.message },
-        { status: 500 }
-      );
-    }
-
-    // Transform database response to match frontend Product interface
-    const transformedProducts = (products || []).map(product => ({
+    const transformedProducts = products.map((product) => ({
       id: product.id,
       name: product.name,
-      description: product.description,
-      price: Number(product.price),
-      category: product.category,
-      sizes: product.sizes || [],
-      colors: product.colors || [],
-      images: product.images || [],
-      stock: product.stock_quantity || 0, // Map stock_quantity to stock
-      featured: product.featured || false,
-      createdAt: product.created_at, // Map created_at to createdAt
-      updatedAt: product.updated_at  // Map updated_at to updatedAt
+      description: product.description || "",
+      price: product.price,
+      category: product.category || "General",
+      sizes: [],
+      colors: [],
+      images: product.image ? [product.image] : [],
+      stock: product.stock,
+      featured: product.featured,
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString()
     }));
 
     return NextResponse.json({ products: transformedProducts });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { error: "Failed to fetch products" },
       { status: 500 }
     );
   }
@@ -54,9 +58,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
-    // Validate required fields
-    const requiredFields = ['name', 'description', 'price', 'category'];
+
+    const requiredFields = ["name", "description", "price", "category"];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
@@ -66,72 +69,59 @@ export async function POST(request: Request) {
       }
     }
 
-    // Validate data types
-    if (typeof body.price !== 'number' || body.price <= 0) {
+    if (typeof body.price !== "number" || body.price <= 0) {
       return NextResponse.json(
-        { error: 'Price must be a positive number' },
+        { error: "Price must be a positive number" },
         { status: 400 }
       );
     }
 
-    if (body.stock !== undefined && (typeof body.stock !== 'number' || body.stock < 0)) {
+    if (body.stock !== undefined && (typeof body.stock !== "number" || body.stock < 0)) {
       return NextResponse.json(
-        { error: 'Stock must be a non-negative number' },
+        { error: "Stock must be a non-negative number" },
         { status: 400 }
       );
     }
 
-    // Map form status to database status
-    let dbStatus = 'active';
-    if (body.status === 'draft') {
-      dbStatus = 'inactive';
-    } else if (body.status === 'published') {
-      dbStatus = 'active';
-    }
+    const image = Array.isArray(body.images) ? body.images[0] : body.image;
+    const slug = await createUniqueSlug(body.name);
 
-    // Prepare product data for database
-    const productData: Omit<Partial<ProductFormData>, 'status'> & { 
-      stock_quantity: number; 
-      status: string; 
-      original_price?: number; 
-      sku?: string; 
-    } = {
-      name: body.name,
-      description: body.description,
-      price: body.price,
-      category: body.category,
-      sizes: body.sizes || [],
-      colors: body.colors || [],
-      images: body.images || [],
-      stock_quantity: body.stock || 0,
-      featured: body.featured || false,
-      status: dbStatus
-    };
+    const product = await prisma.product.create({
+      data: {
+        name: body.name,
+        slug,
+        description: body.description,
+        price: body.price,
+        category: body.category,
+        stock: body.stock || 0,
+        featured: body.featured || false,
+        image: image || null
+      }
+    });
 
-    // Add optional fields if they exist
-    if (body.sku) productData.sku = body.sku;
-    if (body.compareAtPrice) productData.original_price = body.compareAtPrice;
-
-    // Insert product into Supabase
-    const { data: product, error } = await supabaseAdmin
-      .from('products')
-      .insert(productData)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating product in Supabase:', error);
-      return NextResponse.json(
-        { error: 'Failed to create product', details: error.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ product }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating product:', error);
     return NextResponse.json(
-      { error: 'Failed to create product', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        product: {
+          id: product.id,
+          name: product.name,
+          description: product.description || "",
+          price: product.price,
+          category: product.category || "General",
+          sizes: [],
+          colors: [],
+          images: product.image ? [product.image] : [],
+          stock: product.stock,
+          featured: product.featured,
+          createdAt: product.createdAt.toISOString(),
+          updatedAt: product.updatedAt.toISOString()
+        }
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return NextResponse.json(
+      { error: "Failed to create product" },
       { status: 500 }
     );
   }

@@ -7,7 +7,6 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { useCart } from '@/contexts/CartContext'
 import { useAuth } from '@/hooks/useAuth'
-import { SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -131,10 +130,9 @@ function CheckoutContent() {
     return true
   }
 
-  // Prepare order data
+  // Prepare order data (no longer requires customer_id; backend uses session)
   const prepareOrderData = (paymentMethod: PaymentMethod) => {
     return {
-      customer_id: profile?.id,
       items: state.items.map(item => ({
         product_id: String(item.id),
         quantity: item.quantity,
@@ -730,10 +728,8 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <SupabaseAuthProvider>
-      <Suspense fallback={<CheckoutLoading />}>
-        <CheckoutContent />
-      </Suspense>
-    </SupabaseAuthProvider>
+    <Suspense fallback={<CheckoutLoading />}>
+      <CheckoutContent />
+    </Suspense>
   )
 }

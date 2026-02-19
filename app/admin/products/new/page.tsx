@@ -572,12 +572,13 @@ function NewProductPageContent() {
 
   return (
     <AdminLayout>
-      <motion.div
-        className="space-y-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="p-6 md:p-8">
+        <motion.div
+          className="space-y-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -1429,7 +1430,8 @@ function NewProductPageContent() {
             </div>
           </motion.div>
         </AnimatePresence>
-      </motion.div>
+        </motion.div>
+      </div>
     </AdminLayout>
   )
 }

@@ -58,7 +58,7 @@ export default function AdminLogin() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-fill-secondary rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto h-16 w-16 bg-white dark:bg-black border border-black dark:border-white rounded-full flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-label-primary" />
           </div>
           <h1 className="text-large-title font-semibold text-label-primary mb-2">
@@ -73,8 +73,8 @@ export default function AdminLogin() {
         <div className="card-apple p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-system-red-light border border-system-red rounded-lg p-4">
-                <p className="text-footnote text-system-red font-medium">{error}</p>
+              <div className="bg-white dark:bg-black border border-black dark:border-white rounded-lg p-4">
+                <p className="text-footnote text-black dark:text-white font-medium">{error}</p>
               </div>
             )}
 
@@ -91,7 +91,7 @@ export default function AdminLogin() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-fill-secondary border border-separator rounded-lg text-body text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-system-blue focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg text-body text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
                   placeholder="Enter admin email"
                 />
               </div>
@@ -109,13 +109,13 @@ export default function AdminLogin() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 bg-fill-secondary border border-separator rounded-lg text-body text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-system-blue focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg text-body text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
                     placeholder="Enter admin password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-label-tertiary hover:text-label-secondary transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -133,7 +133,7 @@ export default function AdminLogin() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-system-blue focus:ring-system-blue border-separator rounded"
+                  className="h-4 w-4 text-black focus:ring-black border-gray-300 dark:border-gray-700 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-footnote text-label-secondary">
                   Keep me signed in
@@ -142,7 +142,7 @@ export default function AdminLogin() {
 
               <Link
                 href="/auth/reset-password"
-                className="text-footnote text-system-blue hover:text-system-blue-dark transition-colors"
+                className="text-footnote text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -151,11 +151,11 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-label-primary hover:bg-label-secondary text-system-background font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-label-primary focus:ring-offset-2 focus:ring-offset-system-background disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-black hover:bg-gray-900 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-system-background mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Signing in...
                 </div>
               ) : (
@@ -169,7 +169,7 @@ export default function AdminLogin() {
               Need customer access?{' '}
               <Link
                 href="/signin"
-                className="text-system-blue hover:text-system-blue-dark font-medium transition-colors"
+                className="text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors"
               >
                 Customer Login
               </Link>

@@ -1,35 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/utils/auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/auth';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await getServerSession(authOptions);
 
-    if (authError || !user) {
+    if (!session?.user?.id) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
       }, { status: 401 });
     }
 
-    // Get user's profile using auth_user_id
-    const { data: profile, error } = await supabase
-      .from('customer_profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('❌ Error fetching customer profile:', error);
-      return NextResponse.json({
-        success: false,
-        error: 'Error fetching customer profile',
-        details: error
-      }, { status: 500 });
-    }
+    const profile = await prisma.customerProfile.findUnique({
+      where: { userId: session.user.id },
+    });
 
     if (!profile) {
       return NextResponse.json({
@@ -38,9 +25,22 @@ export async function GET() {
       }, { status: 404 });
     }
 
+    // Transform to snake_case for frontend
     return NextResponse.json({
       success: true,
-      profile
+      profile: {
+        id: profile.id,
+        email: profile.email,
+        role: 'customer' as const,
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        postal_code: profile.postalCode,
+        country: profile.country,
+        created_at: profile.createdAt?.toISOString(),
+      }
     });
 
   } catch (error) {
@@ -55,12 +55,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await getServerSession(authOptions);
 
-    if (authError || !user) {
+    if (!session?.user?.id) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
@@ -68,88 +65,59 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, first_name, last_name } = body;
+    const { email, first_name, last_name, phone, address, city, postal_code, country } = body;
 
-    if (!email) {
+    // Use session email if not provided
+    const profileEmail = email || session.user.email || '';
+    
+    if (!profileEmail) {
       return NextResponse.json({
         success: false,
         error: 'email is required'
       }, { status: 400 });
     }
 
-    // Check if this is an admin email - admin users should not have customer profiles
-    const isAdminEmail = email === 'daniel.nonso48@gmail.com';
-    if (isAdminEmail) {
-      return NextResponse.json({
-        success: false,
-        error: 'Admin users are managed separately and should not have customer profiles',
-        isAdmin: true
-      }, { status: 400 });
-    }
-
-    // Check if profile already exists for this user
-    const { data: existingProfile } = await supabase
-      .from('customer_profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (existingProfile) {
-      // Update existing profile
-      const { data: updatedProfile, error: updateError } = await supabase
-        .from('customer_profiles')
-        .update({ email, first_name, last_name })
-        .eq('auth_user_id', user.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('❌ Error updating existing profile:', updateError);
-        return NextResponse.json({
-          success: false,
-          error: 'Error updating existing profile',
-          details: updateError
-        }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        profile: updatedProfile,
-        action: 'updated'
-      });
-    }
-
-    // Create new customer profile (only for non-admin users)
-    const newProfile = {
-      auth_user_id: user.id,
-      email,
-      first_name: first_name || '',
-      last_name: last_name || '',
-      preferences: {
-        newsletter: false,
-        smsUpdates: false,
+    const profile = await prisma.customerProfile.upsert({
+      where: { userId: session.user.id },
+      update: {
+        firstName: first_name || undefined,
+        lastName: last_name || undefined,
+        phone,
+        address,
+        city,
+        postalCode: postal_code,
+        country,
       },
-    };
+      create: {
+        userId: session.user.id,
+        email: profileEmail,
+        firstName: first_name || '',
+        lastName: last_name || '',
+        phone,
+        address,
+        city,
+        postalCode: postal_code,
+        country,
+      },
+    });
 
-    const { data: createdProfile, error: createError } = await supabase
-      .from('customer_profiles')
-      .insert(newProfile)
-      .select()
-      .single();
-
-    if (createError) {
-      console.error('❌ Error creating customer profile:', createError);
-      return NextResponse.json({
-        success: false,
-        error: 'Error creating customer profile',
-        details: createError
-      }, { status: 500 });
-    }
-
+    // Transform to snake_case for frontend
     return NextResponse.json({
       success: true,
-      profile: createdProfile,
-      action: 'created'
+      profile: {
+        id: profile.id,
+        email: profile.email,
+        role: 'customer' as const,
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        postal_code: profile.postalCode,
+        country: profile.country,
+        created_at: profile.createdAt?.toISOString(),
+      },
+      action: 'updated'
     });
 
   } catch (error) {
@@ -164,12 +132,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await getServerSession(authOptions);
 
-    if (authError || !user) {
+    if (!session?.user?.id) {
       return NextResponse.json({
         success: false,
         error: 'Not authenticated'
@@ -177,30 +142,33 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { ...updateData } = body;
 
-    const { data: updatedProfile, error } = await supabase
-      .from('customer_profiles')
-      .update({
-        ...updateData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('auth_user_id', user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('❌ Error updating customer profile:', error);
-      return NextResponse.json({
-        success: false,
-        error: 'Error updating customer profile',
-        details: error
-      }, { status: 500 });
-    }
+    const updatedProfile = await prisma.customerProfile.update({
+      where: { userId: session.user.id },
+      data: {
+        firstName: body.firstName,
+        lastName: body.lastName,
+        phone: body.phone,
+        address: body.address,
+        city: body.city,
+        postalCode: body.postalCode,
+        country: body.country,
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      profile: updatedProfile
+      profile: {
+        id: updatedProfile.id,
+        email: updatedProfile.email,
+        first_name: updatedProfile.firstName,
+        last_name: updatedProfile.lastName,
+        phone: updatedProfile.phone,
+        address: updatedProfile.address,
+        city: updatedProfile.city,
+        postal_code: updatedProfile.postalCode,
+        country: updatedProfile.country,
+      }
     });
 
   } catch (error) {

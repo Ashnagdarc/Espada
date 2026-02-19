@@ -6,12 +6,7 @@ import AdminPage from '@/components/admin/ui/AdminPage';
 import PageHeader from '@/components/admin/ui/PageHeader';
 import Card from '@/components/admin/ui/Card';
 import { Save, Store, Bell, Shield, Palette, Loader2 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { useToastActions } from '@/hooks/useToast';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface SettingsData {
   general: {
@@ -71,7 +66,6 @@ function SettingsPageContent() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const tabs = [
     { id: 'general', name: 'General', icon: Store },
@@ -88,21 +82,8 @@ function SettingsPageContent() {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      setError(null);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        const errorMsg = 'Please log in to access settings';
-        setError(errorMsg);
-        showError('Authentication Required', errorMsg);
-        return;
-      }
-
-      const response = await fetch('/api/admin/settings', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
+      const response = await fetch('/api/admin/settings');
 
       if (!response.ok) {
         throw new Error('Failed to load settings');
@@ -120,7 +101,6 @@ function SettingsPageContent() {
     } catch (err) {
       console.error('Error loading settings:', err);
       const errorMsg = 'Failed to load settings. Using default values.';
-      setError(errorMsg);
       showError('Load Failed', errorMsg);
     } finally {
       setLoading(false);
@@ -130,21 +110,11 @@ function SettingsPageContent() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      setError(null);
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        const errorMsg = 'Please log in to save settings';
-        setError(errorMsg);
-        showError('Authentication Required', errorMsg);
-        return;
-      }
 
       const response = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(settings)
       });
@@ -159,7 +129,6 @@ function SettingsPageContent() {
       console.error('Error saving settings:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to save settings. Please try again.';
       showError('Save Failed', errorMessage);
-      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -207,13 +176,6 @@ function SettingsPageContent() {
             </button>
           )}
         />
-
-        {/* Error Message */}
-        {error && (
-          <Card appearance="panel" className="px-4 py-3 text-red-200 border-red-500/50 bg-red-500/10">
-            {error}
-          </Card>
-        )}
 
         <div className="flex gap-6">
           {/* Sidebar */}

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react'
 
 export interface CartItem {
-  id: number
+  id: string
   name: string
   price: number
   image: string
@@ -21,8 +21,8 @@ interface CartState {
 
 type CartAction =
   | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'quantity'> }
-  | { type: 'REMOVE_ITEM'; payload: { id: number; color: string; size: string } }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: number; color: string; size: string; quantity: number } }
+  | { type: 'REMOVE_ITEM'; payload: { id: string; color: string; size: string } }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; color: string; size: string; quantity: number } }
   | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; payload: CartItem[] }
   | { type: 'SET_LOADED'; payload: boolean }
@@ -30,8 +30,8 @@ type CartAction =
 interface CartContextType {
   state: CartState
   addItem: (item: Omit<CartItem, 'quantity'>) => void
-  removeItem: (id: number, color: string, size: string) => void
-  updateQuantity: (id: number, color: string, size: string, quantity: number) => void
+  removeItem: (id: string, color: string, size: string) => void
+  updateQuantity: (id: string, color: string, size: string, quantity: number) => void
   clearCart: () => void
 }
 
@@ -130,7 +130,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (savedCart) {
         try {
           const cartItems = JSON.parse(savedCart)
-          dispatch({ type: 'LOAD_CART', payload: cartItems })
+          const normalizedItems = Array.isArray(cartItems)
+            ? cartItems.map((item) => ({
+                ...item,
+                id: String(item.id)
+              }))
+            : []
+          dispatch({ type: 'LOAD_CART', payload: normalizedItems })
         } catch (error) {
           console.error('Error loading cart from localStorage:', error)
           localStorage.removeItem('espada-cart')
@@ -158,11 +164,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'ADD_ITEM', payload: item })
   }
 
-  const removeItem = (id: number, color: string, size: string) => {
+  const removeItem = (id: string, color: string, size: string) => {
     dispatch({ type: 'REMOVE_ITEM', payload: { id, color, size } })
   }
 
-  const updateQuantity = (id: number, color: string, size: string, quantity: number) => {
+  const updateQuantity = (id: string, color: string, size: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id, color, size, quantity } })
   }
 

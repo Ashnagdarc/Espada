@@ -268,7 +268,7 @@ function ReportsPageContent() {
         />
 
         {/* Report Type Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {reportTypes.map((report) => {
             const Icon = report.icon;
             return (
@@ -304,7 +304,7 @@ function ReportsPageContent() {
           <div className="space-y-6">
             {selectedReport === 'sales' && reportData && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatCard
                     title="Total Sales"
                     value={formatCurrency(reportData.salesReport.totalSales)}
@@ -331,7 +331,7 @@ function ReportsPageContent() {
                 </div>
 
                 <Card appearance="panel" className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Sales Trends</h3>
+                  <h3 className="text-lg font-semibold mb-6">Sales Trends</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
                       <BarChart3 className="h-12 w-12 text-white/60 mx-auto mb-2" />
@@ -345,7 +345,7 @@ function ReportsPageContent() {
 
             {selectedReport === 'customers' && reportData && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatCard
                     title="Total Customers"
                     value={reportData.customerReport.totalCustomers}
@@ -372,7 +372,7 @@ function ReportsPageContent() {
                 </div>
 
                 <Card appearance="panel" className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Customer Acquisition</h3>
+                  <h3 className="text-lg font-semibold mb-6">Customer Acquisition</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
                       <Users className="h-12 w-12 text-white/60 mx-auto mb-2" />
@@ -386,7 +386,7 @@ function ReportsPageContent() {
 
             {selectedReport === 'products' && reportData && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatCard
                     title="Total Products"
                     value={reportData.productReport.totalProducts}
@@ -411,7 +411,7 @@ function ReportsPageContent() {
                 </div>
 
                 <Card appearance="panel" className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Category Performance</h3>
+                  <h3 className="text-lg font-semibold mb-6">Category Performance</h3>
                   <div className="space-y-4">
                     {reportData.productReport.categoryPerformance.map((category) => (
                       <Card key={category.name} appearance="panel" className="p-3 flex items-center justify-between">
@@ -426,7 +426,7 @@ function ReportsPageContent() {
 
             {selectedReport === 'orders' && reportData && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatCard
                     title="Total Orders"
                     value={reportData.orderReport.totalOrders}
@@ -452,7 +452,7 @@ function ReportsPageContent() {
                 </div>
 
                 <Card appearance="panel" className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Order Status Distribution</h3>
+                  <h3 className="text-lg font-semibold mb-6">Order Status Distribution</h3>
                   <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
                     <div className="text-center">
                       <ShoppingCart className="h-12 w-12 text-white/60 mx-auto mb-2" />
@@ -467,10 +467,10 @@ function ReportsPageContent() {
         )}
 
         {/* Quick Actions */}
-        <Card appearance="panel" className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
+        <Card appearance="panel" className="p-6 mt-12">
+          <h3 className="text-lg font-semibold mb-6">Quick Actions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card appearance="panel" className="flex items-center gap-4 p-5" hover>
               <FileText className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Generate Monthly Report</p>
@@ -478,7 +478,7 @@ function ReportsPageContent() {
               </div>
             </Card>
 
-            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
+            <Card appearance="panel" className="flex items-center gap-4 p-5" hover>
               <Calendar className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Schedule Report</p>
@@ -486,7 +486,7 @@ function ReportsPageContent() {
               </div>
             </Card>
 
-            <Card appearance="panel" className="flex items-center gap-3 p-4" hover>
+            <Card appearance="panel" className="flex items-center gap-4 p-5" hover>
               <Download className="h-5 w-5 text-white/80" />
               <div className="text-left">
                 <p className="font-medium">Export All Data</p>

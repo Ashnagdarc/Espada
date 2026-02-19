@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 
 // GET /api/admin/customers/[id] - Fetch specific customer
 export async function GET(
@@ -11,36 +11,79 @@ export async function GET(
     console.log('🔍 Admin customer details API called');
     const { id } = await params;
 
-    const { data: customer, error } = await supabaseAdmin
-      .from('customer_profiles')
-      .select(`
-        *,
-        customer_addresses(*),
-        orders(
-          id,
-          order_number,
-          status,
-          total_amount,
-          currency,
-          created_at,
-          order_items(
-            id,
-            product_id,
-            quantity,
-            price,
-            products(name, image_url)
-          )
-        )
-      `)
-      .eq('id', id)
-      .single();
-      
-    if (error) {
-      console.error('Error fetching customer:', error);
+    const customer = await prisma.customerProfile.findUnique({
+      where: { id },
+      include: {
+        user: {
+          include: {
+            orders: {
+              select: {
+                id: true,
+                orderNumber: true,
+                status: true,
+                totalAmount: true,
+                currency: true,
+                createdAt: true,
+                items: {
+                  select: {
+                    id: true,
+                    quantity: true,
+                    price: true,
+                    product: {
+                      select: {
+                        id: true,
+                        name: true,
+                        image: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!customer) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
-    
-    return NextResponse.json(customer);
+
+    // Transform response to match expected shape
+    const response = {
+      id: customer.id,
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      fullName: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      country: customer.country,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+      orders: customer.user?.orders?.map(order => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        totalAmount: order.totalAmount,
+        currency: order.currency,
+        createdAt: order.createdAt.toISOString(),
+        items: order.items.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            image: item.product.image
+          }
+        }))
+      })) || []
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Customer API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -58,33 +101,44 @@ export async function PUT(
 
     const customerData = await request.json();
 
-    const { data: customer, error } = await supabaseAdmin
-      .from('customer_profiles')
-      .update({
-        email: customerData.email,
-        first_name: customerData.firstName,
-        last_name: customerData.lastName,
+    // First verify customer exists
+    const existingCustomer = await prisma.customerProfile.findUnique({
+      where: { id }
+    });
+
+    if (!existingCustomer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+    }
+
+    // Update customer profile
+    const customer = await prisma.customerProfile.update({
+      where: { id },
+      data: {
+        email: customerData.email || existingCustomer.email,
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
         phone: customerData.phone,
         address: customerData.address,
         city: customerData.city,
-        postal_code: customerData.postalCode,
-        country: customerData.country,
-        date_of_birth: customerData.dateOfBirth,
-        gender: customerData.gender,
-        status: customerData.status,
-        preferences: customerData.preferences,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error updating customer:', error);
-      return NextResponse.json({ error: 'Failed to update customer' }, { status: 500 });
-    }
-    
-    return NextResponse.json(customer);
+        postalCode: customerData.postalCode,
+        country: customerData.country
+      }
+    });
+
+    return NextResponse.json({
+      id: customer.id,
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      fullName: `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      country: customer.country,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString()
+    });
   } catch (error) {
     console.error('Customer update API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -101,20 +155,20 @@ export async function DELETE(
     console.log('🔍 Admin customer delete API called');
     const { id } = await params;
 
-    // Soft delete by updating status
-    const { error } = await supabaseAdmin
-      .from('customer_profiles')
-      .update({ 
-        status: 'deleted',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
-      
-    if (error) {
-      console.error('Error deleting customer:', error);
-      return NextResponse.json({ error: 'Failed to delete customer' }, { status: 500 });
+    // Verify customer exists
+    const customer = await prisma.customerProfile.findUnique({
+      where: { id }
+    });
+
+    if (!customer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
-    
+
+    // Delete customer profile
+    await prisma.customerProfile.delete({
+      where: { id }
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Customer deletion API error:', error);

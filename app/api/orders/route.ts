@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/auth';
+import prisma from '@/lib/prisma';
 
-// Interface for order creation
-interface OrderItem {
+interface OrderItemInput {
   product_id: string;
   quantity: number;
   unit_price: number;
@@ -11,8 +12,7 @@ interface OrderItem {
 }
 
 interface CreateOrderRequest {
-  customer_id: string;
-  items: OrderItem[];
+  items: OrderItemInput[];
   total_amount: number;
   shipping_address: {
     street: string;
@@ -32,232 +32,148 @@ interface CreateOrderRequest {
   notes?: string;
 }
 
-// Generate order number
-function generateOrderNumber(): string {
-  const date = new Date();
-  const year = date.getFullYear().toString().slice(-2);
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `ORD${year}${month}${day}${random}`;
+function safeParseAddress(value?: string | null) {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 // POST - Create a new order
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
     const body: CreateOrderRequest = await request.json();
-    
-    // Validate required fields
-    if (!body.customer_id || !body.items || body.items.length === 0 || !body.total_amount || !body.shipping_address) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing required fields: customer_id, items, total_amount, shipping_address'
-      }, { status: 400 });
+
+    if (!body.items || body.items.length === 0 || !body.total_amount || !body.shipping_address) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: items, total_amount, shipping_address' },
+        { status: 400 }
+      );
     }
 
-    // Validate customer exists
-    const { data: customer, error: customerError } = await supabaseAdmin
-      .from('customer_profiles')
-      .select('id')
-      .eq('id', body.customer_id)
-      .single();
+    const productIds = body.items.map((item) => item.product_id);
+    const existingProducts = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true }
+    });
 
-    if (customerError || !customer) {
-      return NextResponse.json({
-        success: false,
-        error: 'Customer not found'
-      }, { status: 404 });
+    if (existingProducts.length !== productIds.length) {
+      return NextResponse.json(
+        { success: false, error: 'Some items are no longer available. Please refresh your cart.' },
+        { status: 400 }
+      );
     }
 
-    // Generate unique order number
-    let orderNumber = generateOrderNumber();
-    let attempts = 0;
-    const maxAttempts = 10;
-
-    // Ensure order number is unique
-    while (attempts < maxAttempts) {
-      const { data: existingOrder } = await supabaseAdmin
-        .from('orders')
-        .select('id')
-        .eq('order_number', orderNumber)
-        .single();
-
-      if (!existingOrder) break;
-      
-      orderNumber = generateOrderNumber();
-      attempts++;
-    }
-
-    if (attempts >= maxAttempts) {
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to generate unique order number'
-      }, { status: 500 });
-    }
-
-    // Create the order
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert({
-        customer_id: body.customer_id,
-        order_number: orderNumber,
+    const order = await prisma.order.create({
+      data: {
+        userId: session.user.id,
         status: 'pending',
-        total_amount: body.total_amount,
-        currency: 'USD',
-        shipping_address: body.shipping_address,
-        billing_address: body.billing_address || body.shipping_address,
-        payment_status: 'pending',
-        payment_method: body.payment_method,
-        notes: body.notes || ''
-      })
-      .select()
-      .single();
+        totalAmount: body.total_amount,
+        currency: 'NGN',
+        paymentStatus: 'pending',
+        shippingAddress: JSON.stringify(body.shipping_address),
+      },
+    });
 
-    if (orderError) {
-      console.error('Error creating order:', orderError);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to create order'
-      }, { status: 500 });
-    }
-
-    // Create order items
-    const orderItems = body.items.map(item => ({
-      order_id: order.id,
-      product_id: item.product_id,
+    const orderItems = body.items.map((item) => ({
+      orderId: order.id,
+      productId: item.product_id,
       quantity: item.quantity,
-      unit_price: item.unit_price,
-      color: item.color,
-      size: item.size
+      price: item.unit_price,
     }));
 
-    const { error: itemsError } = await supabaseAdmin
-      .from('order_items')
-      .insert(orderItems);
-
-    if (itemsError) {
-      console.error('Error creating order items:', itemsError);
-      // Rollback order creation
-      await supabaseAdmin.from('orders').delete().eq('id', order.id);
-      
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to create order items'
-      }, { status: 500 });
-    }
-
-    // Update product stock quantities (retrieve current stock then decrement)
-    for (const item of body.items) {
-      const { data: productStock, error: fetchStockError } = await supabaseAdmin
-        .from('products')
-        .select('stock_quantity')
-        .eq('id', item.product_id)
-        .single();
-
-      if (fetchStockError) {
-        console.error('Error fetching stock for product:', item.product_id, fetchStockError);
-        continue;
-      }
-
-      const currentStock = Number(productStock?.stock_quantity ?? 0);
-      const newStock = Math.max(0, currentStock - Number(item.quantity));
-
-      const { error: stockError } = await supabaseAdmin
-        .from('products')
-        .update({ stock_quantity: newStock })
-        .eq('id', item.product_id);
-
-      if (stockError) {
-        console.error('Error updating stock for product:', item.product_id, stockError);
-      }
-    }
+    await prisma.orderItem.createMany({ data: orderItems });
 
     return NextResponse.json({
       success: true,
       data: {
-        order_id: order.id,
-        order_number: orderNumber,
+        id: order.id,
+        order_number: order.id,
         status: order.status,
-        total_amount: order.total_amount
-      }
+        total_amount: order.totalAmount,
+      },
     });
-
   } catch (error) {
     console.error('Error in POST /api/orders:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error'
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-// GET - Retrieve orders for a customer
-export async function GET(request: NextRequest) {
+// GET - Retrieve orders for the authenticated user
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const customerId = searchParams.get('customer_id');
+    const session = await getServerSession(authOptions);
 
-    if (!customerId) {
-      return NextResponse.json({
-        success: false,
-        error: 'customer_id parameter is required'
-      }, { status: 400 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Not authenticated' },
+        { status: 401 }
+      );
     }
 
-    // Get orders with order items and product details
-    const { data: orders, error } = await supabaseAdmin
-      .from('orders')
-      .select(`
-        *,
-        order_items (
-          id,
-          quantity,
-          unit_price,
-          color,
-          size,
-          products (
-            id,
-            name,
-            images
-          )
-        )
-      `)
-      .eq('customer_id', customerId)
-      .order('created_at', { ascending: false });
+    const orders = await prisma.order.findMany({
+      where: { userId: session.user.id },
+      include: {
+        items: {
+          include: { product: true },
+        },
+        payment: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    if (error) {
-      console.error('Error fetching orders:', error);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to fetch orders'
-      }, { status: 500 });
-    }
+    const transformedOrders = orders.map((order) => {
+      const shippingAddress = safeParseAddress(order.shippingAddress);
 
-    // Transform the data to include product details in order items
-    const transformedOrders = orders.map(order => ({
-      ...order,
-      items: order.order_items.map((item: any) => ({
-        id: item.id,
-        product_id: item.products.id,
-        product_name: item.products.name,
-        quantity: item.quantity,
-        price: item.unit_price,
-        color: item.color,
-        size: item.size,
-        image_url: item.products.images?.[0] || null
-      }))
-    }));
+      return {
+        id: order.id,
+        order_number: order.id,
+        status: order.status,
+        total_amount: order.totalAmount,
+        currency: order.currency,
+        created_at: order.createdAt.toISOString(),
+        updated_at: order.updatedAt.toISOString(),
+        payment_method: order.payment?.paymentMethod || 'unknown',
+        payment_status: order.paymentStatus,
+        shipping_address: shippingAddress,
+        billing_address: shippingAddress,
+        notes: null,
+        items: order.items.map((item) => ({
+          id: item.id,
+          product_id: item.productId,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          price: item.price,
+          color: null,
+          size: null,
+          image_url: item.product.image || null,
+        })),
+      };
+    });
 
     return NextResponse.json({
       success: true,
-      data: transformedOrders
+      data: transformedOrders,
     });
-
   } catch (error) {
     console.error('Error in GET /api/orders:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error'
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

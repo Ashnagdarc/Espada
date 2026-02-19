@@ -152,11 +152,11 @@ export default function OrderDetailPage() {
   return (
     <AdminLayout>
       <PageTransition>
-        <div className="space-y-6">
+        <div className="p-6 md:p-8 space-y-8">
           <StaggerContainer>
             {/* Header */}
             <StaggerItem>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => router.push('/admin/orders')}
@@ -167,10 +167,10 @@ export default function OrderDetailPage() {
                     Back
                   </button>
                   <h1 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Order #{order?.id}
+                    Order #{order?.id.slice(-8)}
                   </h1>
                 </div>
-                <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order?.status || 'pending')}`}>
+                <div className={`flex items-center px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(order?.status || 'pending')}`}>
                   {getStatusIcon(order?.status || 'pending')}
                   <span style={{ fontFamily: 'Gilroy, sans-serif' }} className="ml-2 capitalize">{order?.status}</span>
                 </div>
@@ -192,34 +192,37 @@ export default function OrderDetailPage() {
                 {/* Order Items */}
                 <StaggerItem>
                   <HoverCard className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
-                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
                       <Package className="h-5 w-5 mr-2" />
                       Order Items
                     </h3>
-                    <div className="space-y-4">
-                      {order?.items.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                          <div className="flex-1">
-                            <h4 style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-medium text-gray-900 dark:text-white">{item.productName}</h4>
-                            <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              <span>Size: {item.size}</span>
-                              <span className="mx-2">•</span>
-                              <span>Color: {item.color}</span>
-                              <span className="mx-2">•</span>
-                              <span>Qty: {item.quantity}</span>
+                    {order?.items && order.items.length > 0 ? (
+                      <div className="space-y-3">
+                        {order.items.map((item, index) => (
+                          <div key={index} className="flex items-start justify-between p-5 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <div className="flex-1 min-w-0 pr-4">
+                              <h4 style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-semibold text-gray-900 dark:text-white mb-2">{item.product?.name || 'Product'}</h4>
+                              <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm text-gray-600 dark:text-gray-400">
+                                <span>Quantity: {item.quantity}</span>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-semibold text-gray-900 dark:text-white text-lg mb-1">${(item.price * item.quantity).toFixed(2)}</div>
+                              <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm text-gray-500 dark:text-gray-400">${item.price.toFixed(2)} each</div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-medium text-gray-900 dark:text-white">${(item.price * item.quantity).toFixed(2)}</div>
-                            <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm text-gray-600 dark:text-gray-400">${item.price.toFixed(2)} each</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-gray-600 mt-4 pt-4">
-                      <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="flex justify-between items-center text-lg font-medium text-gray-900 dark:text-white">
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Package className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" />
+                        <p style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-500 dark:text-gray-400">No items in this order</p>
+                      </div>
+                    )}
+                    <div className="border-t border-gray-200 dark:border-gray-600 mt-6 pt-5">
+                      <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="flex justify-between items-center text-xl font-bold text-gray-900 dark:text-white">
                         <span>Total</span>
-                        <span>${order?.total.toFixed(2)}</span>
+                        <span>${order?.totalAmount.toFixed(2)}</span>
                       </div>
                     </div>
                   </HoverCard>
@@ -228,25 +231,28 @@ export default function OrderDetailPage() {
                 {/* Status Update */}
                 <StaggerItem>
                   <HoverCard className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
-                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-medium text-gray-900 dark:text-white mb-4">Update Order Status</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {getAvailableStatusTransitions(order?.status || 'pending').map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => updateOrderStatus(status)}
-                          disabled={updating}
-                          className="flex items-center px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors"
-                          style={{ fontFamily: 'Gilroy, sans-serif' }}
-                        >
-                          {getStatusIcon(status)}
-                          <span className="ml-2 capitalize">
-                            {updating ? 'Updating...' : `Mark as ${status}`}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    {getAvailableStatusTransitions(order?.status || 'pending').length === 0 && (
-                      <p style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-600 dark:text-gray-400">No status updates available for this order.</p>
+                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Update Order Status</h3>
+                    {getAvailableStatusTransitions(order?.status || 'pending').length > 0 ? (
+                      <div className="flex flex-wrap gap-3">
+                        {getAvailableStatusTransitions(order?.status || 'pending').map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => updateOrderStatus(status)}
+                            disabled={updating}
+                            className="flex items-center px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105"
+                            style={{ fontFamily: 'Gilroy, sans-serif' }}
+                          >
+                            {getStatusIcon(status)}
+                            <span className="ml-2 capitalize font-medium">
+                              {updating ? 'Updating...' : `Mark as ${status}`}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-500 dark:text-gray-400">No status updates available for this order.</p>
+                      </div>
                     )}
                   </HoverCard>
                 </StaggerItem>
@@ -257,18 +263,18 @@ export default function OrderDetailPage() {
                 {/* Customer Information */}
                 <StaggerItem>
                   <HoverCard className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
-                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center">
                       <User className="h-5 w-5 mr-2" />
                       Customer
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white">{order?.customerName}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white font-medium">{order?.user?.name || 'N/A'}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white">{order?.customerEmail}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white break-all">{order?.user?.email || 'N/A'}</div>
                       </div>
                     </div>
                   </HoverCard>
@@ -277,16 +283,29 @@ export default function OrderDetailPage() {
                 {/* Shipping Address */}
                 <StaggerItem>
                   <HoverCard className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
-                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center">
                       <MapPin className="h-5 w-5 mr-2" />
                       Shipping Address
                     </h3>
-                    <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white">
-                      <div>{order?.shippingAddress.street}</div>
-                      <div>
-                        {order?.shippingAddress.city}, {order?.shippingAddress.state} {order?.shippingAddress.zipCode}
-                      </div>
-                      <div>{order?.shippingAddress.country}</div>
+                    <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white leading-relaxed">
+                      {order?.shippingAddress ? (() => {
+                        try {
+                          const addr = typeof order.shippingAddress === 'string' 
+                            ? JSON.parse(order.shippingAddress) 
+                            : order.shippingAddress;
+                          return (
+                            <div className="space-y-1">
+                              <div className="font-medium">{addr.street || 'N/A'}</div>
+                              <div className="text-gray-700 dark:text-gray-300">
+                                {addr.city || 'N/A'}, {addr.state || 'N/A'} {addr.postal_code || ''}
+                              </div>
+                              <div className="text-gray-700 dark:text-gray-300">{addr.country || 'N/A'}</div>
+                            </div>
+                          );
+                        } catch {
+                          return <div className="text-gray-500 dark:text-gray-400">Invalid address format</div>;
+                        }
+                      })() : <div className="text-gray-500 dark:text-gray-400">No shipping address</div>}
                     </div>
                   </HoverCard>
                 </StaggerItem>
@@ -294,17 +313,17 @@ export default function OrderDetailPage() {
                 {/* Order Information */}
                 <StaggerItem>
                   <HoverCard className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6">
-                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <h3 style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center">
                       <CreditCard className="h-5 w-5 mr-2" />
                       Order Information
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Order ID</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white font-mono text-sm">{order?.id}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Order ID</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white font-mono text-xs break-all bg-gray-50 dark:bg-gray-700/50 p-2 rounded">{order?.id}</div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Order Date</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Order Date</div>
                         <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white">
                           {order?.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -316,7 +335,7 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Last Updated</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Last Updated</div>
                         <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white">
                           {order?.updatedAt ? new Date(order.updatedAt).toLocaleDateString('en-US', {
                             year: 'numeric',
@@ -327,9 +346,9 @@ export default function OrderDetailPage() {
                           }) : 'N/A'}
                         </div>
                       </div>
-                      <div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Amount</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white text-lg font-medium">${order?.total.toFixed(2)}</div>
+                      <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Amount</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white text-2xl font-bold">${order?.totalAmount.toFixed(2)}</div>
                       </div>
                     </div>
                   </HoverCard>

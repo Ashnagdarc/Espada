@@ -98,13 +98,13 @@ export default function ResetPasswordConfirmPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-system-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-black rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-800">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Set New Password</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-label-primary mb-2">Set New Password</h1>
+            <p className="text-label-secondary">
               Enter your new password below to complete the reset process.
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function ResetPasswordConfirmPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-label-primary mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -125,8 +125,8 @@ export default function ResetPasswordConfirmPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-colors ${
+                    errors.password ? 'border-gray-400 bg-gray-50 dark:bg-gray-900' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-black'
                   }`}
                   placeholder="Enter your new password"
                   disabled={isLoading}
@@ -149,26 +149,26 @@ export default function ResetPasswordConfirmPage() {
               {password && (
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center text-xs">
-                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.length ? 'text-green-500' : 'text-gray-400'}`} />
-                    <span className={passwordValidation.length ? 'text-green-600' : 'text-gray-500'}>
+                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.length ? 'text-black dark:text-white' : 'text-gray-400'}`} />
+                    <span className={passwordValidation.length ? 'text-black dark:text-white' : 'text-gray-500'}>
                       At least 8 characters
                     </span>
                   </div>
                   <div className="flex items-center text-xs">
-                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.uppercase ? 'text-green-500' : 'text-gray-400'}`} />
-                    <span className={passwordValidation.uppercase ? 'text-green-600' : 'text-gray-500'}>
+                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.uppercase ? 'text-black dark:text-white' : 'text-gray-400'}`} />
+                    <span className={passwordValidation.uppercase ? 'text-black dark:text-white' : 'text-gray-500'}>
                       One uppercase letter
                     </span>
                   </div>
                   <div className="flex items-center text-xs">
-                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.lowercase ? 'text-green-500' : 'text-gray-400'}`} />
-                    <span className={passwordValidation.lowercase ? 'text-green-600' : 'text-gray-500'}>
+                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.lowercase ? 'text-black dark:text-white' : 'text-gray-400'}`} />
+                    <span className={passwordValidation.lowercase ? 'text-black dark:text-white' : 'text-gray-500'}>
                       One lowercase letter
                     </span>
                   </div>
                   <div className="flex items-center text-xs">
-                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.number ? 'text-green-500' : 'text-gray-400'}`} />
-                    <span className={passwordValidation.number ? 'text-green-600' : 'text-gray-500'}>
+                    <Check className={`h-3 w-3 mr-1 ${passwordValidation.number ? 'text-black dark:text-white' : 'text-gray-400'}`} />
+                    <span className={passwordValidation.number ? 'text-black dark:text-white' : 'text-gray-500'}>
                       One number
                     </span>
                   </div>
@@ -176,13 +176,13 @@ export default function ResetPasswordConfirmPage() {
               )}
               
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{errors.password}</p>
               )}
             </div>
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-label-primary mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
@@ -194,8 +194,8 @@ export default function ResetPasswordConfirmPage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-colors ${
+                    errors.confirmPassword ? 'border-gray-400 bg-gray-50 dark:bg-gray-900' : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-black'
                   }`}
                   placeholder="Confirm your new password"
                   disabled={isLoading}
@@ -214,7 +214,7 @@ export default function ResetPasswordConfirmPage() {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -222,7 +222,7 @@ export default function ResetPasswordConfirmPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white focus:ring-offset-white dark:focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -239,7 +239,7 @@ export default function ResetPasswordConfirmPage() {
           <div className="mt-8 text-center">
             <Link
               href="/signin"
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="text-sm text-label-secondary hover:text-label-primary transition-colors"
             >
               Remember your password? Sign in
             </Link>

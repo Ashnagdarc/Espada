@@ -78,17 +78,17 @@ class PaystackService {
 
   constructor() {
     this.config = {
-      secretKey: process.env.PAYSTACK_SECRET_KEY!,
-      publicKey: process.env.PAYSTACK_PUBLIC_KEY!,
+      secretKey: process.env.PAYSTACK_SECRET_KEY || '',
+      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
       baseUrl: 'https://api.paystack.co'
     };
 
-    // Validate required environment variables
-    if (!this.config.secretKey) {
-      throw new Error('PAYSTACK_SECRET_KEY environment variable is required');
+    // Warn if required environment variables are missing (only in production)
+    if (!this.config.secretKey && process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  PAYSTACK_SECRET_KEY environment variable is not set');
     }
-    if (!this.config.publicKey) {
-      throw new Error('PAYSTACK_PUBLIC_KEY environment variable is required');
+    if (!this.config.publicKey && process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  PAYSTACK_PUBLIC_KEY environment variable is not set');
     }
   }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
@@ -14,6 +14,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, user, isLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Redirect if user is already authenticated
   useEffect(() => {
@@ -28,13 +29,18 @@ export default function SignIn() {
     setLoading(true);
 
     try {
+      if (!email || !password) {
+        setError('Email and password are required');
+        return;
+      }
+
       const result = await signIn(email, password);
       
       if (result.error) {
         setError(result.error);
       } else {
-        // Sign in successful, redirect to home page
-        router.push('/');
+        const callbackUrl = searchParams.get('callbackUrl');
+        router.push(callbackUrl || '/');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -48,7 +54,7 @@ export default function SignIn() {
     return (
       <div className="min-h-screen bg-system-background flex items-center justify-center">
         <div className="flex items-center space-x-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black dark:border-white"></div>
           <span className="text-label-primary">Loading...</span>
         </div>
       </div>
@@ -72,9 +78,9 @@ export default function SignIn() {
         <div className="card-apple p-8 bg-white dark:bg-gray-900 border border-separator shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 dark:text-red-200 font-medium">{error}</p>
+              <div className="bg-white dark:bg-black border border-black dark:border-white rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-black dark:text-white flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-black dark:text-white font-medium">{error}</p>
               </div>
             )}
 
@@ -91,7 +97,7 @@ export default function SignIn() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                   placeholder="Enter your email"
                 />
               </div>
@@ -109,13 +115,13 @@ export default function SignIn() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -133,7 +139,7 @@ export default function SignIn() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-black focus:ring-black border-gray-300 dark:border-gray-700 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-label-secondary">
                   Remember me
@@ -142,7 +148,7 @@ export default function SignIn() {
 
               <Link
                 href="/auth/reset-password"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
+                className="text-sm text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors"
               >
                 Forgot password?
               </Link>
@@ -151,7 +157,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+              className="w-full bg-black hover:bg-gray-900 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -169,7 +175,7 @@ export default function SignIn() {
               Don't have an account?{' '}
               <Link
                 href="/signup"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold transition-colors"
+                className="text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-semibold transition-colors"
               >
                 Sign up
               </Link>

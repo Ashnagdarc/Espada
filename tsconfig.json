@@ -43,6 +43,7 @@
   "include": [
     "next-env.d.ts",
     "global.d.ts",
+    "types/**/*.d.ts",
     "api",
     "app",
     "components",

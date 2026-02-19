@@ -1,66 +1,22 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 export async function middleware(req: NextRequest) {
-  let response = NextResponse.next({
+  const { pathname } = req.nextUrl
+
+  // Skip middleware for API routes - they should handle their own auth
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
+  const response = NextResponse.next({
     request: {
       headers: req.headers,
     },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return req.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          req.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: any) {
-          req.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    }
-  )
-
-  // Refresh session if expired - required for Server Components
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  const { pathname } = req.nextUrl
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 
   // Define protected routes
   const adminRoutes = ['/admin']
@@ -82,22 +38,15 @@ export async function middleware(req: NextRequest) {
   const isAdminAuthRoute = adminAuthRoutes.some(route => pathname.startsWith(route))
 
   // If user is not authenticated and trying to access protected routes
-  if (!session && (isAdminRoute || isCustomerRoute)) {
+  if (!token && (isAdminRoute || isCustomerRoute)) {
     const redirectUrl = isAdminRoute ? '/admin/login' : '/signin'
     return NextResponse.redirect(new URL(redirectUrl, req.url))
   }
 
   // If user is authenticated, check role-based access
-  if (session) {
+  if (token) {
     try {
-      // Check if user is admin
-      const { data: adminData } = await supabase
-        .from('admins')
-        .select('user_id')
-        .eq('user_id', session.user.id)
-        .single()
-
-      const isAdmin = !!adminData
+      const isAdmin = token.role === 'admin'
 
       // Admin trying to access customer routes - redirect to admin dashboard
       if (isAdmin && isCustomerRoute) {
@@ -138,12 +87,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (all API routes including NextAuth)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes (handled separately)
+     * - public folder files
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/|api/).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 }

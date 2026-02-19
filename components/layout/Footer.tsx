@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Instagram, Twitter, Facebook, Mail } from "lucide-react";
 import Link from "next/link";
+import { useSettings } from '@/hooks/useSettings';
 
 const footerSections = [
   {
@@ -45,6 +46,15 @@ const languages = ["English", "Español", "Français", "Deutsch"];
 const technologies = ["React", "Next.js", "TypeScript", "Tailwind CSS"];
 
 export default function Footer() {
+  const { settings } = useSettings();
+  
+  const socialLinks = [
+    { name: "Instagram", icon: Instagram, href: "#" },
+    { name: "Twitter", icon: Twitter, href: "#" },
+    { name: "Facebook", icon: Facebook, href: "#" },
+    { name: "Email", icon: Mail, href: `mailto:${settings.contactEmail}` },
+  ];
+
   return (
     <footer className="bg-muted/30 border-t border-border/40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,11 +70,10 @@ export default function Footer() {
                 viewport={{ once: true }}
               >
                 <h3 className="text-2xl font-bold text-foreground mb-4">
-                  Espada
+                  {settings.storeName}
                 </h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Modern fashion with minimalist design and sustainable quality.
-                  Crafted for those who appreciate timeless elegance.
+                  {settings.storeDescription}
                 </p>
 
                 {/* Social Links */}
@@ -153,7 +162,7 @@ export default function Footer() {
         <div className="py-6 border-t border-border/40">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-              <span>&copy; 2024 Espada. All rights reserved.</span>
+              <span>&copy; {new Date().getFullYear()} {settings.storeName}. All rights reserved.</span>
               <Link
                 href="/privacy"
                 className="hover:text-foreground transition-colors duration-200"

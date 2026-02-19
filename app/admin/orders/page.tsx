@@ -9,7 +9,7 @@ import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
 import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/admin/ui/Button'
 import { SearchInput } from '@/components/admin/ui/Input'
-import Select from '@/components/admin/ui/Select'
+import Select, { SimpleSelect } from '@/components/admin/ui/Select'
 import Table from '@/components/admin/ui/Table'
 import Card from '@/components/admin/ui/Card'
 import { SkeletonTable } from '@/components/admin/ui/Skeleton'
@@ -205,6 +205,23 @@ export default function AdminOrdersPage() {
     })
   }
 
+  const getStatusPillClasses = (status: Order['status']) => {
+    switch (status) {
+      case 'pending':
+        return 'border-amber-500/30 text-amber-200 bg-amber-500/10'
+      case 'processing':
+        return 'border-blue-500/30 text-blue-200 bg-blue-500/10'
+      case 'shipped':
+        return 'border-purple-500/30 text-purple-200 bg-purple-500/10'
+      case 'delivered':
+        return 'border-green-500/30 text-green-200 bg-green-500/10'
+      case 'cancelled':
+        return 'border-red-500/30 text-red-200 bg-red-500/10'
+      default:
+        return 'border-white/20 text-white/80 bg-white/5'
+    }
+  }
+
   // Table columns configuration
   const columns = [
     {
@@ -271,9 +288,9 @@ export default function AdminOrdersPage() {
       render: (value: unknown, order: Order) => {
         void value
         return (
-          <Select
+          <SimpleSelect
             value={order.status}
-            onChange={(v) => updateOrderStatus(order.id, v as string)}
+            onChange={(event) => updateOrderStatus(order.id, event.target.value)}
             options={[
               { value: 'pending', label: 'Pending' },
               { value: 'processing', label: 'Processing' },
@@ -281,6 +298,9 @@ export default function AdminOrdersPage() {
               { value: 'delivered', label: 'Delivered' },
               { value: 'cancelled', label: 'Cancelled' }
             ]}
+            variant="outline"
+            selectSize="sm"
+            className={`rounded-full px-3 py-1.5 border ${getStatusPillClasses(order.status)}`}
           />
         )
       }
@@ -339,7 +359,7 @@ export default function AdminOrdersPage() {
           )}
         />
         {/* Filters */}
-        <Card appearance="panel" className="p-4 mb-6">
+        <Card appearance="panel" className="p-5 mb-6 bg-white/5 dark:bg-gray-900/40 border border-white/10 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <SearchInput
@@ -361,11 +381,17 @@ export default function AdminOrdersPage() {
               ]}
             />
           </div>
+          <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>{filteredOrders.length} orders</span>
+            <span className="capitalize">
+              {selectedStatus === 'all' ? 'All statuses' : selectedStatus}
+            </span>
+          </div>
         </Card>
 
         {/* Orders Table */}
         {filteredOrders.length === 0 ? (
-          <Card appearance="panel" className="p-12 text-center">
+          <Card appearance="panel" className="p-12 text-center border border-white/10">
             <ShoppingCart className="mx-auto h-12 w-12 text-white/50 mb-4" />
             <h3 className="text-lg font-medium mb-2">
               No orders found
@@ -375,12 +401,23 @@ export default function AdminOrdersPage() {
             </p>
           </Card>
         ) : (
-          <Table
-            data={filteredOrders}
-            columns={columns}
-            rowKey="id"
-            className="hover:bg-white/5"
-          />
+          <Card appearance="panel" className="p-0 overflow-hidden border border-white/10 shadow-lg">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 dark:bg-gray-900/40">
+              <div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">Orders</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Track status and fulfillment</div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Showing {filteredOrders.length} orders
+              </div>
+            </div>
+            <Table
+              data={filteredOrders}
+              columns={columns}
+              rowKey="id"
+              className="hover:bg-white/5"
+            />
+          </Card>
         )}
       </AdminPage>
     </AdminLayout>

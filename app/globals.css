@@ -18,8 +18,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
     
-    /* Apple System Colors */
-    --primary: 211 100% 50%;        /* Apple Blue */
+    /* Monochrome System Colors */
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -83,35 +83,35 @@
     /* Enhanced Form Colors */
     --form-background: 0 0% 98%;       /* #FAFAFA */
     --form-border: 0 0% 85%;           /* #D9D9D9 */
-    --form-border-focus: 211 100% 50%; /* Apple Blue */
+    --form-border-focus: 0 0% 0%;
     --form-border-error: 0 84% 60%;    /* Apple Red */
     --form-text: 0 0% 0%;              /* #000000 */
     --form-placeholder: 0 0% 42%;      /* #6B6B70 */
     
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 211 100% 50%;
+    --accent: 0 0% 0%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 211 100% 50%;
+    --ring: 0 0% 0%;
     --radius: 8px;  /* Apple's 8pt grid */
     
     /* Toast Variables - Light Mode */
     --toast-bg: 0 0% 100%;
     --toast-color: 0 0% 0%;
     --toast-border: 0 0% 89.8%;
-    --toast-success-bg: 142 76% 96%;
-    --toast-success-color: 142 76% 36%;
-    --toast-success-border: 142 76% 86%;
-    --toast-error-bg: 0 93% 96%;
-    --toast-error-color: 0 93% 41%;
-    --toast-error-border: 0 93% 86%;
-    --toast-loading-bg: 211 100% 96%;
-    --toast-loading-color: 211 100% 41%;
-    --toast-loading-border: 211 100% 86%;
+    --toast-success-bg: 0 0% 96%;
+    --toast-success-color: 0 0% 20%;
+    --toast-success-border: 0 0% 86%;
+    --toast-error-bg: 0 0% 96%;
+    --toast-error-color: 0 0% 20%;
+    --toast-error-border: 0 0% 86%;
+    --toast-loading-bg: 0 0% 96%;
+    --toast-loading-color: 0 0% 20%;
+    --toast-loading-border: 0 0% 86%;
   }
 
   .dark {
@@ -123,8 +123,8 @@
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 100%;
     
-    /* Apple System Colors - Dark */
-    --primary: 211 100% 64%;        /* Apple Blue Dark */
+    /* Monochrome System Colors - Dark */
+    --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -155,27 +155,27 @@
     
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 211 100% 64%;
+    --accent: 0 0% 100%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
-    --ring: 211 100% 64%;
+    --ring: 0 0% 100%;
     
     /* Toast Variables - Dark Mode */
     --toast-bg: 0 0% 7%;
     --toast-color: 0 0% 100%;
     --toast-border: 0 0% 14.9%;
-    --toast-success-bg: 142 76% 8%;
-    --toast-success-color: 142 76% 64%;
-    --toast-success-border: 142 76% 14%;
-    --toast-error-bg: 0 93% 8%;
-    --toast-error-color: 0 93% 64%;
-    --toast-error-border: 0 93% 14%;
-    --toast-loading-bg: 211 100% 8%;
-    --toast-loading-color: 211 100% 64%;
-    --toast-loading-border: 211 100% 14%;
+    --toast-success-bg: 0 0% 7%;
+    --toast-success-color: 0 0% 90%;
+    --toast-success-border: 0 0% 18%;
+    --toast-error-bg: 0 0% 7%;
+    --toast-error-color: 0 0% 90%;
+    --toast-error-border: 0 0% 18%;
+    --toast-loading-bg: 0 0% 7%;
+    --toast-loading-color: 0 0% 90%;
+    --toast-loading-border: 0 0% 18%;
   }
 }
 

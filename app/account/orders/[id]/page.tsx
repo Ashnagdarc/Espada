@@ -6,7 +6,6 @@ import { Package, Truck, CheckCircle, Clock, AlertCircle, ArrowLeft, MapPin, Cre
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/hooks/useAuth'
-import { SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext'
 import { Button } from '@/components/ui/Button'
 import Image from 'next/image'
 
@@ -38,7 +37,7 @@ interface Order {
     postal_code: string
     country: string
   }
-  billing_address: {
+  billing_address?: {
     street: string
     city: string
     state: string
@@ -85,7 +84,7 @@ const ORDER_STATUS_CONFIG = {
 function OrderDetailsContent() {
   const router = useRouter()
   const params = useParams()
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -95,7 +94,7 @@ function OrderDetailsContent() {
   // Fetch order details
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!user || !profile || !orderId) {
+      if (!user || !orderId) {
         setLoading(false)
         return
       }
@@ -104,7 +103,7 @@ function OrderDetailsContent() {
         setLoading(true)
         setError(null)
 
-        const response = await fetch(`/api/orders?customer_id=${profile.id}`)
+        const response = await fetch('/api/orders')
         const result = await response.json()
 
         if (!response.ok || !result.success) {
@@ -128,7 +127,7 @@ function OrderDetailsContent() {
     }
 
     fetchOrder()
-  }, [user, profile, orderId])
+  }, [user, orderId])
 
   // Redirect to sign in if not authenticated
   if (!user) {
@@ -206,6 +205,20 @@ function OrderDetailsContent() {
 
         {/* Order Details */}
         {!loading && !error && order && (
+          (() => {
+            const formattedTotal = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: order.currency || 'NGN'
+            }).format(order.total_amount);
+            const paymentMethodLabel = order.payment_method
+              ? order.payment_method.replace('_', ' ').toUpperCase()
+              : 'NOT AVAILABLE';
+            const paymentStatusLabel = order.payment_status
+              ? order.payment_status.replace('_', ' ').toUpperCase()
+              : 'NOT AVAILABLE';
+            const billingAddress = order.billing_address || order.shipping_address;
+
+            return (
           <div className="space-y-8">
             {/* Order Header */}
             <div className="bg-fill-secondary border border-separator rounded-lg p-6">
@@ -229,7 +242,7 @@ function OrderDetailsContent() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                    ${order.total_amount.toFixed(2)}
+                    {formattedTotal}
                   </p>
                   <p className="text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
                     {order.currency.toUpperCase()}
@@ -261,7 +274,7 @@ function OrderDetailsContent() {
                       Payment Method
                     </p>
                     <p className="text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                      {order.payment_method.replace('_', ' ').toUpperCase()}
+                      {paymentMethodLabel}
                     </p>
                   </div>
                 </div>
@@ -273,7 +286,7 @@ function OrderDetailsContent() {
                       Payment Status
                     </p>
                     <p className="text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                      {order.payment_status.replace('_', ' ').toUpperCase()}
+                      {paymentStatusLabel}
                     </p>
                   </div>
                 </div>
@@ -307,17 +320,23 @@ function OrderDetailsContent() {
                         {item.product_name}
                       </h3>
                       <div className="flex gap-3 text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        <span>Color: {item.color}</span>
-                        <span>Size: {item.size}</span>
+                        <span>Color: {item.color || 'Default'}</span>
+                        <span>Size: {item.size || 'Standard'}</span>
                         <span>Qty: {item.quantity}</span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: order.currency || 'NGN'
+                        }).format(item.price * item.quantity)}
                       </p>
                       <p className="text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        ${item.price.toFixed(2)} each
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: order.currency || 'NGN'
+                        }).format(item.price)} each
                       </p>
                     </div>
                   </div>
@@ -331,7 +350,7 @@ function OrderDetailsContent() {
                     Total
                   </span>
                   <span className="text-lg font-bold text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                    ${order.total_amount.toFixed(2)}
+                    {formattedTotal}
                   </span>
                 </div>
               </div>
@@ -348,11 +367,11 @@ function OrderDetailsContent() {
                   </h2>
                 </div>
                 <div className="text-sm text-label-secondary space-y-1" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  <p>{order.shipping_address.street}</p>
+                  <p>{order.shipping_address?.street || 'Not available'}</p>
                   <p>
-                    {order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.postal_code}
+                    {(order.shipping_address?.city || 'N/A')}, {(order.shipping_address?.state || 'N/A')} {order.shipping_address?.postal_code || ''}
                   </p>
-                  <p>{order.shipping_address.country}</p>
+                  <p>{order.shipping_address?.country || 'N/A'}</p>
                 </div>
               </div>
 
@@ -365,11 +384,11 @@ function OrderDetailsContent() {
                   </h2>
                 </div>
                 <div className="text-sm text-label-secondary space-y-1" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                  <p>{order.billing_address.street}</p>
+                  <p>{billingAddress?.street || 'Not available'}</p>
                   <p>
-                    {order.billing_address.city}, {order.billing_address.state} {order.billing_address.postal_code}
+                    {(billingAddress?.city || 'N/A')}, {(billingAddress?.state || 'N/A')} {billingAddress?.postal_code || ''}
                   </p>
-                  <p>{order.billing_address.country}</p>
+                  <p>{billingAddress?.country || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -386,6 +405,8 @@ function OrderDetailsContent() {
               </div>
             )}
           </div>
+            );
+          })()
         )}
       </div>
 
@@ -396,8 +417,6 @@ function OrderDetailsContent() {
 
 export default function OrderDetailsPage() {
   return (
-    <SupabaseAuthProvider>
-      <OrderDetailsContent />
-    </SupabaseAuthProvider>
+    <OrderDetailsContent />
   )
 }

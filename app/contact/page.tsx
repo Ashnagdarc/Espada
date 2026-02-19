@@ -6,6 +6,7 @@ import { Send, Mail, Phone, MapPin } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from '@/hooks/useToast';
+import { useSettings } from '@/hooks/useSettings';
 
 interface FormData {
   name: string;
@@ -28,6 +29,7 @@ export default function ContactPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { success, error } = useToastActions();
+  const { settings } = useSettings();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -66,8 +68,22 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || "Failed to send message");
+      }
 
       // Show success toast
       success(
@@ -77,10 +93,11 @@ export default function ContactPage() {
 
       // Reset form
       setFormData({ name: "", email: "", message: "" });
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Please try again";
       error(
         "Failed to send message",
-        "Please try again or contact us directly"
+        message
       );
     } finally {
       setIsSubmitting(false);
@@ -149,7 +166,7 @@ export default function ContactPage() {
                       Email
                     </p>
                     <p className="text-callout text-label-secondary">
-                      hello@espada.com
+                      {settings.contactEmail}
                     </p>
                   </div>
                 </div>
@@ -163,7 +180,7 @@ export default function ContactPage() {
                       Phone
                     </p>
                     <p className="text-callout text-label-secondary">
-                      +1 (555) 123-4567
+                      {settings.contactPhone || 'Not provided'}
                     </p>
                   </div>
                 </div>

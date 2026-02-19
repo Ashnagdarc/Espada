@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import AdminLayout from '@/components/admin/AdminLayout'
 import { adminFetchCached } from '@/lib/admin/api'
 import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
@@ -196,38 +197,43 @@ export default function AdminAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto"></div>
-          <p className="mt-4 text-white/70">Loading analytics...</p>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto"></div>
+            <p className="mt-4 text-white/70">Loading analytics...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-white/80 mb-4">{error}</p>
-          <button
-            onClick={() => fetchAnalytics()}
-            className="px-4 py-2 bg-white text-black rounded-lg hover:bg-white/80"
-          >
-            Retry
-          </button>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <p className="text-white/80 mb-4">{error}</p>
+            <button
+              onClick={() => fetchAnalytics()}
+              className="px-4 py-2 bg-white text-black rounded-lg hover:bg-white/80"
+            >
+              Retry
+            </button>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (!analytics) return null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
+    <AdminLayout>
+      <div className="p-6 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
@@ -471,8 +477,16 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-black rounded-xl border border-white/10 p-6">
-          <h3 className="text-lg font-semibold mb-6">Recent Orders</h3>
+        <div className="bg-black rounded-xl border border-white/10 p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
+            <div>
+              <div className="text-sm font-semibold">Recent Orders</div>
+              <div className="text-xs text-white/60">Latest purchases and totals</div>
+            </div>
+            <div className="text-xs text-white/60">
+              Showing {analytics.recentOrders.length} orders
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-white/5">
@@ -535,7 +549,8 @@ export default function AdminAnalyticsPage() {
             </table>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

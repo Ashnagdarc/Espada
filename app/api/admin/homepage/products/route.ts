@@ -1,110 +1,84 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma, type Product } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// GET - Fetch products for collection management
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
-    const featured = searchParams.get('featured');
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const search = (searchParams.get("search") || "").trim();
+    const category = (searchParams.get("category") || "").trim();
+    const featured = searchParams.get("featured");
 
-    const offset = (page - 1) * limit;
+    const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
+    const safeLimit = Number.isNaN(limit) || limit < 1 ? 20 : limit;
+    const skip = (safePage - 1) * safeLimit;
 
-    // Build query
-    let query = supabase
-      .from('products')
-      .select(`
-        id,
-        name,
-        description,
-        price,
-        category,
-        subcategory,
-        brand,
-        stock_quantity,
-        images,
-        featured,
-        status,
-        created_at
-      `, { count: 'exact' })
-      .eq('status', 'active')
-      .range(offset, offset + limit - 1)
-      .order('created_at', { ascending: false });
+    const where: Prisma.ProductWhereInput = {};
 
-    // Apply filters
     if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } }
+      ];
     }
 
     if (category) {
-      query = query.eq('category', category);
+      where.category = category;
     }
 
     if (featured !== null && featured !== undefined) {
-      query = query.eq('featured', featured === 'true');
+      where.featured = featured === "true";
     }
 
-    const { data: products, error: productsError, count } = await query;
+    const [products, total, categories] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: safeLimit
+      }),
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where: { category: { not: null } },
+        select: { category: true },
+        distinct: ["category"]
+      })
+    ]);
 
-    if (productsError) {
-      console.error('Error fetching products:', productsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch products' },
-        { status: 500 }
-      );
-    }
-
-    // Transform products data
-    const transformedProducts = products?.map(product => ({
+    const transformedProducts = (products as Product[]).map((product) => ({
       id: product.id,
       name: product.name,
       description: product.description,
       price: product.price,
       category: product.category,
-      subcategory: product.subcategory,
-      brand: product.brand,
-      stock_quantity: product.stock_quantity,
-      image: product.images && product.images.length > 0 ? product.images[0] : null,
-      images: product.images || [],
+      stock_quantity: product.stock,
+      image: product.image || null,
+      images: product.image ? [product.image] : [],
       featured: product.featured,
-      created_at: product.created_at
-    })) || [];
-
-    // Get unique categories for filter options
-    const { data: categories } = await supabase
-      .from('products')
-      .select('category')
-      .eq('status', 'active')
-      .not('category', 'is', null);
-
-    const uniqueCategories = [...new Set(categories?.map(p => p.category) || [])];
+      created_at: product.createdAt.toISOString()
+    }));
 
     return NextResponse.json({
       success: true,
       products: transformedProducts,
       pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages: Math.ceil(total / safeLimit)
       },
       filters: {
-        categories: uniqueCategories
+        categories: (categories as Array<{ category: string | null }>)
+          .map((item) => item.category)
+          .filter((value): value is string => Boolean(value))
       }
     });
-
   } catch (error) {
-    console.error('Error in GET /api/admin/homepage/products:', error);
+    console.error("Error fetching homepage products:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

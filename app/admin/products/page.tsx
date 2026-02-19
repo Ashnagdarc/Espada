@@ -190,7 +190,7 @@ function AdminProductsPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card appearance="panel" className="p-6">
+          <Card appearance="panel" className="p-5 bg-white/5 dark:bg-gray-900/40 border border-white/10 shadow-sm">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <SearchInput
@@ -200,7 +200,7 @@ function AdminProductsPageContent() {
                   fullWidth
                 />
               </div>
-              <div className="sm:w-48">
+              <div className="sm:w-56">
                 <Select
                   value={selectedCategory}
                   onChange={(value) => setSelectedCategory(String(value))}
@@ -213,6 +213,12 @@ function AdminProductsPageContent() {
                 />
               </div>
             </div>
+            <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>{filteredProducts.length} products</span>
+              <span className="capitalize">
+                {selectedCategory === 'all' ? 'All categories' : selectedCategory}
+              </span>
+            </div>
           </Card>
         </motion.div>
 
@@ -222,9 +228,19 @@ function AdminProductsPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Table
-            data={filteredProducts}
-            columns={[
+          <Card appearance="panel" className="p-0 overflow-hidden border border-white/10 shadow-lg">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 dark:bg-gray-900/40">
+              <div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">Inventory</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Manage pricing, stock, and status</div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Showing {filteredProducts.length} products
+              </div>
+            </div>
+            <Table
+              data={filteredProducts}
+              columns={[
               {
                 key: 'product',
                 title: 'Product',
@@ -381,11 +397,12 @@ function AdminProductsPageContent() {
                   );
                 }
               }
-            ]}
-            loading={isLoading}
-            hoverable
-            striped
-          />
+              ]}
+              loading={isLoading}
+              hoverable
+              striped
+            />
+          </Card>
         </motion.div>
 
         {filteredProducts.length === 0 && (

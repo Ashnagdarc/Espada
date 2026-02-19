@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
 interface HomepageImage {
@@ -99,9 +99,6 @@ export async function GET() {
     };
 
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
     // Check cache first
     const cachedData = cache.get<HomepageData>(CACHE_KEYS.HOMEPAGE);
     if (cachedData) {
@@ -124,96 +121,42 @@ export async function GET() {
       'X-Cache': 'MISS',
     });
 
-    // Optimize: Fetch sections first, then fetch related data separately to reduce join complexity
-    // Pre-check env to avoid hard failures in local/dev
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.warn('⚠️ Supabase env missing; serving fallback homepage data');
-      const headers = new Headers({
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        'X-Cache': 'BYPASS',
-        'X-Fallback': 'true'
-      });
-      const fallback = buildFallbackData();
-      cache.set(CACHE_KEYS.HOMEPAGE, fallback, CACHE_TTL.HOMEPAGE);
-      return NextResponse.json({ success: true, data: fallback }, { headers });
-    }
-
-    const { data: sections, error: sectionsError } = await supabaseAdmin
-      .from('homepage_sections')
-      .select('id, section_type, content, status, created_at, updated_at')
-      .eq('status', 'published')
-      .order('created_at', { ascending: true });
-
-    if (sectionsError) {
-      console.error('Error fetching homepage sections:', sectionsError);
-      const headersErr = new Headers({
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        'X-Cache': 'BYPASS',
-        'X-Fallback': 'true'
-      });
-      const fallback = buildFallbackData();
-      cache.set(CACHE_KEYS.HOMEPAGE, fallback, CACHE_TTL.HOMEPAGE);
-      return NextResponse.json({ success: true, data: fallback }, { headers: headersErr });
-    }
-
-    // Fetch images and collection items separately for better performance
-    const sectionIds = sections?.map(s => s.id) || [];
-    
-    const [imagesResult, collectionsResult] = await Promise.all([
-      // Fetch all images for these sections
-      supabaseAdmin
-        .from('homepage_images')
-        .select('id, section_id, image_url, alt_text, display_order')
-        .in('section_id', sectionIds)
-        .order('display_order', { ascending: true }),
-      
-      // Fetch collection items with products
-      supabaseAdmin
-        .from('collection_items')
-        .select(`
-          id,
-          section_id,
-          product_id,
-          display_order,
-          products (
-            id,
-            name,
-            price,
-            images,
-            category
-          )
-        `)
-        .in('section_id', sectionIds)
-        .order('display_order', { ascending: true })
-    ]);
-
-    if (imagesResult.error) {
-      console.error('Error fetching homepage images:', imagesResult.error);
-    }
-
-    if (collectionsResult.error) {
-      console.error('Error fetching collection items:', collectionsResult.error);
-    }
-
-    // Group images and collections by section_id for efficient lookup
-    const imagesBySection = new Map<string, any[]>();
-    const collectionsBySection = new Map<string, any[]>();
-
-    imagesResult.data?.forEach(image => {
-      if (!imagesBySection.has(image.section_id)) {
-        imagesBySection.set(image.section_id, []);
+    // Fetch homepage sections with related images and collection items
+    const sections = await prisma.homepageSection.findMany({
+      include: {
+        images: {
+          orderBy: {
+            position: 'asc'
+          }
+        },
+        collectionItems: {
+          orderBy: {
+            position: 'asc'
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
       }
-      imagesBySection.get(image.section_id)!.push(image);
     });
 
-    collectionsResult.data?.forEach(collection => {
-      if (!collectionsBySection.has(collection.section_id)) {
-        collectionsBySection.set(collection.section_id, []);
+    // Fetch products for collection items
+    const productIds = sections
+      .flatMap(section => section.collectionItems)
+      .map(item => item.productId)
+      .filter((id): id is string => id !== null);
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds
+        }
       }
-      collectionsBySection.get(collection.section_id)!.push(collection);
     });
 
-    // Transform the data into a more usable format
+    const productsMap = new Map(products.map(p => [p.id, p]));
+
+    // Transform the data into the format expected by the frontend
     const homepageData: HomepageData = {
       hero: null,
       new_this_week: null,
@@ -221,22 +164,65 @@ export async function GET() {
       approach: null,
     };
 
-    sections?.forEach((section: any) => {
-      const sectionImages = imagesBySection.get(section.id) || [];
-      const sectionCollections = collectionsBySection.get(section.id) || [];
+    sections.forEach((section) => {
+      // Transform images to match frontend expectations (snake_case)
+      const transformedImages = section.images.map(img => ({
+        id: img.id,
+        image_url: img.url,
+        alt_text: img.caption || '',
+        display_order: img.position
+      }));
+
+      // Transform collection items with product data
+      const transformedCollections = section.collectionItems.map(item => {
+        const product = item.productId ? productsMap.get(item.productId) : null;
+        
+        return {
+          id: item.id,
+          product_id: item.productId || '',
+          display_order: item.position,
+          products: product ? {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            images: product.image ? [product.image] : [],
+            category: product.category || ''
+          } : {
+            id: '',
+            name: item.title || 'Product',
+            price: 0,
+            images: [],
+            category: ''
+          }
+        };
+      });
+
+      // Parse content from JSON string if needed
+      let parsedContent: Record<string, unknown> = {};
+      if (section.content) {
+        try {
+          parsedContent = typeof section.content === 'string' 
+            ? JSON.parse(section.content) 
+            : section.content as Record<string, unknown>;
+        } catch {
+          parsedContent = { title: section.title };
+        }
+      } else {
+        parsedContent = { title: section.title };
+      }
 
       const sectionData = {
         id: section.id,
-        content: section.content,
-        status: section.status,
-        images: sectionImages,
-        collection_items: sectionCollections,
-        created_at: section.created_at,
-        updated_at: section.updated_at,
+        content: parsedContent,
+        status: 'published', // Prisma schema doesn't have status, default to published
+        images: transformedImages,
+        collection_items: transformedCollections,
+        created_at: section.createdAt.toISOString(),
+        updated_at: section.updatedAt.toISOString(),
       };
 
       // Assign to the appropriate section type
-      switch (section.section_type) {
+      switch (section.type) {
         case 'hero':
           homepageData.hero = sectionData;
           break;

@@ -3,11 +3,12 @@ import localFont from 'next/font/local';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LocaleProvider } from "@/contexts/LocaleContext";
-import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
+import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
 import NoSSR from "@/components/ui/NoSSR";
+import { getGeneralSettings } from "@/lib/settings";
 import "./globals.css";
 
 const gilroy = localFont({
@@ -24,13 +25,16 @@ const gilroy = localFont({
   fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 });
 
-export const metadata: Metadata = {
-  title: "Espada - Modern Fashion Store",
-  description:
-    "Discover premium fashion collections with minimalist design and sustainable quality.",
-  keywords: ["fashion", "clothing", "sustainable", "premium", "minimalist"],
-  authors: [{ name: "Espada" }],
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getGeneralSettings();
+  
+  return {
+    title: `${settings.storeName} - Modern Fashion Store`,
+    description: settings.storeDescription,
+    keywords: ["fashion", "clothing", "sustainable", "premium", "minimalist"],
+    authors: [{ name: settings.storeName }],
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -84,8 +88,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <LocaleProvider>
-            <CartProvider>
+          <NextAuthProvider>
+            <LocaleProvider>
+              <CartProvider>
               <Suspense fallback={
                 <div className="min-h-screen bg-background flex items-center justify-center">
                   <div className="text-center">
@@ -94,22 +99,21 @@ export default function RootLayout({
                   </div>
                 </div>
               }>
-                <SupabaseAuthProvider>
-                  <AuthGuard>
-                    {children}
-                  </AuthGuard>
-                  <Toaster 
-                    position="top-right"
-                    richColors
-                    closeButton
-                    theme="system"
-                    expand={true}
-                    visibleToasts={5}
-                  />
-                </SupabaseAuthProvider>
+                <AuthGuard>
+                  {children}
+                </AuthGuard>
+                <Toaster 
+                  position="top-right"
+                  richColors
+                  closeButton
+                  theme="system"
+                  expand={true}
+                  visibleToasts={5}
+                />
               </Suspense>
-            </CartProvider>
-          </LocaleProvider>
+              </CartProvider>
+            </LocaleProvider>
+          </NextAuthProvider>
         </ThemeProvider>
       </body>
     </html>

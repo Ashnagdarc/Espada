@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
-// import { Order } from '@/lib/admin/data';
+import prisma from '@/lib/prisma';
 
 // GET /api/admin/orders/[id] - Get order by ID
 export async function GET(
@@ -10,25 +9,46 @@ export async function GET(
   void request;
   const { id } = await params;
   try {
-
-    // Fetch order from Supabase
-    const { data: order, error } = await supabaseAdmin
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Order not found' },
-          { status: 404 }
-        );
+    // Fetch order from Prisma with all relationships
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                price: true
+              }
+            }
+          }
+        },
+        payment: {
+          select: {
+            id: true,
+            amount: true,
+            status: true,
+            paymentMethod: true,
+            reference: true,
+            createdAt: true
+          }
+        }
       }
-      console.error('Error fetching order from Supabase:', error);
+    });
+
+    if (!order) {
       return NextResponse.json(
-        { error: 'Failed to fetch order' },
-        { status: 500 }
+        { error: 'Order not found' },
+        { status: 404 }
       );
     }
 

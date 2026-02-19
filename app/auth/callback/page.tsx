@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClientSupabaseClient } from '@/utils/auth-client'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -11,12 +10,9 @@ export default function AuthCallbackPage() {
   const [message, setMessage] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClientSupabaseClient()
-
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const code = searchParams.get('code')
         const error = searchParams.get('error')
         const errorDescription = searchParams.get('error_description')
 
@@ -26,31 +22,12 @@ export default function AuthCallbackPage() {
           return
         }
 
-        if (code) {
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-          
-          if (exchangeError) {
-            setStatus('error')
-            setMessage(exchangeError.message)
-            return
-          }
+        setStatus('success')
+        setMessage('Authentication successful! Redirecting...')
 
-          if (data.session) {
-            setStatus('success')
-            setMessage('Email verified successfully! Redirecting...')
-            
-            // Redirect after a short delay
-            setTimeout(() => {
-              router.push('/')
-            }, 2000)
-          } else {
-            setStatus('error')
-            setMessage('Failed to create session')
-          }
-        } else {
-          setStatus('error')
-          setMessage('No verification code found')
-        }
+        setTimeout(() => {
+          router.push('/signin')
+        }, 1500)
       } catch (error) {
         console.error('Auth callback error:', error)
         setStatus('error')
@@ -59,7 +36,7 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback()
-  }, [searchParams, router, supabase.auth])
+  }, [searchParams, router])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 
 // PUT /api/admin/orders/[id]/status - Update order status
 export async function PUT(
@@ -21,23 +21,14 @@ export async function PUT(
     }
 
     // First, get the current order to validate status transition
-    const { data: currentOrder, error: fetchError } = await supabaseAdmin
-      .from('orders')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const currentOrder = await prisma.order.findUnique({
+      where: { id }
+    });
 
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Order not found' },
-          { status: 404 }
-        );
-      }
-      console.error('Error fetching order from Supabase:', fetchError);
+    if (!currentOrder) {
       return NextResponse.json(
-        { error: 'Failed to fetch order' },
-        { status: 500 }
+        { error: 'Order not found' },
+        { status: 404 }
       );
     }
 
@@ -50,28 +41,18 @@ export async function PUT(
       'cancelled': [] // Final state
     };
 
-    if (!validTransitions[currentOrder.status].includes(status)) {
+    if (!validTransitions[currentOrder.status]?.includes(status)) {
       return NextResponse.json(
         { error: `Cannot change status from ${currentOrder.status} to ${status}` },
         { status: 400 }
       );
     }
 
-    // Update order status in Supabase
-    const { data: updatedOrder, error: updateError } = await supabaseAdmin
-      .from('orders')
-      .update({ status })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('Error updating order status in Supabase:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to update order status' },
-        { status: 500 }
-      );
-    }
+    // Update order status in Prisma
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: { status }
+    });
 
     return NextResponse.json({ order: updatedOrder });
   } catch (error) {

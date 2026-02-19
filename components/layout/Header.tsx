@@ -15,6 +15,7 @@ import {
 import { useTheme } from "next-themes";
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
+import { useSettings } from '@/hooks/useSettings';
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -36,6 +37,7 @@ const Header: React.FC = React.memo(() => {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const { state: cartState } = useCart();
+  const { settings } = useSettings();
 
   // Prevent hydration mismatch for theme toggle
   useEffect(() => {
@@ -71,9 +73,11 @@ const Header: React.FC = React.memo(() => {
     try {
       setUserMenuOpen(false);
       await signOut();
-      router.push("/");
+      // No need to manually redirect - signOut now handles it
     } catch (error) {
       console.error('Sign out error:', error);
+      // Fallback redirect if signOut fails
+      router.push("/");
     }
   };
 
@@ -101,7 +105,7 @@ const Header: React.FC = React.memo(() => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Simple Logo */}
         <Link href="/" className="font-bold text-xl text-black dark:text-white hover:opacity-70 transition-opacity">
-          Espada
+          {settings.storeName}
         </Link>
 
         {/* Clean Navigation */}

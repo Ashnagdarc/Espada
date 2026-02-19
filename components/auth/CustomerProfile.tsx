@@ -44,7 +44,8 @@ export function CustomerProfile() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateProfile({
+      const result = await updateProfile({
+        email: user.email || '',
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
@@ -53,6 +54,12 @@ export function CustomerProfile() {
         postal_code: formData.postalCode,
         country: formData.country,
       });
+      
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (err) {
@@ -97,38 +104,50 @@ export function CustomerProfile() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-2xl mx-auto space-y-6"
+      className="space-y-6"
     >
       {/* Profile Header */}
-      <Card className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-black dark:bg-white rounded-full flex items-center justify-center">
-            <User className="w-8 h-8 text-white dark:text-black" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {profile?.first_name} {profile?.last_name}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
-            <div className="flex items-center mt-1 text-sm text-gray-500">
-              <Calendar className="w-4 h-4 mr-1" />
-              Member since {new Date(profile?.created_at || '').toLocaleDateString()}
+      <Card className="p-8 border border-separator bg-white dark:bg-black">
+        <div className="flex items-center space-x-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-2 border-black dark:border-white rounded-full flex items-center justify-center">
+              <User className="w-10 h-10 text-black dark:text-white" />
             </div>
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-black dark:text-white">
+              {profile?.first_name && profile?.last_name 
+                ? `${profile.first_name} ${profile.last_name}`
+                : 'Complete Your Profile'}
+            </h1>
+            <p className="text-label-secondary flex items-center mt-1">
+              <Mail className="w-4 h-4 mr-2" />
+              {user.email}
+            </p>
+            {profile?.created_at && (
+              <div className="flex items-center mt-2 text-sm text-label-tertiary">
+                <Calendar className="w-4 h-4 mr-1" />
+                Member since {new Date(profile.created_at).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </div>
+            )}
           </div>
         </div>
       </Card>
 
       {/* Profile Information */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+      <Card className="p-8 border border-separator bg-white dark:bg-black">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-black dark:text-white">
             Profile Information
           </h2>
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
               variant="outline"
-              className="text-black dark:text-white border-gray-200 dark:border-gray-700"
+              className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
             >
               <Edit3 className="w-4 h-4 mr-2" />
               Edit Profile
@@ -138,10 +157,10 @@ export function CustomerProfile() {
               <Button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
+                className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
               >
                 {isSaving ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
@@ -150,7 +169,7 @@ export function CustomerProfile() {
               <Button
                 onClick={handleCancel}
                 variant="outline"
-                className="text-gray-600 dark:text-gray-400"
+                className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
@@ -159,108 +178,114 @@ export function CustomerProfile() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Personal Information */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-900 dark:text-white">Personal Information</h3>
+          <div className="space-y-5">
+            <h3 className="font-semibold text-lg text-black dark:text-white flex items-center">
+              <User className="w-5 h-5 mr-2" />
+              Personal Information
+            </h3>
             
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="First name"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
 
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="Last name"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
 
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary w-5 h-5" />
               <Input
                 type="email"
                 placeholder="Email"
                 value={user.email || ''}
                 disabled={true}
-                className="pl-10 bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 opacity-60 rounded-lg cursor-not-allowed"
               />
             </div>
 
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="tel"
                 placeholder="Phone number"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
           </div>
 
           {/* Address Information */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-900 dark:text-white">Address Information</h3>
+          <div className="space-y-5">
+            <h3 className="font-semibold text-lg text-black dark:text-white flex items-center">
+              <MapPin className="w-5 h-5 mr-2" />
+              Address Information
+            </h3>
             
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="Street address"
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
 
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="City"
                 value={formData.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
 
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="Postal code"
                 value={formData.postalCode}
                 onChange={(e) => handleInputChange('postalCode', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
 
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-label-tertiary group-focus-within:text-black dark:group-focus-within:text-white w-5 h-5 transition-colors" />
               <Input
                 type="text"
                 placeholder="Country"
                 value={formData.country}
                 onChange={(e) => handleInputChange('country', e.target.value)}
                 disabled={!isEditing}
-                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 disabled:opacity-60"
+                className="pl-12 h-12 !bg-white dark:!bg-black !border !border-white/20 dark:!border-white/20 disabled:opacity-60 focus:!ring-0 focus:!border-white/40 dark:focus:!border-white/40 transition-all rounded-lg"
               />
             </div>
           </div>

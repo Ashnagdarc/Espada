@@ -207,10 +207,12 @@ export default function ProductEditPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/20 mx-auto mb-4"></div>
-            <p className="text-white/60">Loading product...</p>
+        <div className="p-6 md:p-8">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/20 mx-auto mb-4"></div>
+              <p className="text-white/60">Loading product...</p>
+            </div>
           </div>
         </div>
       </AdminLayout>
@@ -220,16 +222,18 @@ export default function ProductEditPage() {
   if (error && !product) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="text-red-400 text-xl mb-4">Error</div>
-            <p className="text-white/60 mb-4">{error}</p>
-            <button
-              onClick={() => router.push('/admin/products')}
-              className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/90 transition-colors"
-            >
-              Back to Products
-            </button>
+        <div className="p-6 md:p-8">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="text-red-400 text-xl mb-4">Error</div>
+              <p className="text-white/60 mb-4">{error}</p>
+              <button
+                onClick={() => router.push('/admin/products')}
+                className="bg-white text-black px-4 py-2 rounded-lg hover:bg-white/90 transition-colors"
+              >
+                Back to Products
+              </button>
+            </div>
           </div>
         </div>
       </AdminLayout>
@@ -238,39 +242,40 @@ export default function ProductEditPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleCancel}
-              className="flex items-center text-white/60 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5 mr-1" />
-              Back
-            </button>
-            <h1 className="text-2xl font-bold text-white">
-              Edit Product: {product?.name}
-            </h1>
+      <div className="p-6 md:p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleCancel}
+                className="flex items-center text-white/60 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5 mr-1" />
+                Back
+              </button>
+              <h1 className="text-2xl font-bold text-white">
+                Edit Product: {product?.name}
+              </h1>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCancel}
+                className="flex items-center px-4 py-2 border border-white/20 rounded-lg text-white/60 hover:bg-white/5 transition-colors"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center px-4 py-2 bg-white text-black rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={handleCancel}
-              className="flex items-center px-4 py-2 border border-white/20 rounded-lg text-white/60 hover:bg-white/5 transition-colors"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center px-4 py-2 bg-white text-black rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </div>
 
         {/* Error Message */}
         {error && (
@@ -502,6 +507,7 @@ export default function ProductEditPage() {
               <p className="text-xs text-white/40">Maximum 6 images allowed. Supported formats: JPG, PNG, GIF, WebP, SVG</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </AdminLayout>

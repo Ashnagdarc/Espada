@@ -152,7 +152,7 @@ export default function ProductDetailPage() {
       // Add item to cart with selected options
       for (let i = 0; i < quantity; i++) {
         addItem({
-          id: parseInt(product.id),
+          id: String(product.id),
           name: product.name,
           price: product.price,
           image: product.images[0] || product.image,

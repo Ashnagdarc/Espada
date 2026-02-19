@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { CustomerProfile } from '@/components/auth/CustomerProfile';
 import { CustomerOrderHistory } from '@/components/auth/CustomerOrderHistory';
+import { CustomerWishlist } from '@/components/auth/CustomerWishlist';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { User, Package, Settings, Heart, CreditCard, LogOut } from 'lucide-react';
+import { User, Package, Settings, Heart, CreditCard, LogOut, Home, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -36,9 +37,10 @@ function AccountContent() {
     try {
       await signOut();
       toast.success('Signed out successfully');
-      router.push('/');
+      // No need to manually redirect - signOut now handles it
     } catch (error) {
       toast.error('Error signing out');
+      router.push('/'); // Fallback redirect on error
     }
   };
 
@@ -73,90 +75,74 @@ function AccountContent() {
       case 'orders':
         return <CustomerOrderHistory />;
       case 'wishlist':
-        return (
-          <Card className="p-8 text-center">
-            <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Your Wishlist is Empty
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Save items you love to your wishlist and shop them later.
-            </p>
-            <Button
-              onClick={() => router.push('/products')}
-              className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
-            >
-              Browse Products
-            </Button>
-          </Card>
-        );
+        return <CustomerWishlist />;
       case 'settings':
         return (
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+          <Card className="p-6 border border-separator">
+            <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
               Account Settings
             </h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-5 border border-separator rounded-lg">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Email</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="font-semibold text-black dark:text-white">Email</h3>
+                  <p className="text-sm text-label-secondary mt-1">
                     {user?.email}
                   </p>
                 </div>
-                <Button variant="outline" className="text-gray-600 dark:text-gray-400">
+                <Button variant="outline" className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
                   Change Email
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-5 border border-separator rounded-lg">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Password</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="font-semibold text-black dark:text-white">Password</h3>
+                  <p className="text-sm text-label-secondary mt-1">
                     Change your account password
                   </p>
                 </div>
-                <Button variant="outline" className="text-gray-600 dark:text-gray-400">
+                <Button variant="outline" className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
                   Change Password
                 </Button>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-5 border border-separator rounded-lg">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="font-semibold text-black dark:text-white">Two-Factor Authentication</h3>
+                  <p className="text-sm text-label-secondary mt-1">
                     Add an extra layer of security to your account
                   </p>
                 </div>
-                <Button variant="outline" className="text-gray-600 dark:text-gray-400">
+                <Button variant="outline" className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
                   Enable 2FA
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-5 border border-separator rounded-lg">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">Payment Methods</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="font-semibold text-black dark:text-white">Payment Methods</h3>
+                  <p className="text-sm text-label-secondary mt-1">
                     Manage your saved payment methods
                   </p>
                 </div>
-                <Button variant="outline" className="text-gray-600 dark:text-gray-400">
+                <Button variant="outline" className="flex items-center border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
                   <CreditCard className="w-4 h-4 mr-2" />
                   Manage
                 </Button>
               </div>
 
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="border-t border-separator pt-6 mt-6">
+                <div className="flex items-center justify-between p-5 border-2 border-black dark:border-white rounded-lg">
                   <div>
-                    <h3 className="font-medium text-red-900 dark:text-red-400">Delete Account</h3>
-                    <p className="text-sm text-red-600 dark:text-red-400">
+                    <h3 className="font-semibold text-black dark:text-white">Delete Account</h3>
+                    <p className="text-sm text-label-secondary mt-1">
                       Permanently delete your account and all data
                     </p>
                   </div>
                   <Button
                     variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                    className="border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
                   >
                     Delete Account
                   </Button>
@@ -171,21 +157,34 @@ function AccountContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen bg-white dark:bg-black py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="mb-8 flex justify-between items-center">
+        {/* Back to Home Button */}
+        <div className="mb-6">
+          <Button
+            onClick={() => router.push('/')}
+            variant="outline"
+            className="flex items-center space-x-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Button>
+        </div>
+
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-4xl font-bold text-black dark:text-white mb-2">
               My Account
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-label-secondary">
               Manage your profile, orders, and account settings
             </p>
           </div>
           <Button
             onClick={handleSignOut}
             variant="outline"
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>
@@ -195,7 +194,7 @@ function AccountContent() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <Card className="p-4">
+            <Card className="p-4 border border-separator">
               <nav className="space-y-2">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -203,10 +202,10 @@ function AccountContent() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                         activeTab === tab.id
                           ? 'bg-black dark:bg-white text-white dark:text-black'
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'text-label-secondary hover:bg-gray-100 dark:hover:bg-gray-900'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -222,8 +221,8 @@ function AccountContent() {
           <div className="lg:col-span-3">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               {renderTabContent()}

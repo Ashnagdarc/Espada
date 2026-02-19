@@ -24,7 +24,7 @@ export function useCartWithToast() {
     }
   }
 
-  const removeItemWithToast = (id: number, color: string, size: string) => {
+  const removeItemWithToast = (id: string, color: string, size: string) => {
     try {
       // Find the item to get its name for the toast
       const item = cart.state.items.find(
@@ -50,7 +50,7 @@ export function useCartWithToast() {
     }
   }
 
-  const updateQuantityWithToast = (id: number, color: string, size: string, quantity: number) => {
+  const updateQuantityWithToast = (id: string, color: string, size: string, quantity: number) => {
     try {
       const item = cart.state.items.find(
         item => item.id === id && item.color === color && item.size === size

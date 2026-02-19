@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
 
@@ -18,6 +19,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { signUp } = useAuth();
+  const router = useRouter();
 
   const passwordRequirements = [
     { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
@@ -53,15 +55,14 @@ export default function SignUp() {
 
     try {
       const result = await signUp(formData.email, formData.password, {
-        fullName: `${formData.firstName} ${formData.lastName}`.trim()
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
       });
       
       if (result.error) {
         setError(result.error);
       } else {
-        // Signup successful - redirect to home page or dashboard
-        console.log('Signup successful, redirecting...');
-        window.location.href = '/';
+        router.push('/');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -87,9 +88,9 @@ export default function SignUp() {
         <div className="card-apple p-8 bg-white dark:bg-gray-900 border border-separator shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 dark:text-red-200 font-medium">{error}</p>
+              <div className="bg-white dark:bg-black border border-black dark:border-white rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-black dark:text-white flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-black dark:text-white font-medium">{error}</p>
               </div>
             )}
 
@@ -108,7 +109,7 @@ export default function SignUp() {
                     required
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-4 py-3 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                     placeholder="First name"
                   />
                 </div>
@@ -124,7 +125,7 @@ export default function SignUp() {
                     required
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-4 py-3 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                     placeholder="Last name"
                   />
                 </div>
@@ -143,7 +144,7 @@ export default function SignUp() {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                   placeholder="Enter your email"
                 />
               </div>
@@ -162,13 +163,13 @@ export default function SignUp() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="w-full px-4 py-3 pr-12 bg-white dark:bg-black border-2 border-gray-300 dark:border-gray-700 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all duration-200"
                     placeholder="Create a password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -180,7 +181,7 @@ export default function SignUp() {
 
                 {/* Password Requirements */}
                 {formData.password && (
-                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="mt-3 p-3 bg-white dark:bg-black rounded-lg border border-gray-200 dark:border-gray-700">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password requirements:</p>
                     <div className="space-y-1">
                       {passwordRequirements.map((req, index) => {
@@ -188,11 +189,11 @@ export default function SignUp() {
                         return (
                           <div key={index} className="flex items-center gap-2">
                             {isValid ? (
-                              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <Check className="h-4 w-4 text-black dark:text-white" />
                             ) : (
-                              <X className="h-4 w-4 text-red-500 dark:text-red-400" />
+                              <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                             )}
-                            <span className={`text-sm ${isValid ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}>
+                            <span className={`text-sm ${isValid ? 'text-black dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
                               {req.label}
                             </span>
                           </div>
@@ -217,19 +218,19 @@ export default function SignUp() {
                     required
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 pr-12 bg-white dark:bg-gray-800 border-2 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                    className={`w-full px-4 py-3 pr-12 bg-white dark:bg-black border-2 rounded-lg text-base text-label-primary placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
                       formData.confirmPassword && !doPasswordsMatch
-                        ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
+                        ? 'border-gray-400 dark:border-gray-600 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white'
                         : formData.confirmPassword && doPasswordsMatch
-                        ? 'border-green-300 dark:border-green-600 focus:ring-green-500 focus:border-green-500'
-                        : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
+                        ? 'border-black dark:border-white focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white'
+                        : 'border-gray-300 dark:border-gray-700 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white'
                     }`}
                     placeholder="Confirm your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -239,10 +240,10 @@ export default function SignUp() {
                   </button>
                 </div>
                 {formData.confirmPassword && !doPasswordsMatch && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">Passwords do not match</p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Passwords do not match</p>
                 )}
                 {formData.confirmPassword && doPasswordsMatch && (
-                  <p className="mt-2 text-sm text-green-600 dark:text-green-400">Passwords match</p>
+                  <p className="mt-2 text-sm text-black dark:text-white">Passwords match</p>
                 )}
               </div>
             </div>
@@ -250,7 +251,7 @@ export default function SignUp() {
             <button
               type="submit"
               disabled={loading || !isPasswordValid || !doPasswordsMatch}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+              className="w-full bg-black hover:bg-gray-900 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -268,7 +269,7 @@ export default function SignUp() {
               Already have an account?{' '}
               <Link
                 href="/signin"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold transition-colors"
+                className="text-black dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-semibold transition-colors"
               >
                 Sign in
               </Link>

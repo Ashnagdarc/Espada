@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import prisma from '@/lib/prisma';
 
 // Helper function to get color hex values
 function getColorValue(colorName: string): string {
@@ -104,45 +104,35 @@ function getColorValue(colorName: string): string {
 // GET /api/products - Get all products for the shop
 export async function GET() {
   try {
-    // Fetch products from Supabase
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Fetch products from Prisma
+    const products = await prisma.product.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-    if (error) {
-      console.error('Error fetching products from Supabase:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch products' },
-        { status: 500 }
-      );
-    }
-
-    // Transform Supabase products to shop format
+    // Transform Prisma products to shop format
     const shopProducts = products.map(product => ({
       id: product.id,
       name: product.name,
-      description: product.description,
+      description: product.description || '',
       price: Number(product.price),
-      image: product.images?.[0] || '/images/placeholder.jpg',
-      images: product.images || ['/images/placeholder.jpg'],
-      category: product.category,
-      collection: product.category, // Map category to collection for shop
-      stock: product.stock_quantity || 0, // Fix: map stock_quantity to stock
-      inStock: (product.stock_quantity || 0) > 0,
+      image: product.image || '/images/placeholder.jpg',
+      images: product.image ? [product.image] : ['/images/placeholder.jpg'],
+      category: product.category || 'General',
+      collection: product.category || 'General', // Map category to collection for shop
+      stock: product.stock || 0,
+      inStock: (product.stock || 0) > 0,
       featured: product.featured || false,
       tags: product.featured ? ['Featured'] : [],
       rating: 4.5, // Default rating for shop display
-      sizes: product.sizes || ['S', 'M', 'L', 'XL'],
-      colors: Array.isArray(product.colors)
-        ? product.colors.map((color: any) =>
-          typeof color === 'string'
-            ? { name: color, value: getColorValue(color) }
-            : color
-        )
-        : [{ name: 'Black', value: '#000000' }, { name: 'White', value: '#FFFFFF' }],
-      createdAt: product.created_at,
-      updatedAt: product.updated_at
+      sizes: ['S', 'M', 'L', 'XL'], // Default sizes (can be customized per product later)
+      colors: [
+        { name: 'Black', value: '#000000' },
+        { name: 'White', value: '#FFFFFF' }
+      ], // Default colors (can be customized per product later)
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt
     }));
 
     return NextResponse.json(shopProducts);

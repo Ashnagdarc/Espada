@@ -183,7 +183,7 @@ function ProductsPageContent() {
         }
       } catch (error) {
         // Ignore abort errors triggered by unmount/navigation/HMR in dev
-        if ((error as any)?.name === "AbortError") {
+        if (controller.signal.aborted || (error as any)?.name === "AbortError") {
           return;
         }
         console.error("Error fetching products:", error);

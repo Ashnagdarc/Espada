@@ -6,7 +6,6 @@ import { Package, Truck, CheckCircle, Clock, AlertCircle, ArrowLeft, Eye } from 
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/hooks/useAuth'
-import { SupabaseAuthProvider } from '@/contexts/SupabaseAuthContext'
 import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
 import Image from 'next/image'
@@ -71,7 +70,7 @@ const ORDER_STATUS_CONFIG = {
 function OrderHistoryContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const { success } = useToastActions()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -92,7 +91,7 @@ function OrderHistoryContent() {
   // Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user || !profile) {
+      if (!user) {
         setLoading(false)
         return
       }
@@ -101,7 +100,7 @@ function OrderHistoryContent() {
         setLoading(true)
         setError(null)
 
-        const response = await fetch(`/api/orders?customer_id=${profile.id}`)
+        const response = await fetch('/api/orders')
         const result = await response.json()
 
         if (!response.ok || !result.success) {
@@ -118,7 +117,7 @@ function OrderHistoryContent() {
     }
 
     fetchOrders()
-  }, [user, profile])
+  }, [user])
 
   // Redirect to sign in if not authenticated
   if (!user) {
@@ -222,6 +221,10 @@ function OrderHistoryContent() {
             {orders.map((order) => {
               const statusConfig = ORDER_STATUS_CONFIG[order.status]
               const StatusIcon = statusConfig.icon
+              const orderTotal = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: order.currency || 'NGN'
+              }).format(order.total_amount)
 
               return (
                 <div key={order.id} className="bg-fill-secondary border border-separator rounded-lg p-6">
@@ -238,7 +241,7 @@ function OrderHistoryContent() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-medium text-label-primary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                        ${order.total_amount.toFixed(2)}
+                        {orderTotal}
                       </p>
                       <p className="text-sm text-label-secondary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
                         {new Date(order.created_at).toLocaleDateString()}
@@ -315,8 +318,6 @@ function OrderHistoryContent() {
 
 export default function OrderHistoryPage() {
   return (
-    <SupabaseAuthProvider>
-      <OrderHistoryContent />
-    </SupabaseAuthProvider>
+    <OrderHistoryContent />
   )
 }

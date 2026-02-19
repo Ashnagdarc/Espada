@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import AppleButton from "../apple/AppleButton";
 import { useCartWithToast } from "@/hooks/useCartWithToast";
 import { useWishlist } from "@/hooks/useWishlist";
 
@@ -163,7 +162,7 @@ export default function ProductCard({
 
     try {
       addItem({
-        id: typeof product.id === "number" ? product.id : parseInt(String(product.id), 10),
+        id: String(product.id),
         name: product.name,
         price: product.price,
         image: product.image,
@@ -212,9 +211,7 @@ export default function ProductCard({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <AppleButton
-              variant="ghost"
-              size="sm"
+            <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -223,8 +220,14 @@ export default function ProductCard({
               disabled={wishlistLoading}
               aria-label="Toggle wishlist"
               className={cn(
-                "btn-apple-icon backdrop-blur-md transition-all duration-200",
-                isLiked ? "text-apple-red-500" : ""
+                "!w-10 !h-10 rounded-full flex items-center justify-center",
+                "backdrop-blur-md transition-all duration-200",
+                "!border-2 shadow-lg",
+                isLiked 
+                  ? "!bg-red-500 !border-red-500 text-white" 
+                  : "!bg-white/90 dark:!bg-black/90 !border-white/50 dark:!border-white/20 text-black dark:text-white",
+                "hover:scale-110 active:scale-95",
+                "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
             >
               <motion.div
@@ -238,7 +241,7 @@ export default function ProductCard({
                   )}
                 />
               </motion.div>
-            </AppleButton>
+            </button>
           </motion.div>
         </div>
 
@@ -296,25 +299,51 @@ export default function ProductCard({
       {/* Add to Cart Button */}
       <div className="p-6 pt-0">
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <AppleButton
-            variant="primary"
-            size="lg"
+          <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleAddToCart();
             }}
-            loading={isLoading}
-            fullWidth={true}
-            leftIcon={<ShoppingBag className="h-5 w-5" />}
+            disabled={isLoading}
             className={cn(
-              "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
-              "shadow-lg hover:shadow-xl transition-all duration-300 font-semibold",
-              "border border-primary/20 backdrop-blur-sm"
+              "w-full !h-12 rounded-full flex items-center justify-center gap-2",
+              "!bg-black dark:!bg-white !border-2 !border-black dark:!border-white",
+              "text-white dark:text-black font-semibold text-base",
+              "hover:!bg-black/90 dark:hover:!bg-white/90",
+              "active:scale-95 transition-all duration-200",
+              "shadow-lg hover:shadow-xl",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
-            Add to Cart
-          </AppleButton>
+            {isLoading ? (
+              <svg
+                className="animate-spin h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              <>
+                <ShoppingBag className="h-5 w-5" />
+                <span>Add to Cart</span>
+              </>
+            )}
+          </button>
         </motion.div>
       </div>
     </motion.div>

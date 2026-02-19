@@ -4,31 +4,35 @@ import { useToastActions } from '@/hooks/useToast';
 
 interface WishlistItem {
   id: string;
-  product_id: string;
-  created_at: string;
+  productId: string;
+  createdAt: string;
+  product?: {
+    id: string;
+    name: string;
+    image?: string | null;
+    price?: number | null;
+  };
 }
 
 export function useWishlist() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const { success, error, info } = useToastActions();
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch user's wishlist
   const fetchWishlist = async () => {
-    if (!user || !session) return;
+    if (!user) return;
 
     try {
       setLoading(true);
-      const response = await fetch('/api/wishlist', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch('/api/wishlist');
 
       if (response.ok) {
         const data = await response.json();
-        setWishlistItems(data.wishlist || []);
+        if (data.success) {
+          setWishlistItems(data.wishlist || []);
+        }
       }
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -39,7 +43,7 @@ export function useWishlist() {
 
   // Add item to wishlist
   const addToWishlist = async (productId: string) => {
-    if (!user || !session) {
+    if (!user) {
       error('Authentication Required', 'Please log in to add items to your wishlist');
       return false;
     }
@@ -50,7 +54,6 @@ export function useWishlist() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ product_id: productId }),
       });
@@ -79,7 +82,7 @@ export function useWishlist() {
 
   // Remove item from wishlist
   const removeFromWishlist = async (productId: string) => {
-    if (!user || !session) {
+    if (!user) {
       error('Authentication Required', 'Please log in to manage your wishlist');
       return false;
     }
@@ -90,7 +93,6 @@ export function useWishlist() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ product_id: productId }),
       });
@@ -115,7 +117,7 @@ export function useWishlist() {
 
   // Toggle wishlist status
   const toggleWishlist = async (productId: string) => {
-    const isInWishlist = wishlistItems.some(item => item.product_id === productId);
+    const isInWishlist = wishlistItems.some(item => item.productId === productId);
     
     if (isInWishlist) {
       return await removeFromWishlist(productId);
@@ -126,17 +128,17 @@ export function useWishlist() {
 
   // Check if product is in wishlist
   const isInWishlist = (productId: string) => {
-    return wishlistItems.some(item => item.product_id === productId);
+    return wishlistItems.some(item => item.productId === productId);
   };
 
   // Fetch wishlist when user changes
   useEffect(() => {
-    if (user && session) {
+    if (user) {
       fetchWishlist();
     } else {
       setWishlistItems([]);
     }
-  }, [user, session]);
+  }, [user]);
 
   return {
     wishlistItems,

@@ -18,7 +18,8 @@ import {
   Moon,
   Monitor,
   Home,
-  Menu
+  Menu,
+  Mail
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -38,6 +39,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { href: '/admin/homepage', label: 'Homepage', Icon: Home, active: pathname.startsWith('/admin/homepage') },
     { href: '/admin/products', label: 'Products', Icon: Package, active: pathname.startsWith('/admin/products') },
     { href: '/admin/orders', label: 'Orders', Icon: ShoppingCart, active: pathname.startsWith('/admin/orders') },
+    { href: '/admin/contact-messages', label: 'Contact', Icon: Mail, active: pathname.startsWith('/admin/contact-messages') },
     { href: '/admin/customers', label: 'Customers', Icon: Users, active: pathname.startsWith('/admin/customers') },
     { href: '/admin/reports', label: 'Reports', Icon: BarChart3, active: pathname.startsWith('/admin/reports') },
     { href: '/admin/settings', label: 'Settings', Icon: Settings, active: pathname.startsWith('/admin/settings') },

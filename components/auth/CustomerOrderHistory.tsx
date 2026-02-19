@@ -8,17 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Package, Calendar, CreditCard, Eye, Download, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
 
 interface Order {
   id: string;
   order_number: string;
   status: string;
   total_amount: number;
+  currency?: string;
   created_at: string;
   items: OrderItem[];
   shipping_address: Record<string, unknown>;
   payment_method: string;
+  payment_status?: string;
 }
 
 interface OrderItem {
@@ -32,47 +33,30 @@ interface OrderItem {
 }
 
 export function CustomerOrderHistory() {
-  const { user, profile, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    if (profile?.id) {
+    if (user) {
       fetchOrders();
     }
-  }, [profile?.id]);
+  }, [user]);
 
   const fetchOrders = async () => {
-    if (!profile?.id) return;
+    if (!user) return;
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            product_name,
-            size,
-            color,
-            quantity,
-            price,
-            image_url
-          )
-        `)
-        .eq('customer_id', profile.id)
-        .order('created_at', { ascending: false });
+      const response = await fetch('/api/orders');
+      const result = await response.json();
 
-      if (error) throw error;
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to fetch orders');
+      }
 
-      const formattedOrders = data?.map(order => ({
-        ...order,
-        items: order.order_items || []
-      })) || [];
-
-      setOrders(formattedOrders);
+      setOrders(result.data || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
       toast.error('Failed to load order history');
@@ -106,10 +90,10 @@ export function CustomerOrderHistory() {
     });
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number, currency = 'NGN') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency,
     }).format(price);
   };
 
@@ -186,7 +170,7 @@ export function CustomerOrderHistory() {
                     </div>
                     <div className="flex items-center">
                       <CreditCard className="w-4 h-4 mr-1" />
-                      {formatPrice(order.total_amount)}
+                      {formatPrice(order.total_amount, order.currency || 'NGN')}
                     </div>
                   </div>
                 </div>
@@ -223,7 +207,7 @@ export function CustomerOrderHistory() {
                         {item.product_name}
                       </p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {item.size} • {item.color} • Qty: {item.quantity}
+                        {(item.size || 'Standard')} • {(item.color || 'Default')} • Qty: {item.quantity}
                       </p>
                     </div>
                   </div>
