@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 
@@ -11,7 +12,19 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn } = useAuth();
+  const { signIn, user, isLoading, isAdmin } = useAuth();
+  const router = useRouter();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (isAdmin) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [user, isLoading, isAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +32,20 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      const result = await signIn(email, password);
+      
+      if (result.error) {
+        setError(result.error);
+      } else if (result.profile) {
+        // Check if user is admin
+        if (result.profile.role === 'admin') {
+          router.push('/admin');
+        } else {
+          setError('Access denied. Admin privileges required.');
+        }
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
