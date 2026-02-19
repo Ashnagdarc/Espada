@@ -222,7 +222,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>((
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-black border border-white/20 rounded-xl shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-2 bg-gray-950/90 backdrop-blur border border-white/10 rounded-xl shadow-2xl ring-1 ring-white/5 max-h-64 overflow-auto">
             {searchable && (
               <div className="p-2 border-b border-white/10">
                 <input
@@ -339,19 +339,19 @@ export const SimpleSelect = forwardRef<HTMLSelectElement, SimpleSelectProps>((
 
   return (
     <div className={fullWidth ? 'w-full' : ''}>
-      {label && (
+                <input
         <label
           className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
           style={{ fontFamily: 'Gilroy, sans-serif' }}
         >
           {label}
-        </label>
+                  className="w-full px-3 py-2 text-sm bg-black/60 text-white border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/20"
       )}
 
       <select
         ref={ref}
         className={`
-          block w-full rounded-xl border transition-all duration-200
+            <div className="py-1.5">
           focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10
           disabled:opacity-50 disabled:cursor-not-allowed
           ${getVariantClasses()}
@@ -366,8 +366,8 @@ export const SimpleSelect = forwardRef<HTMLSelectElement, SimpleSelectProps>((
         {...props}
       >
         {options.map((option) => (
-          <option
-            key={option.value}
+                        ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/15'}
+                        ${isSelected ? 'bg-white/15 text-white' : 'text-white/80'}
             value={option.value}
             disabled={option.disabled}
           >
