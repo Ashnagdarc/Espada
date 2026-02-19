@@ -40,6 +40,8 @@ export async function GET() {
       images: product.image ? [product.image] : [],
       stock: product.stock,
       featured: product.featured,
+      published: product.published || false,
+      publishedAt: product.publishedAt ? product.publishedAt.toISOString() : null,
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString()
     }));
@@ -86,18 +88,32 @@ export async function POST(request: Request) {
     const image = Array.isArray(body.images) ? body.images[0] : body.image;
     const slug = await createUniqueSlug(body.name);
 
-    const product = await prisma.product.create({
-      data: {
-        name: body.name,
-        slug,
-        description: body.description,
-        price: body.price,
-        category: body.category,
-        stock: body.stock || 0,
-        featured: body.featured || false,
-        image: image || null
-      }
-    });
+    // Attempt to create product, but be defensive if DB schema doesn't include published fields yet
+    let product;
+    const createData: any = {
+      name: body.name,
+      slug,
+      description: body.description,
+      price: body.price,
+      category: body.category,
+      stock: body.stock || 0,
+      featured: body.featured || false,
+      image: image || null,
+    };
+    if (body.published !== undefined) {
+      createData.published = body.published || false;
+      createData.publishedAt = body.published ? new Date() : null;
+    }
+
+    try {
+      product = await prisma.product.create({ data: createData });
+    } catch (err) {
+      console.warn('Create product with published fields failed, retrying without published:', err);
+      // Retry without published fields
+      delete createData.published;
+      delete createData.publishedAt;
+      product = await prisma.product.create({ data: createData });
+    }
 
     return NextResponse.json(
       {
@@ -112,6 +128,8 @@ export async function POST(request: Request) {
           images: product.image ? [product.image] : [],
           stock: product.stock,
           featured: product.featured,
+          published: product.published || false,
+          publishedAt: product.publishedAt ? product.publishedAt.toISOString() : null,
           createdAt: product.createdAt.toISOString(),
           updatedAt: product.updatedAt.toISOString()
         }

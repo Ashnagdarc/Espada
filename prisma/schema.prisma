@@ -119,18 +119,31 @@ model CustomerProfile {
   @@map("customer_profiles")
 }
 
+enum ProductCategory {
+  T_SHIRTS
+  POLO_SHIRTS
+  SHORTS
+  JACKETS
+  JEANS
+  SWEATERS
+  SHOES
+  ACCESSORIES
+}
+
 model Product {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String?  @db.Text
+  slug        String           @unique
+  description String?          @db.Text
   price       Float
   image       String?
-  category    String?
-  stock       Int      @default(0)
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  category    ProductCategory?
+  published   Boolean          @default(false)
+  publishedAt DateTime?
+  stock       Int              @default(0)
+  featured    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   orderItems OrderItem[]
 

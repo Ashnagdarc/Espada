@@ -190,7 +190,7 @@ function AdminProductsPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card appearance="panel" className="p-5 bg-white/5 dark:bg-gray-900/40 border border-white/10 shadow-sm">
+          <Card appearance="panel" className="relative z-20 p-5 bg-white/5 dark:bg-gray-900/40 border border-white/10 shadow-sm">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <SearchInput
@@ -228,7 +228,7 @@ function AdminProductsPageContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card appearance="panel" className="p-0 overflow-hidden border border-white/10 shadow-lg">
+          <Card appearance="panel" className="relative z-10 p-0 overflow-hidden border border-white/10 shadow-lg">
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 dark:bg-gray-900/40">
               <div>
                 <div className="text-sm font-semibold text-gray-900 dark:text-white">Inventory</div>

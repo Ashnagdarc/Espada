@@ -102,14 +102,52 @@ function getColorValue(colorName: string): string {
 }
 
 // GET /api/products - Get all products for the shop
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // Fetch products from Prisma
-    const products = await prisma.product.findMany({
-      orderBy: {
-        createdAt: 'desc'
+    const url = new URL(req.url);
+    const filter = (url.searchParams.get('filter') || '').toUpperCase();
+
+    // Build Prisma where clause based on filter
+    const where: any = {};
+
+    // By default return only published products for the public API
+    const includeDrafts = url.searchParams.get('includeDrafts') === 'true';
+    if (!includeDrafts) {
+      where.published = true;
+    }
+
+    if (filter === 'NEW') {
+      // Products created in the last 7 days
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: sevenDaysAgo };
+    } else if (filter === 'BEST_SELLERS' || filter === 'BEST SELLERS') {
+      // Featured products as best sellers proxy
+      where.featured = true;
+    }
+
+    // Fetch products from Prisma with optional filter
+    let products;
+    try {
+      products = await prisma.product.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    } catch (err) {
+      // If the DB doesn't have the `published` column yet (migration not applied),
+      // retry without the `published` constraint so the public API still works.
+      console.warn('Initial products query failed, retrying without published filter:', err);
+      const whereNoPublished = { ...where };
+      if (whereNoPublished.published !== undefined) delete whereNoPublished.published;
+      if (whereNoPublished.createdAt && whereNoPublished.createdAt.gte === undefined) {
+        // keep createdAt as-is
       }
-    });
+      products = await prisma.product.findMany({
+        where: whereNoPublished,
+        orderBy: { createdAt: 'desc' }
+      });
+    }
 
     // Transform Prisma products to shop format
     const shopProducts = products.map(product => ({

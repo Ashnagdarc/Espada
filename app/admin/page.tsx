@@ -363,11 +363,17 @@ export default function AdminDashboard() {
           }
         />
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Overview</h2>
+            <p className="text-xs text-white/60">Key performance snapshots</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {quickStats.map((stat, index) => (
-            <Card key={index} appearance="panel" className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-white/10 rounded-lg">
+            <Card key={index} appearance="panel" className="p-6 border border-white/10 shadow-lg hover:border-white/20 transition-all duration-200">
+              <div className="flex items-center justify-between mb-5">
+                <div className="p-3 bg-white/10 rounded-lg ring-1 ring-white/10">
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
                 <div className={`text-sm px-2 py-1 rounded-full ${
@@ -380,23 +386,29 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-white/60 text-sm mb-1">{stat.title}</p>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-2xl font-bold text-white tracking-tight">{stat.value}</p>
               </div>
             </Card>
           ))}
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Quick Access</h2>
+            <p className="text-xs text-white/60">Jump to the most used areas</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           {navigationCards.map((card, index) => (
             <Card
               key={index}
               onClick={() => router.push(card.href)}
               appearance="panel"
-              className="p-6 cursor-pointer hover:bg-white/5 transition-all duration-200 group hover:border-white/20"
+              className="p-6 cursor-pointer hover:bg-white/5 transition-all duration-200 group border border-white/10 hover:border-white/20 shadow-lg"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
+                <div className="p-3 rounded-lg bg-white/10 ring-1 ring-white/10 group-hover:bg-white/20 transition-colors">
                   <card.icon className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -412,8 +424,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <Card appearance="panel" className="p-6">
-          <h3 className="text-lg font-semibold mb-6 text-white">Recent Activity</h3>
+        <Card appearance="panel" className="p-0 overflow-hidden border border-white/10 shadow-lg">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
+            <div>
+              <h3 className="text-sm font-semibold text-white">Recent Activity</h3>
+              <p className="text-xs text-white/60">Latest updates across the store</p>
+            </div>
+            <div className="text-xs text-white/60">
+              {stats.recentActivities?.length || 0} updates
+            </div>
+          </div>
+          <div className="p-6">
           <div className="space-y-4">
             {stats.recentActivities && stats.recentActivities.length > 0 ? (
               stats.recentActivities.map((activity) => (
@@ -434,6 +455,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
           </div>
         </Card>
       </AdminPage>

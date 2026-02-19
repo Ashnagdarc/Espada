@@ -105,14 +105,29 @@ export default function AboutPage() {
     <div ref={containerRef} className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section with HI */}
-      <section className="min-h-screen flex items-center justify-center relative">
+      {/* Hero Section */}
+      <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute -top-32 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)]" />
+        </div>
+
         <motion.div
-          className="text-center"
+          className="text-center relative z-10"
           style={{ opacity: hiOpacity, scale: hiScale }}
         >
+          <motion.p
+            className="text-xs uppercase tracking-[0.35em] text-label-tertiary mb-6"
+            style={{ fontFamily: 'Gilroy, sans-serif' }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            About Espada
+          </motion.p>
           <motion.h1
-            className="text-[12rem] md:text-[16rem] lg:text-[20rem] font-black text-foreground leading-none tracking-tighter"
+            className="text-[10rem] md:text-[14rem] lg:text-[18rem] font-black text-foreground leading-none tracking-tighter"
             style={{ fontFamily: 'Gilroy, sans-serif' }}
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
@@ -120,28 +135,60 @@ export default function AboutPage() {
           >
             HI
           </motion.h1>
+          <motion.p
+            className="mt-4 text-base md:text-lg text-label-secondary"
+            style={{ fontFamily: 'Gilroy, sans-serif' }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.1, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            Quiet essentials. Small batches. Made to outlast trends.
+          </motion.p>
         </motion.div>
-        
+
         <ScrollIndicator />
       </section>
 
       {/* Letter Content */}
-      <motion.section 
-        className="min-h-screen px-8 py-24"
+      <motion.section
+        className="min-h-screen px-6 md:px-10 py-24"
         style={{ opacity: letterOpacity }}
       >
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 60 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-2xl md:text-3xl font-medium text-label-primary mb-8 tracking-wide" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-              A Letter From Our Founder
-            </h2>
-          </motion.div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12">
+          <div className="lg:sticky lg:top-24 self-start">
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 60 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-2xl md:text-3xl font-medium text-label-primary mb-4 tracking-wide" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                A Letter From Our Founder
+              </h2>
+              <p className="text-sm text-label-tertiary" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                Built for the long term. Designed for quiet confidence.
+              </p>
+            </motion.div>
+
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-label-tertiary mb-2">Principle 01</div>
+                <div className="text-base font-semibold text-foreground">Local craft</div>
+                <p className="text-sm text-label-secondary mt-1">Small batches with trusted hands and premium fabrics.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-label-tertiary mb-2">Principle 02</div>
+                <div className="text-base font-semibold text-foreground">Essential forms</div>
+                <p className="text-sm text-label-secondary mt-1">Timeless silhouettes over trend-driven noise.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-label-tertiary mb-2">Principle 03</div>
+                <div className="text-base font-semibold text-foreground">Inclusive fit</div>
+                <p className="text-sm text-label-secondary mt-1">Unisex design that prioritizes comfort and ease.</p>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-12">
             {paragraphs.map((paragraph, index) => (
@@ -152,26 +199,71 @@ export default function AboutPage() {
                 {paragraph}
               </ScrollRevealText>
             ))}
-          </div>
 
-          <motion.div
-            className="mt-24 text-center"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            viewport={{ once: true }}
-          >
-            <div className="inline-block">
-              <div className="text-lg font-medium text-label-primary mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                With love,
+            <motion.div
+              className="mt-16"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-block">
+                <div className="text-lg font-medium text-label-primary mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                  With love,
+                </div>
+                <div className="text-2xl font-bold text-foreground tracking-wider" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                  ESPADA
+                </div>
               </div>
-              <div className="text-2xl font-bold text-foreground tracking-wider" style={{ fontFamily: 'Gilroy, sans-serif' }}>
-                ESPADA
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </motion.section>
+
+      {/* Values Strip */}
+      <section className="px-6 md:px-10 pb-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-label-tertiary mb-2" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                  Our Values
+                </p>
+                <h3 className="text-2xl md:text-3xl font-semibold text-foreground" style={{ fontFamily: 'Gilroy, sans-serif' }}>
+                  Designed to last. Built to feel like you.
+                </h3>
+              </div>
+              <div className="text-sm text-label-secondary max-w-md">
+                We focus on fewer, better pieces: wearable daily, crafted locally, and refined through slow iteration.
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
+                <div className="text-xs uppercase tracking-[0.24em] text-label-tertiary mb-2">Materials</div>
+                <div className="text-lg font-semibold text-foreground">Premium fabrics</div>
+                <p className="text-sm text-label-secondary mt-2">
+                  Natural, breathable textiles that soften with time and hold their shape.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
+                <div className="text-xs uppercase tracking-[0.24em] text-label-tertiary mb-2">Craft</div>
+                <div className="text-lg font-semibold text-foreground">Small‑batch production</div>
+                <p className="text-sm text-label-secondary mt-2">
+                  Every run is intentional, controlled, and checked by the hands that make it.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
+                <div className="text-xs uppercase tracking-[0.24em] text-label-tertiary mb-2">Design</div>
+                <div className="text-lg font-semibold text-foreground">Quiet confidence</div>
+                <p className="text-sm text-label-secondary mt-2">
+                  Subtle details, clean lines, and fit that feels effortless day after day.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Bottom Spacing */}
       <div className="h-24" />

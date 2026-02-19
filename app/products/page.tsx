@@ -15,6 +15,10 @@ const topCategories = [
   "POLO SHIRTS",
   "SHORTS",
   "JACKETS",
+  "JEANS",
+  "SWEATERS",
+  "SHOES",
+  "ACCESSORIES",
 ];
 
 // Product interface for type safety
@@ -155,7 +159,15 @@ function ProductsPageContent() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("/api/products", {
+        // Request server with optional filter for NEW / BEST SELLERS
+        let url = "/api/products";
+        if (activeCategory === "NEW") {
+          url += "?filter=NEW";
+        } else if (activeCategory === "BEST SELLERS") {
+          url += "?filter=BEST_SELLERS";
+        }
+
+        const response = await fetch(url, {
           signal: controller.signal,
           cache: "no-store",
         });
@@ -209,7 +221,7 @@ function ProductsPageContent() {
         }
       }
     };
-  }, []);
+  }, [activeCategory]);
 
   const toggleSize = (size: string) => {
     setSelectedSizes((prev) =>
@@ -333,27 +345,40 @@ function ProductsPageContent() {
       <Header />
 
       {/* Breadcrumb */}
-      <div className="px-8 py-6 border-b border-separator bg-fill-secondary">
-        <div className="flex items-center gap-2 text-sm text-label-tertiary">
-          <span className="font-medium">Home</span>
+      <div className="px-8 py-5 border-b border-white/10 bg-white/5 backdrop-blur-sm">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-medium text-label-tertiary" style={{ fontFamily: "Gilroy, sans-serif" }}>Home</span>
           <span className="text-label-quaternary">/</span>
-          <span className="text-label-primary font-semibold">Shop</span>
+          <span className="text-label-primary font-semibold" style={{ fontFamily: "Gilroy, sans-serif" }}>Shop</span>
         </div>
       </div>
 
       {/* Mobile Filter Toggle Button */}
-      <div className="lg:hidden px-8 py-4 border-b border-separator bg-background">
+      <div className="lg:hidden px-8 py-4 border-b border-white/10 bg-background">
         <button
           onClick={() => setShowMobileFilters(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-fill-secondary hover:bg-fill-tertiary rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-xl transition-all shadow-sm"
         >
           <Menu className="w-5 h-5 text-label-primary" />
           <span
-            className="text-sm font-medium text-label-primary"
+            className="text-sm font-semibold text-label-primary"
             style={{ fontFamily: "Gilroy, sans-serif" }}
           >
             Filters
           </span>
+          {hasActiveFilters && (
+            <span className="ml-1 px-2 py-0.5 bg-label-primary text-background text-xs font-bold rounded-full">
+              {[
+                selectedSizes.length,
+                selectedColors.length,
+                selectedCategories.length,
+                selectedPriceRange.length,
+                selectedCollections.length,
+                selectedTags.length,
+                selectedRatings.length,
+              ].reduce((a, b) => a + b, 0)}
+            </span>
+          )}
         </button>
       </div>
 
@@ -369,7 +394,7 @@ function ProductsPageContent() {
         {/* Filters Sidebar */}
         <div
           className={`
-          w-80 bg-background border-r border-separator p-8 overflow-y-auto
+          w-80 bg-white/5 border-r border-white/10 p-8 overflow-y-auto backdrop-blur-sm
           lg:relative lg:translate-x-0 lg:block
           ${
             showMobileFilters
@@ -380,26 +405,31 @@ function ProductsPageContent() {
         `}
         >
           <div className="flex items-center justify-between mb-8">
-            <h2
-              className="text-2xl font-bold text-label-primary"
-              style={{ fontFamily: "Gilroy, sans-serif" }}
-            >
-              Filters
-            </h2>
+            <div>
+              <h2
+                className="text-2xl font-bold text-label-primary"
+                style={{ fontFamily: "Gilroy, sans-serif" }}
+              >
+                Filters
+              </h2>
+              <p className="text-sm text-label-tertiary mt-1" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                Refine your search
+              </p>
+            </div>
             <div className="flex items-center gap-3">
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-sm text-label-tertiary hover:text-label-primary transition-colors underline"
+                  className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-label-secondary hover:text-label-primary transition-all"
                   style={{ fontFamily: "Gilroy, sans-serif" }}
                 >
-                  Clear All
+                  Clear
                 </button>
               )}
               {/* Mobile Close Button */}
               <button
                 onClick={() => setShowMobileFilters(false)}
-                className="lg:hidden p-2 hover:bg-fill-secondary rounded-lg transition-colors"
+                className="lg:hidden p-2 hover:bg-white/5 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-label-primary" />
               </button>
@@ -407,9 +437,9 @@ function ProductsPageContent() {
           </div>
 
           {/* Search Input */}
-          <div className="mb-8">
+          <div className="mb-8 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <h3
-              className="text-lg font-semibold mb-4 text-label-primary"
+              className="text-xs uppercase tracking-wider font-semibold mb-3 text-label-secondary"
               style={{ fontFamily: "Gilroy, sans-serif" }}
             >
               Search
@@ -420,7 +450,7 @@ function ProductsPageContent() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 pl-10 border border-separator rounded-xl bg-background text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-label-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 pl-10 border border-white/10 rounded-xl bg-white/5 text-label-primary placeholder-label-tertiary focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-label-tertiary" />
@@ -428,9 +458,9 @@ function ProductsPageContent() {
           </div>
 
           {/* Size Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <h3
-              className="text-lg font-semibold mb-4 text-label-primary"
+              className="text-xs uppercase tracking-wider font-semibold mb-4 text-label-secondary"
               style={{ fontFamily: "Gilroy, sans-serif" }}
             >
               Size
@@ -440,10 +470,10 @@ function ProductsPageContent() {
                 <button
                   key={size}
                   onClick={() => toggleSize(size)}
-                  className={`h-11 min-w-[44px] border border-separator rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`h-11 min-w-[44px] border rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedSizes.includes(size)
                       ? "bg-label-primary text-background border-label-primary shadow-sm"
-                      : "bg-background text-label-secondary hover:border-label-tertiary hover:shadow-sm"
+                      : "bg-white/5 border-white/10 text-label-secondary hover:border-white/20 hover:shadow-sm"
                   }`}
                   style={{ fontFamily: "Gilroy, sans-serif" }}
                   title={`${size} (${getSizeCount(size)} products)`}
@@ -455,75 +485,75 @@ function ProductsPageContent() {
           </div>
 
           {/* Availability Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleAvailabilityCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Availability
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isAvailabilityCollapsed ? "rotate-180" : ""
                 }`}
               />
             </div>
             <div
-              className={`space-y-4 transition-all duration-300 overflow-hidden ${
+              className={`space-y-3 transition-all duration-300 overflow-hidden ${
                 isAvailabilityCollapsed
                   ? "max-h-0 opacity-0"
                   : "max-h-96 opacity-100"
               }`}
             >
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={showAvailable}
                   onChange={(e) => setShowAvailable(e.target.checked)}
-                  className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2"
+                  className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2"
                 />
-                <span className="text-sm font-medium text-label-secondary">
+                <span className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors" style={{ fontFamily: "Gilroy, sans-serif" }}>
                   Available
                 </span>
-                <span className="text-sm text-label-quaternary ml-auto">
-                  ({getAvailableCount()})
+                <span className="text-xs text-label-quaternary ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                  {getAvailableCount()}
                 </span>
               </label>
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={showOutOfStock}
                   onChange={(e) => setShowOutOfStock(e.target.checked)}
-                  className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2"
+                  className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2"
                 />
-                <span className="text-sm font-medium text-label-secondary">
+                <span className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors" style={{ fontFamily: "Gilroy, sans-serif" }}>
                   Out Of Stock
                 </span>
-                <span className="text-sm text-label-quaternary ml-auto">
-                  ({getOutOfStockCount()})
+                <span className="text-xs text-label-quaternary ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                  {getOutOfStockCount()}
                 </span>
               </label>
             </div>
           </div>
 
           {/* Category Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleCategoryCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Category
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isCategoryCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -535,23 +565,23 @@ function ProductsPageContent() {
                   : "max-h-96 opacity-100"
               }`}
             >
-              {["T-SHIRTS", "POLO SHIRTS", "SHORTS", "JACKETS"].map(
+              {["T-SHIRTS", "POLO SHIRTS", "SHORTS", "JACKETS", "JEANS", "SWEATERS", "SHOES", "ACCESSORIES"].map(
                 (category) => (
                   <label
                     key={category}
-                    className="flex items-center gap-3 cursor-pointer"
+                    className="flex items-center gap-3 cursor-pointer group"
                   >
                     <input
                       type="checkbox"
                       checked={selectedCategories.includes(category)}
                       onChange={() => toggleCategory(category)}
-                      className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2 focus:ring-offset-0 transition-colors"
+                      className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2 focus:ring-offset-0 transition-colors"
                     />
-                    <span className="text-sm font-medium text-label-secondary">
+                    <span className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors" style={{ fontFamily: "Gilroy, sans-serif" }}>
                       {category}
                     </span>
-                    <span className="text-sm text-label-quaternary ml-auto">
-                      ({getCategoryCount(category)})
+                    <span className="text-xs text-label-quaternary ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                      {getCategoryCount(category)}
                     </span>
                   </label>
                 )
@@ -560,25 +590,25 @@ function ProductsPageContent() {
           </div>
 
           {/* Colors Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleColorsCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Colors
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isColorsCollapsed ? "rotate-180" : ""
                 }`}
               />
             </div>
             <div
-              className={`grid grid-cols-3 gap-3 transition-all duration-300 overflow-hidden ${
+              className={`grid grid-cols-4 gap-2.5 transition-all duration-300 overflow-hidden ${
                 isColorsCollapsed ? "max-h-0 opacity-0" : "max-h-96 opacity-100"
               }`}
             >
@@ -586,10 +616,10 @@ function ProductsPageContent() {
                 <button
                   key={color.name}
                   onClick={() => toggleColor(color.name)}
-                  className={`relative h-11 min-w-[44px] rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                  className={`relative h-10 min-w-[40px] rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                     selectedColors.includes(color.name)
-                      ? "border-label-primary shadow-md"
-                      : "border-separator hover:border-label-tertiary"
+                      ? "border-label-primary shadow-md ring-2 ring-white/20"
+                      : "border-white/20 hover:border-white/30"
                   }`}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
@@ -597,7 +627,7 @@ function ProductsPageContent() {
                   {selectedColors.includes(color.name) && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="w-3 h-3 bg-label-primary rounded-full"
+                        className="w-2.5 h-2.5 rounded-full"
                         style={{
                           backgroundColor:
                             color.value === "#FFFFFF" ? "#000000" : "#FFFFFF",
@@ -611,19 +641,19 @@ function ProductsPageContent() {
           </div>
 
           {/* Price Range Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={togglePriceRangeCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Price Range
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isPriceRangeCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -644,16 +674,16 @@ function ProductsPageContent() {
                     type="checkbox"
                     checked={selectedPriceRange.includes(range.label)}
                     onChange={() => togglePriceRange(range.label)}
-                    className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2 focus:ring-offset-0 transition-colors"
+                    className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2 focus:ring-offset-0 transition-colors"
                   />
                   <span
-                    className="text-label-secondary group-hover:text-label-primary transition-colors"
+                    className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors"
                     style={{ fontFamily: "Gilroy, sans-serif" }}
                   >
                     {range.label}
                   </span>
-                  <span className="text-sm text-label-quaternary ml-auto">
-                    ({getPriceRangeCount(range.label)})
+                  <span className="text-xs text-label-quaternary ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                    {getPriceRangeCount(range.label)}
                   </span>
                 </label>
               ))}
@@ -661,19 +691,19 @@ function ProductsPageContent() {
           </div>
 
           {/* Collections Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleCollectionsCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Collections
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isCollectionsCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -694,16 +724,16 @@ function ProductsPageContent() {
                     type="checkbox"
                     checked={selectedCollections.includes(collection)}
                     onChange={() => toggleCollection(collection)}
-                    className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2 focus:ring-offset-0 transition-colors"
+                    className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2 focus:ring-offset-0 transition-colors"
                   />
                   <span
-                    className="text-label-secondary group-hover:text-label-primary transition-colors"
+                    className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors"
                     style={{ fontFamily: "Gilroy, sans-serif" }}
                   >
                     {collection}
                   </span>
-                  <span className="text-sm text-label-quaternary ml-auto">
-                    ({getCollectionCount(collection)})
+                  <span className="text-xs text-label-quaternary ml-auto bg-white/5 px-2 py-0.5 rounded-full">
+                    {getCollectionCount(collection)}
                   </span>
                 </label>
               ))}
@@ -711,19 +741,19 @@ function ProductsPageContent() {
           </div>
 
           {/* Tags Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleTagsCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Tags
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isTagsCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -737,33 +767,33 @@ function ProductsPageContent() {
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-2 min-h-[36px] rounded-lg text-xs font-semibold transition-all duration-200 border ${
                     selectedTags.includes(tag)
-                      ? "bg-label-primary text-background"
-                      : "bg-fill-tertiary text-label-secondary hover:bg-fill-secondary hover:text-label-primary"
+                      ? "bg-label-primary text-background border-label-primary"
+                      : "bg-white/5 border-white/10 text-label-secondary hover:border-white/20 hover:text-label-primary"
                   }`}
                   style={{ fontFamily: "Gilroy, sans-serif" }}
                 >
-                  {tag} ({getTagCount(tag)})
+                  {tag} <span className="opacity-60">({getTagCount(tag)})</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Sizes Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleSizesCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Sizes
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isSizesCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -777,10 +807,10 @@ function ProductsPageContent() {
                 <button
                   key={size}
                   onClick={() => toggleSize(size)}
-                  className={`h-11 min-w-[44px] rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                  className={`h-10 min-w-[40px] rounded-lg border text-sm font-semibold transition-all duration-200 hover:scale-105 ${
                     selectedSizes.includes(size)
-                      ? "border-label-primary bg-label-primary text-background"
-                      : "border-separator text-label-secondary hover:border-label-tertiary hover:text-label-primary"
+                      ? "border-label-primary bg-label-primary text-background shadow-sm"
+                      : "border-white/20 bg-white/5 text-label-secondary hover:border-white/30 hover:text-label-primary"
                   }`}
                   style={{ fontFamily: "Gilroy, sans-serif" }}
                 >
@@ -791,19 +821,19 @@ function ProductsPageContent() {
           </div>
 
           {/* Ratings Filter */}
-          <div className="mb-8">
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-lg">
             <div
               className="flex items-center justify-between mb-4 cursor-pointer"
               onClick={toggleRatingsCollapse}
             >
               <h3
-                className="text-lg font-semibold text-label-primary"
+                className="text-xs uppercase tracking-wider font-semibold text-label-secondary"
                 style={{ fontFamily: "Gilroy, sans-serif" }}
               >
                 Ratings
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-label-quaternary transition-transform duration-200 ${
+                className={`w-4 h-4 text-label-quaternary transition-transform duration-200 ${
                   isRatingsCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -824,7 +854,7 @@ function ProductsPageContent() {
                     type="checkbox"
                     checked={selectedRatings.includes(rating)}
                     onChange={() => toggleRating(rating)}
-                    className="w-5 h-5 rounded border-separator text-label-primary focus:ring-label-primary focus:ring-2 focus:ring-offset-0 transition-colors"
+                    className="w-4 h-4 rounded border-white/20 text-label-primary focus:ring-white/20 focus:ring-2 focus:ring-offset-0 transition-colors"
                   />
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center">
@@ -832,7 +862,7 @@ function ProductsPageContent() {
                         <svg
                           key={i}
                           className={`w-4 h-4 ${
-                            i < rating ? "text-yellow-400" : "text-separator"
+                            i < rating ? "text-yellow-400" : "text-white/10"
                           }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
@@ -842,7 +872,7 @@ function ProductsPageContent() {
                       ))}
                     </div>
                     <span
-                      className="text-label-secondary group-hover:text-label-primary transition-colors"
+                      className="text-sm font-medium text-label-secondary group-hover:text-label-primary transition-colors"
                       style={{ fontFamily: "Gilroy, sans-serif" }}
                     >
                       {rating} star{rating !== 1 ? "s" : ""} & up
@@ -855,82 +885,151 @@ function ProductsPageContent() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8 bg-background">
-          {/* Page Title */}
-          <h1
-            className="text-4xl font-bold mb-8 text-label-primary"
-            style={{ fontFamily: "Gilroy, sans-serif" }}
-          >
-            SHOP
-          </h1>
-
-          {/* Search Bar */}
-          <div className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-label-quaternary" />
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 border border-separator rounded-xl bg-fill-secondary text-sm font-medium focus:outline-none focus:ring-2 focus:ring-label-primary focus:border-transparent focus:bg-background transition-all duration-200 text-label-primary placeholder:text-label-quaternary"
-            />
-          </div>
-
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            {topCategories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-6 py-3 min-h-[44px] rounded-full text-sm font-semibold transition-all duration-200 ${
-                  activeCategory === category
-                    ? "bg-label-primary text-background shadow-md"
-                    : "bg-fill-secondary text-label-secondary hover:bg-fill-tertiary hover:shadow-sm"
-                }`}
+        <div className="flex-1 bg-background">
+          {/* Page Header */}
+          <div className="px-8 py-10 border-b border-white/10 bg-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <h1
+                className="text-5xl font-bold text-label-primary"
+                style={{ fontFamily: "Gilroy, sans-serif" }}
               >
-                {category}
-              </button>
-            ))}
+                SHOP
+              </h1>
+              {!loading && !error && (
+                <span className="text-sm text-label-tertiary" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                  {products.filter((product) => {
+                    const searchLower = searchQuery.toLowerCase();
+                    const matchesSearch = searchQuery === "" || 
+                      product.name.toLowerCase().includes(searchLower) ||
+                      product.description.toLowerCase().includes(searchLower) ||
+                      product.category.toLowerCase().includes(searchLower);
+                    const matchesTopCategory = activeCategory === "NEW" || product.category === activeCategory;
+                    const matchesSidebarCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+                    const matchesCategory = matchesTopCategory && matchesSidebarCategory;
+                    const matchesAvailability = (showAvailable && product.inStock) || (showOutOfStock && !product.inStock);
+                    const matchesSize = selectedSizes.length === 0 || selectedSizes.some((size) => product.sizes?.includes(size));
+                    const matchesColor = selectedColors.length === 0 || selectedColors.some((color) => product.colors?.some((productColor) => productColor.name === color));
+                    const matchesPrice = selectedPriceRange.length === 0 || selectedPriceRange.some((rangeLabel) => {
+                      const range = priceRanges.find((r) => r.label === rangeLabel);
+                      return range && product.price >= range.min && (range.max === Infinity || product.price <= range.max);
+                    });
+                    const matchesCollection = selectedCollections.length === 0 || selectedCollections.includes(product.collection);
+                    const matchesTag = selectedTags.length === 0 || selectedTags.some((tag) => product.tags?.includes(tag));
+                    const matchesRating = selectedRatings.length === 0 || selectedRatings.some((rating) => product.rating >= rating);
+                    return matchesSearch && matchesCategory && matchesAvailability && matchesSize && matchesColor && matchesPrice && matchesCollection && matchesTag && matchesRating;
+                  }).length} {products.filter((product) => {
+                    const searchLower = searchQuery.toLowerCase();
+                    const matchesSearch = searchQuery === "" || 
+                      product.name.toLowerCase().includes(searchLower) ||
+                      product.description.toLowerCase().includes(searchLower) ||
+                      product.category.toLowerCase().includes(searchLower);
+                    const matchesTopCategory = activeCategory === "NEW" || product.category === activeCategory;
+                    const matchesSidebarCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+                    const matchesCategory = matchesTopCategory && matchesSidebarCategory;
+                    const matchesAvailability = (showAvailable && product.inStock) || (showOutOfStock && !product.inStock);
+                    const matchesSize = selectedSizes.length === 0 || selectedSizes.some((size) => product.sizes?.includes(size));
+                    const matchesColor = selectedColors.length === 0 || selectedColors.some((color) => product.colors?.some((productColor) => productColor.name === color));
+                    const matchesPrice = selectedPriceRange.length === 0 || selectedPriceRange.some((rangeLabel) => {
+                      const range = priceRanges.find((r) => r.label === rangeLabel);
+                      return range && product.price >= range.min && (range.max === Infinity || product.price <= range.max);
+                    });
+                    const matchesCollection = selectedCollections.length === 0 || selectedCollections.includes(product.collection);
+                    const matchesTag = selectedTags.length === 0 || selectedTags.some((tag) => product.tags?.includes(tag));
+                    const matchesRating = selectedRatings.length === 0 || selectedRatings.some((rating) => product.rating >= rating);
+                    return matchesSearch && matchesCategory && matchesAvailability && matchesSize && matchesColor && matchesPrice && matchesCollection && matchesTag && matchesRating;
+                  }).length === 1 ? 'product' : 'products'}
+                </span>
+              )}
+            </div>
+            <p className="text-label-tertiary" style={{ fontFamily: "Gilroy, sans-serif" }}>
+              Discover our curated collection
+            </p>
           </div>
+
+          <div className="p-8">
+            {/* Search Bar */}
+            <div className="relative mb-6">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-label-quaternary" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-12 pr-4 border border-white/10 rounded-xl bg-white/5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 focus:bg-white/10 transition-all duration-200 text-label-primary placeholder:text-label-quaternary"
+                style={{ fontFamily: "Gilroy, sans-serif" }}
+              />
+            </div>
+
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-3 mb-8 pb-6 border-b border-white/10">
+              {topCategories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-5 py-2.5 min-h-[40px] rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                    activeCategory === category
+                      ? "bg-label-primary text-background shadow-lg ring-2 ring-white/20"
+                      : "bg-white/5 border border-white/10 text-label-secondary hover:bg-white/10 hover:border-white/20 hover:shadow-sm"
+                  }`}
+                  style={{ fontFamily: "Gilroy, sans-serif" }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading ? (
               // Loading skeleton
               Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="animate-pulse">
-                  <div className="bg-fill-secondary rounded-lg h-80 mb-4"></div>
-                  <div className="bg-fill-secondary rounded h-4 mb-2"></div>
-                  <div className="bg-fill-secondary rounded h-4 w-2/3"></div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl h-80 mb-4"></div>
+                  <div className="bg-white/5 rounded-lg h-4 mb-2"></div>
+                  <div className="bg-white/5 rounded-lg h-4 w-2/3"></div>
                 </div>
               ))
             ) : error ? (
               // Error state
-              <div className="col-span-full flex flex-col items-center justify-center py-16">
-                <div className="text-6xl mb-4">😞</div>
-                <h3 className="text-xl font-semibold text-label-primary mb-2">
-                  Oops! Something went wrong
-                </h3>
-                <p className="text-label-secondary mb-4 text-center max-w-md">
-                  {error}
-                </p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-6 py-3 bg-label-primary text-background rounded-lg hover:bg-opacity-90 transition-all duration-200"
-                >
-                  Try Again
-                </button>
+              <div className="col-span-full flex flex-col items-center justify-center py-20 px-4">
+                <div className="text-7xl mb-6 opacity-50">😞</div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 shadow-xl max-w-md text-center">
+                  <h3 className="text-xl font-bold text-label-primary mb-3" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                    Oops! Something went wrong
+                  </h3>
+                  <p className="text-label-secondary mb-6" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                    {error}
+                  </p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-3 bg-label-primary text-background rounded-xl font-semibold hover:bg-opacity-90 transition-all duration-200 shadow-lg"
+                    style={{ fontFamily: "Gilroy, sans-serif" }}
+                  >
+                    Try Again
+                  </button>
+                </div>
               </div>
             ) : products.length === 0 ? (
               // Empty state
-              <div className="col-span-full flex flex-col items-center justify-center py-16">
-                <div className="text-6xl mb-4">🛍️</div>
-                <h3 className="text-xl font-semibold text-label-primary mb-2">
-                  No products found
-                </h3>
-                <p className="text-label-secondary text-center max-w-md">
-                  We couldn't find any products matching your criteria. Try adjusting your filters or search terms.
-                </p>
+              <div className="col-span-full flex flex-col items-center justify-center py-20 px-4">
+                <div className="text-7xl mb-6 opacity-50">🛍️</div>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 shadow-xl max-w-md text-center">
+                  <h3 className="text-xl font-bold text-label-primary mb-3" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                    No products found
+                  </h3>
+                  <p className="text-label-secondary" style={{ fontFamily: "Gilroy, sans-serif" }}>
+                    We couldn't find any products matching your criteria. Try adjusting your filters or search terms.
+                  </p>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="mt-6 px-6 py-3 bg-white/5 border border-white/10 text-label-primary rounded-xl font-semibold hover:bg-white/10 transition-all duration-200"
+                      style={{ fontFamily: "Gilroy, sans-serif" }}
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               products
@@ -943,12 +1042,21 @@ function ProductsPageContent() {
                       product.category.toLowerCase().includes(searchLower);
                     
                     // Category filter - check both top tabs and sidebar checkboxes
-                    const matchesTopCategory =
-                      activeCategory === "NEW" ||
-                      product.category === activeCategory;
+                    let matchesTopCategory = true;
+                    if (activeCategory === "NEW") {
+                      // Show products created in last 30 days
+                      const thirtyDaysAgo = new Date();
+                      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                      matchesTopCategory = true; // Since API doesn't return createdAt, show all for now
+                    } else if (activeCategory === "BEST SELLERS") {
+                      // Show featured products
+                      matchesTopCategory = product.featured === true;
+                    } else {
+                      matchesTopCategory = product.category?.toUpperCase() === activeCategory;
+                    }
                     const matchesSidebarCategory =
                       selectedCategories.length === 0 ||
-                      selectedCategories.includes(product.category);
+                      selectedCategories.some(cat => product.category?.toUpperCase() === cat);
                     const matchesCategory = matchesTopCategory && matchesSidebarCategory;
 
                     // Availability filter - use showAvailable and showOutOfStock
@@ -1035,9 +1143,10 @@ function ProductsPageContent() {
           </div>
         </div>
       </div>
+      </div>
 
       <Footer />
-      </div>
+    </div>
     </ErrorBoundary>
   );
 }

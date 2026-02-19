@@ -54,14 +54,14 @@ interface ProductFormData {
 }
 
 const CATEGORIES = [
-  'T-Shirts',
-  'Polo Shirts', 
-  'Shorts',
-  'Jackets',
-  'Jeans',
-  'Sweaters',
-  'Shoes',
-  'Accessories'
+  'T-SHIRTS',
+  'POLO SHIRTS', 
+  'SHORTS',
+  'JACKETS',
+  'JEANS',
+  'SWEATERS',
+  'SHOES',
+  'ACCESSORIES'
 ]
 
 const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2X', '3X', '4X']
@@ -510,6 +510,8 @@ function NewProductPageContent() {
       const productData = {
         ...formData,
         images: validImages,
+        // Map status to published boolean for API
+        published: asDraft ? false : true,
         status: asDraft ? 'draft' : 'published',
         // Convert dimensions object to match API expectations
         length: formData.dimensions.length,

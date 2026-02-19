@@ -75,7 +75,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const paidOrders = orders.filter(
+      (order) => order.paymentStatus === "completed" && order.status !== "cancelled"
+    );
+    const totalRevenue = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0);
     const pendingOrders = orders.filter((order) => order.status === "pending").length;
     const completedOrders = orders.filter((order) => order.status === "delivered").length;
     const cancelledOrders = orders.filter((order) => order.status === "cancelled").length;
@@ -84,14 +87,14 @@ export async function GET(request: NextRequest) {
     const outOfStockProducts = products.filter((product) => product.stock === 0).length;
 
     const uniqueCustomers = new Set(orders.map((order) => order.userId)).size;
-    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const averageOrderValue = paidOrders.length > 0 ? totalRevenue / paidOrders.length : 0;
     const avgCustomerLifetimeValue = uniqueCustomers > 0 ? totalRevenue / uniqueCustomers : 0;
 
     const dailyMap = new Map<string, { revenue: number; orders: number }>();
     const weeklyMap = new Map<string, { revenue: number; orders: number }>();
     const monthlyMap = new Map<string, { revenue: number; orders: number }>();
 
-    for (const order of orders) {
+    for (const order of paidOrders) {
       const dayKey = formatDateKey(order.createdAt);
       const weekKey = getWeekKey(order.createdAt);
       const monthKey = getMonthKey(order.createdAt);
@@ -126,7 +129,7 @@ export async function GET(request: NextRequest) {
 
     const productTotals = new Map<string, { productName: string; totalSold: number; revenue: number }>();
 
-    for (const order of orders) {
+    for (const order of paidOrders) {
       for (const item of order.items) {
         const entry = productTotals.get(item.productId) || {
           productName: item.product?.name || "Unknown",
@@ -191,7 +194,7 @@ export async function GET(request: NextRequest) {
       topCustomers: [],
       recentOrders: recentOrdersPayload,
       statusDistribution: countByStatus(orders),
-      revenueByStatus: sumByStatus(orders),
+      revenueByStatus: sumByStatus(paidOrders),
       timeRange: {
         from: fromDate.toISOString(),
         to: now.toISOString(),

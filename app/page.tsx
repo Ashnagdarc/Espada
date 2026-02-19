@@ -181,9 +181,10 @@ export default function HomePage() {
               {/* CTA Button */}
               <Link href="/products">
                 <AppleButton
-                  variant="secondary"
+                  variant="primary"
                   size="lg"
                   className="w-full sm:w-auto min-w-[200px]"
+                  aria-label="Shop collections"
                 >
                   Shop Collections
                 </AppleButton>
@@ -218,13 +219,14 @@ export default function HomePage() {
 
         {/* New This Week Section */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12">
-            <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-4 sm:mb-0">
-              {getText(homepageData?.new_this_week?.content?.title, t.home.newThisWeek)}
-            </h2>
-            <p className="text-title-3 font-bold text-primary uppercase">
-              ({homepageData?.new_this_week?.collection_items?.length || 0})
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8">
+            <div className="flex items-baseline gap-4">
+              <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-2 sm:mb-0">
+                {getText(homepageData?.new_this_week?.content?.title, t.home.newThisWeek)}
+              </h2>
+              <span className="text-xs uppercase bg-white/5 text-label-tertiary px-2 py-1 rounded-full">{homepageData?.new_this_week?.collection_items?.length || 0}</span>
+            </div>
+            <Link href="/products" className="text-sm text-primary font-semibold hover:underline">View all</Link>
           </div>
 
           {/* Product Grid */}
@@ -267,48 +269,48 @@ export default function HomePage() {
                 }
               }
             ]).map((item) => (
-              <Link
-                key={item.id}
-                href={`/products/${item.products.id}`}
-                className="group block"
-              >
-                <div className="relative card-apple overflow-hidden mb-4">
-                  <Image
-                    src={item.products.images?.[0] || "/images/placeholder.png"}
-                    alt={item.products.name}
-                    width={305}
-                    height={313}
-                    className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <button
-                    className="absolute top-3 right-3 w-11 h-11 bg-fill-quaternary/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-fill-tertiary transition-all duration-200 focus-ring"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <Heart className="w-5 h-5 text-label-secondary hover:text-red-500 transition-colors" />
-                  </button>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-caption-1 font-medium text-label-tertiary">
-                    {item.products.name}
-                  </h3>
-                  <p className="text-callout font-medium text-label-primary">
-                    $ {item.products.price}
-                  </p>
-                </div>
-              </Link>
+              <article key={item.id} className="group">
+                <Link href={`/products/${item.products.id}`} className="block"> 
+                  <figure className="relative card-apple overflow-hidden mb-4">
+                    <Image
+                      src={item.products.images?.[0] || "/images/placeholder.png"}
+                      alt={item.products.name || 'Product image'}
+                      width={305}
+                      height={313}
+                      className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <button
+                      aria-label={`Add ${item.products.name} to wishlist`}
+                      className="absolute top-3 right-3 w-11 h-11 bg-fill-quaternary/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-fill-tertiary transition-all duration-200 focus-ring"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <Heart className="w-5 h-5 text-label-secondary hover:text-red-500 transition-colors" />
+                    </button>
+                  </figure>
+                  <figcaption className="space-y-1">
+                    <h3 className="text-caption-1 font-medium text-label-tertiary truncate">
+                      {item.products.name}
+                    </h3>
+                    <p className="text-callout font-medium text-label-primary">
+                      $ {item.products.price}
+                    </p>
+                  </figcaption>
+                </Link>
+              </article>
             ))}
           </div>
         </section>
 
         {/* XIV Collections Section */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12">
-            <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-4 sm:mb-0">
-              {getText(homepageData?.xiv_collections?.content?.title, t.home.xivCollections)}
-            </h2>
-            <p className="text-title-3 font-bold text-primary uppercase">
-              ({homepageData?.xiv_collections?.collection_items?.length || 50})
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8">
+            <div className="flex items-baseline gap-4">
+              <h2 className="text-large-title font-bold text-label-primary tracking-tight leading-tight uppercase mb-2 sm:mb-0">
+                {getText(homepageData?.xiv_collections?.content?.title, t.home.xivCollections)}
+              </h2>
+              <span className="text-xs uppercase bg-white/5 text-label-tertiary px-2 py-1 rounded-full">{homepageData?.xiv_collections?.collection_items?.length || 0}</span>
+            </div>
+            <Link href="/products" className="text-sm text-primary font-semibold hover:underline">See all collections</Link>
           </div>
 
           {/* Product Grid */}

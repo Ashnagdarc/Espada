@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/hooks/useAuth'
 import {
   LayoutDashboard,
   Package,
@@ -30,6 +31,7 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
+  const { signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   
@@ -77,7 +79,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const SidebarContent = ({ onClose }: { onClose?: () => void }) => (
     <Fragment>
       <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center space-x-2 mb-8">
+        <div className="flex items-center space-x-2">
           <span className="text-2xl font-bold tracking-tight">Espada</span>
           {onClose && (
             <button
@@ -89,12 +91,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </button>
           )}
         </div>
-        <nav className="space-y-2">
+        <div className="text-xs uppercase tracking-wide text-white/40">Navigation</div>
+        <nav className="space-y-1">
           {routes.map(({ href, label, Icon, active }) => (
             <Link
               key={href}
               href={href}
-              className={`flex items-center px-3 py-2 rounded-md transition-colors ${active ? 'bg-white/10' : 'hover:bg-white/5'}`}
+              className={`flex items-center px-3 py-2 rounded-lg transition-colors ${active ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
               onClick={onClose}
             >
               <Icon className="w-5 h-5 mr-3" /> {label}
@@ -102,8 +105,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           ))}
         </nav>
       </div>
-      <div className="p-6 border-t border-white/10">
-        <div className="flex items-center mb-4">
+      <div className="p-6 border-t border-white/10 space-y-4">
+        <div className="flex items-center">
           <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center mr-3">
             <User className="h-4 w-4 text-white/80" />
           </div>
@@ -112,7 +115,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <p className="font-sans text-xs text-white/60">Theme & navigation</p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center justify-between">
+          <ThemeToggle />
+          <button
+            onClick={signOut}
+            className="px-3 py-1.5 text-xs rounded-md border border-white/20 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+            aria-label="Log out"
+          >
+            Log out
+          </button>
+        </div>
       </div>
     </Fragment>
   )
@@ -131,7 +143,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <div className="min-h-screen bg-black text-white transition-colors duration-300 flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:justify-between w-52 bg-black border-r border-white/10">
+      <aside className="hidden lg:flex lg:flex-col lg:justify-between w-56 bg-black border-r border-white/10">
         <SidebarContent />
       </aside>
 
@@ -140,7 +152,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -208 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="lg:hidden fixed inset-y-0 left-0 z-50 w-52 bg-black border-r border-white/10 flex flex-col justify-between"
+        className="lg:hidden fixed inset-y-0 left-0 z-50 w-56 bg-black border-r border-white/10 flex flex-col justify-between"
       >
         <SidebarContent onClose={() => setSidebarOpen(false)} />
       </motion.aside>

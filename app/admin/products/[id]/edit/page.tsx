@@ -324,15 +324,14 @@ export default function ProductEditPage() {
                   className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
                 >
                   <option value="" className="bg-black text-white">Select a category</option>
-                  <option value="electronics" className="bg-black text-white">Electronics</option>
-                  <option value="clothing" className="bg-black text-white">Clothing</option>
-                  <option value="home" className="bg-black text-white">Home & Garden</option>
-                  <option value="sports" className="bg-black text-white">Sports & Outdoors</option>
-                  <option value="books" className="bg-black text-white">Books</option>
-                  <option value="toys" className="bg-black text-white">Toys & Games</option>
-                  <option value="beauty" className="bg-black text-white">Beauty & Personal Care</option>
-                  <option value="automotive" className="bg-black text-white">Automotive</option>
-                  <option value="other" className="bg-black text-white">Other</option>
+                  <option value="T-SHIRTS" className="bg-black text-white">T-Shirts</option>
+                  <option value="POLO SHIRTS" className="bg-black text-white">Polo Shirts</option>
+                  <option value="SHORTS" className="bg-black text-white">Shorts</option>
+                  <option value="JACKETS" className="bg-black text-white">Jackets</option>
+                  <option value="JEANS" className="bg-black text-white">Jeans</option>
+                  <option value="SWEATERS" className="bg-black text-white">Sweaters</option>
+                  <option value="SHOES" className="bg-black text-white">Shoes</option>
+                  <option value="ACCESSORIES" className="bg-black text-white">Accessories</option>
                 </select>
               </div>
             </div>
@@ -380,6 +379,20 @@ export default function ProductEditPage() {
                 />
                 <span className="ml-2 text-sm text-white/80">Featured Product</span>
               </label>
+              <div className="mt-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.published || false}
+                    onChange={(e) => handleInputChange('published', e.target.checked)}
+                    className="rounded border-white/20 bg-white/5 text-white focus:ring-white/30"
+                  />
+                  <span className="ml-2 text-sm text-white/80">Published</span>
+                </label>
+                {formData.published && formData.publishedAt && (
+                  <p className="text-xs text-white/60 mt-1">Published: {new Date(formData.publishedAt).toLocaleString()}</p>
+                )}
+              </div>
             </div>
           </div>
 
