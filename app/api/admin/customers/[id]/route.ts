@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+type CustomerOrderItem = {
+  id: string;
+  quantity: number;
+  price: number;
+  product: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
+};
+
+type CustomerOrder = {
+  id: string;
+  status: string;
+  totalAmount: number;
+  currency: string;
+  createdAt: Date;
+  items: CustomerOrderItem[];
+};
+
 // GET /api/admin/customers/[id] - Fetch specific customer
 export async function GET(
   request: NextRequest,
@@ -62,14 +82,14 @@ export async function GET(
       country: customer.country,
       createdAt: customer.createdAt.toISOString(),
       updatedAt: customer.updatedAt.toISOString(),
-      orders: customer.user?.orders?.map(order => ({
+      orders: (customer.user?.orders as CustomerOrder[] | undefined)?.map((order) => ({
         id: order.id,
         orderNumber: `ORD-${order.id.slice(-8).toUpperCase()}`,
         status: order.status,
         totalAmount: order.totalAmount,
         currency: order.currency,
         createdAt: order.createdAt.toISOString(),
-        items: order.items.map(item => ({
+        items: order.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           price: item.price,
