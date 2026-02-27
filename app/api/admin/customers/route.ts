@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+type AdminCustomer = {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 // GET /api/admin/customers - Fetch all customers with pagination and filtering
 export async function GET(request: Request) {
   try {
@@ -54,7 +68,7 @@ export async function GET(request: Request) {
       prisma.customerProfile.count({ where })
     ]);
 
-    const transformedCustomers = customers.map(customer => ({
+    const transformedCustomers = (customers as AdminCustomer[]).map((customer: AdminCustomer) => ({
       id: customer.id,
       email: customer.email,
       firstName: customer.firstName,
