@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma, ProductCategory, type Product } from "@prisma/client";
+import { ProductCategory, type Product } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,14 @@ export async function GET(request: NextRequest) {
     const safeLimit = Number.isNaN(limit) || limit < 1 ? 20 : limit;
     const skip = (safePage - 1) * safeLimit;
 
-    const where: Prisma.ProductWhereInput = {};
+    const where: {
+      OR?: Array<
+        | { name: { contains: string; mode: "insensitive" } }
+        | { description: { contains: string; mode: "insensitive" } }
+      >;
+      category?: ProductCategory;
+      featured?: boolean;
+    } = {};
 
     if (search) {
       where.OR = [

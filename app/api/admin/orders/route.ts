@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 function safeParseAddress(value?: string | null) {
@@ -26,8 +25,8 @@ export async function GET(request: Request) {
     const skip = (safePage - 1) * safeLimit
 
     const where = status && status !== 'all' ? { status } : undefined
-    const sortDirection: Prisma.SortOrder = sortOrder === 'asc' ? 'asc' : 'desc'
-    const orderBy: Prisma.OrderOrderByWithRelationInput =
+    const sortDirection = (sortOrder === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc'
+    const orderBy =
       sortBy === 'total_amount'
         ? { totalAmount: sortDirection }
         : { createdAt: sortDirection }

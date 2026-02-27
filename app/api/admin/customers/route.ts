@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 
 // GET /api/admin/customers - Fetch all customers with pagination and filtering
@@ -19,25 +18,26 @@ export async function GET(request: Request) {
     const skip = (safePage - 1) * safeLimit;
 
     // Build where clause for search
-    const where: Prisma.CustomerProfileWhereInput = search
+    const where = search
       ? {
           OR: [
-            { firstName: { contains: search, mode: Prisma.QueryMode.insensitive } },
-            { lastName: { contains: search, mode: Prisma.QueryMode.insensitive } },
-            { email: { contains: search, mode: Prisma.QueryMode.insensitive } }
+            { firstName: { contains: search, mode: 'insensitive' as const } },
+            { lastName: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } }
           ]
         }
       : {};
 
     // Build order by
-    const orderBy: Prisma.CustomerProfileOrderByWithRelationInput = 
+    const direction = sortOrder === 'asc' ? 'asc' : 'desc';
+    const orderBy =
       sortBy === 'email'
-        ? { email: sortOrder === 'asc' ? 'asc' : 'desc' }
+        ? { email: direction as 'asc' | 'desc' }
         : sortBy === 'firstName'
-        ? { firstName: sortOrder === 'asc' ? 'asc' : 'desc' }
+        ? { firstName: direction as 'asc' | 'desc' }
         : sortBy === 'lastName'
-        ? { lastName: sortOrder === 'asc' ? 'asc' : 'desc' }
-        : { createdAt: sortOrder === 'asc' ? 'asc' : 'desc' };
+        ? { lastName: direction as 'asc' | 'desc' }
+        : { createdAt: direction as 'asc' | 'desc' };
 
     const [customers, count] = await Promise.all([
       prisma.customerProfile.findMany({
