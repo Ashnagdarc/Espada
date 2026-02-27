@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { AnalyticsData } from "@/lib/types/api";
+
+type AnalyticsProduct = {
+  id: string;
+  name: string;
+  stock: number;
+  price: number;
+};
+
+type AnalyticsOrder = Prisma.OrderGetPayload<{
+  include: {
+    items: { include: { product: true } };
+    user: { include: { profile: true } };
+  };
+}>;
+
+type AnalyticsRecentOrder = Prisma.OrderGetPayload<{
+  include: {
+    items: true;
+    user: { include: { profile: true } };
+  };
+}>;
 
 function formatDateKey(date: Date) {
   return date.toISOString().split("T")[0];
@@ -41,11 +63,11 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const fromDate = new Date(now.getTime() - timeRange * 24 * 60 * 60 * 1000);
 
-    const [
-      products,
-      orders,
-      recentOrders,
-      newCustomers
+    const [products, orders, recentOrders, newCustomers]: [
+      AnalyticsProduct[],
+      AnalyticsOrder[],
+      AnalyticsRecentOrder[],
+      number
     ] = await Promise.all([
       prisma.product.findMany({
         select: { id: true, name: true, stock: true, price: true }
@@ -74,19 +96,22 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    const totalOrders = orders.length;
-    const paidOrders = orders.filter(
+    const typedOrders = orders;
+    const typedRecentOrders = recentOrders;
+
+    const totalOrders = typedOrders.length;
+    const paidOrders = typedOrders.filter(
       (order) => order.paymentStatus === "completed" && order.status !== "cancelled"
     );
     const totalRevenue = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const pendingOrders = orders.filter((order) => order.status === "pending").length;
-    const completedOrders = orders.filter((order) => order.status === "delivered").length;
-    const cancelledOrders = orders.filter((order) => order.status === "cancelled").length;
+    const pendingOrders = typedOrders.filter((order) => order.status === "pending").length;
+    const completedOrders = typedOrders.filter((order) => order.status === "delivered").length;
+    const cancelledOrders = typedOrders.filter((order) => order.status === "cancelled").length;
 
     const lowStockProducts = products.filter((product) => product.stock <= 5 && product.stock > 0).length;
     const outOfStockProducts = products.filter((product) => product.stock === 0).length;
 
-    const uniqueCustomers = new Set(orders.map((order) => order.userId)).size;
+    const uniqueCustomers = new Set(typedOrders.map((order) => order.userId)).size;
     const averageOrderValue = paidOrders.length > 0 ? totalRevenue / paidOrders.length : 0;
     const avgCustomerLifetimeValue = uniqueCustomers > 0 ? totalRevenue / uniqueCustomers : 0;
 
@@ -153,7 +178,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 6);
 
-    const recentOrdersPayload = recentOrders.map((order) => {
+    const recentOrdersPayload = typedRecentOrders.map((order) => {
       const profile = order.user?.profile;
       const customerName = profile
         ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.email || "Unknown"
@@ -193,7 +218,7 @@ export async function GET(request: NextRequest) {
       topProducts,
       topCustomers: [],
       recentOrders: recentOrdersPayload,
-      statusDistribution: countByStatus(orders),
+      statusDistribution: countByStatus(typedOrders),
       revenueByStatus: sumByStatus(paidOrders),
       timeRange: {
         from: fromDate.toISOString(),
