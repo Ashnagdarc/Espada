@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { validateEmail } from '@/utils/auth-client'
 import { toast } from 'sonner'
 import { Mail, ArrowLeft, Send } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('')
@@ -30,12 +29,16 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password/confirm`,
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
 
-      if (error) {
-        setError(error.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to send reset email')
       } else {
         setIsSubmitted(true)
         toast.success('Password reset email sent!')

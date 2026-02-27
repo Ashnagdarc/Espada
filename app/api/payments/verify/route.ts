@@ -6,7 +6,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 import { paystackService } from '@/lib/paystack';
 
 interface VerifyPaymentRequest {
@@ -25,23 +25,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Get payment record from database
-    const { data: payment, error: paymentError } = await supabaseAdmin
-      .from('payments')
-      .select(`
-        *,
-        orders!inner(
-          id,
-          customer_id,
-          order_number,
-          total_amount,
-          payment_status
-        )
-      `)
-      .eq('paystack_reference', body.reference)
-      .single();
+    const payment = await prisma.payment.findUnique({
+      where: { reference: body.reference },
+      include: {
+        order: true
+      }
+    });
 
-    if (paymentError || !payment) {
-      console.error('Payment record not found:', paymentError);
+    if (!payment) {
+      console.error('Payment record not found');
       return NextResponse.json({
         success: false,
         error: 'Payment record not found'
@@ -56,7 +48,7 @@ export async function POST(request: NextRequest) {
           status: 'success',
           message: 'Payment already verified',
           payment_id: payment.id,
-          order_id: payment.order_id,
+          order_id: payment.orderId,
           amount: payment.amount
         }
       });
@@ -78,45 +70,29 @@ export async function POST(request: NextRequest) {
     const paymentStatus = isPaymentSuccessful ? 'success' : 'failed';
 
     // Update payment record
-    const { error: updatePaymentError } = await supabaseAdmin
-      .from('payments')
-      .update({
+    await prisma.payment.update({
+      where: { reference: body.reference },
+      data: {
         status: paymentStatus,
-        gateway_response: transactionData.gateway_response,
-        paid_at: isPaymentSuccessful ? new Date(transactionData.paid_at).toISOString() : null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('paystack_reference', body.reference);
-
-    if (updatePaymentError) {
-      console.error('Error updating payment record:', updatePaymentError);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to update payment record'
-      }, { status: 500 });
-    }
+        transactionId: transactionData.id?.toString(),
+        metadata: JSON.stringify({
+          gateway_response: transactionData.gateway_response,
+          paid_at: isPaymentSuccessful ? transactionData.paid_at : null,
+          channel: transactionData.channel,
+          authorization: transactionData.authorization
+        })
+      }
+    });
 
     // Update order status if payment successful
     if (isPaymentSuccessful) {
-      const { error: updateOrderError } = await supabaseAdmin
-        .from('orders')
-        .update({
-          payment_status: 'completed',
-          status: 'processing',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', payment.order_id);
-
-      if (updateOrderError) {
-        console.error('Error updating order status:', updateOrderError);
-        // Don't fail the request if order update fails, payment verification is more important
-      }
-
-      // TODO: Here you could add logic to:
-      // - Send confirmation email to customer
-      // - Update inventory/stock
-      // - Trigger fulfillment process
-      // - Send notification to admin
+      await prisma.order.update({
+        where: { id: payment.orderId },
+        data: {
+          paymentStatus: 'completed',
+          status: 'processing'
+        }
+      });
     }
 
     return NextResponse.json({
@@ -125,8 +101,7 @@ export async function POST(request: NextRequest) {
         status: paymentStatus,
         message: paystackService.getPaymentStatusMessage(paymentStatus),
         payment_id: payment.id,
-        order_id: payment.order_id,
-        order_number: payment.orders.order_number,
+        order_id: payment.orderId,
         amount: payment.amount,
         currency: payment.currency,
         paid_at: isPaymentSuccessful ? transactionData.paid_at : null,

@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service role key for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,55 +13,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Auto-verify admin users
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (authError || !authData.user) {
-      console.error('Error creating user in Supabase Auth:', authError);
+    if (existingUser) {
       return NextResponse.json(
-        { error: 'Failed to create user in Supabase Auth' },
-        { status: 500 }
+        { error: 'User with this email already exists' },
+        { status: 400 }
       );
     }
 
-    // Create admin profile in customer_profiles table
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('customer_profiles')
-      .insert([{
-        auth_user_id: authData.user.id,
-        email: email,
-        first_name: firstName || 'Admin',
-        last_name: lastName || 'User',
-        role: 'admin'
-      }])
-      .select()
-      .single();
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    if (profileError) {
-      console.error('Error creating admin profile:', profileError);
-      // Try to clean up the Supabase Auth user if profile creation fails
-      try {
-        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      } catch (cleanupError) {
-        console.error('Error cleaning up Supabase Auth user:', cleanupError);
-      }
-      return NextResponse.json(
-        { error: 'Failed to create admin profile' },
-        { status: 500 }
-      );
-    }
+    // Create user with admin role
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name: `${firstName || 'Admin'} ${lastName || 'User'}`,
+        emailVerified: new Date(), // Auto-verify admin users
+        role: 'ADMIN',
+      },
+    });
+
+    // Create admin profile in Admin table
+    const admin = await prisma.admin.create({
+      data: {
+        userId: user.id,
+        email: user.email!,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: 'Admin user created successfully',
       user: {
-        id: authData.user.id,
-        email: authData.user.email,
-        profile: profile
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        adminProfile: admin,
       }
     });
 

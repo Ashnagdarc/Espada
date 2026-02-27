@@ -1,83 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/utils/auth';
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 import { validatePassword } from '@/utils/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { password, accessToken } = await request.json();
+    const { token, password } = await request.json();
 
-    // Validate input
-    if (!password) {
+    if (!token) {
       return NextResponse.json(
-        { error: 'Password is required' },
+        { error: 'Reset token is required' },
         { status: 400 }
       );
     }
 
-    if (!validatePassword(password)) {
+    if (!password || !validatePassword(password)) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character' },
+        { error: 'Password must be at least 8 characters' },
         { status: 400 }
       );
     }
 
-    const supabase = await createServerSupabaseClient();
-
-    // If access token is provided, set the session first (for password reset flow)
-    if (accessToken) {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: '', // Not needed for password update
-      });
-
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        return NextResponse.json(
-          { error: 'Invalid or expired reset token' },
-          { status: 401 }
-        );
-      }
-    }
-
-    // Update password
-    const { data, error } = await supabase.auth.updateUser({
-      password: password,
+    // Find the verification token
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token }
     });
 
-    if (error) {
-      console.error('Password update error:', error);
+    if (!verificationToken) {
       return NextResponse.json(
-        { error: error.message },
+        { error: 'Invalid or expired reset token' },
         { status: 400 }
       );
     }
 
-    if (!data.user) {
-      return NextResponse.json(
-        { error: 'Failed to update password' },
-        { status: 400 }
-      );
-    }
-
-    // Log password change
-    await supabase
-      .from('email_notifications')
-      .insert({
-        user_id: data.user.id,
-        email: data.user.email || '',
-        type: 'password_changed',
-        subject: 'Password Changed',
-        content: 'Your password has been successfully changed.',
-        status: 'pending',
-        created_at: new Date().toISOString(),
+    if (new Date() > verificationToken.expires) {
+      // Delete expired token
+      await prisma.verificationToken.delete({
+        where: { token }
       });
+      return NextResponse.json(
+        { error: 'Reset token has expired' },
+        { status: 400 }
+      );
+    }
+
+    // Find user by email (identifier)
+    const user = await prisma.user.findUnique({
+      where: { email: verificationToken.identifier }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Hash new password and update user
+    const hashedPassword = await bcrypt.hash(password, 12);
+    
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
+
+    // Delete the used token
+    await prisma.verificationToken.delete({
+      where: { token }
+    });
 
     return NextResponse.json({
-      message: 'Password updated successfully',
+      success: true,
+      message: 'Password updated successfully'
     });
 
   } catch (error) {
-    console.error('Password update API error:', error);
+    console.error('Update password error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

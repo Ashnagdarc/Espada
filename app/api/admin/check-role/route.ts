@@ -1,37 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/utils/auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/auth';
 
 export async function GET(request: NextRequest) {
   void request;
   try {
-    const supabase = await createServerSupabaseClient();
+    const session = await getServerSession(authOptions);
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (userError || !user) {
+    if (!session?.user) {
       return NextResponse.json({
         isAdmin: false,
         error: 'Not authenticated',
       }, { status: 401 });
     }
 
-    // Check if user is admin
-    const { data: admin, error: adminError } = await supabase
-      .from('admins')
-      .select('id, role')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (adminError || !admin) {
-      return NextResponse.json({
-        isAdmin: false,
-      });
-    }
+    const isAdmin = session.user.role === 'admin';
 
     return NextResponse.json({
-      isAdmin: true,
-      role: admin.role,
+      isAdmin,
+      role: session.user.role,
     });
 
   } catch (error) {

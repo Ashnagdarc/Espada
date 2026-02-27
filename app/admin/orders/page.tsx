@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { RefreshCw, Eye, ShoppingCart } from 'lucide-react'
 import AdminLayout from '@/components/admin/AdminLayout'
-import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
 import { useToastActions } from '@/hooks/useToast'
 import { Button } from '@/components/admin/ui/Button'
@@ -51,43 +50,7 @@ export default function AdminOrdersPage() {
     loadOrders()
   }, [])
 
-  // Set up real-time subscriptions for orders
-  useEffect(() => {
-    const ordersSubscription = supabase
-      .channel('orders-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('Order change detected:', payload);
-          
-          // Invalidate orders cache
-          cache.invalidatePattern('orders:');
-          
-          if (payload.eventType === 'INSERT') {
-            const newOrder = payload.new as Order;
-            setOrders(prevOrders => [newOrder, ...prevOrders]);
-            success('New order received!');
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedOrder = payload.new as Order;
-            setOrders(prevOrders =>
-              prevOrders.map(order =>
-                order.id === updatedOrder.id ? updatedOrder : order
-              )
-            );
-          } else if (payload.eventType === 'DELETE') {
-            const deletedOrder = payload.old as Order;
-            setOrders(prevOrders =>
-              prevOrders.filter(order => order.id !== deletedOrder.id)
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(ordersSubscription);
-    };
-  }, [])
+  // Note: Realtime subscriptions removed - use polling or manual refresh instead
 
   const loadOrders = async (showRefreshToast = false, useCache: boolean = true) => {
     try {

@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { validatePassword } from '@/utils/auth-client'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Lock, Check, ArrowRight } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 export default function ResetPasswordConfirmPage() {
   const [password, setPassword] = useState('')
@@ -21,18 +20,20 @@ export default function ResetPasswordConfirmPage() {
     lowercase: false,
     number: false
   })
+  const [token, setToken] = useState<string | null>(null)
 
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if we have the required tokens in the URL
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
+    // Check if we have the required token in the URL
+    const resetToken = searchParams.get('token')
     
-    if (!accessToken || !refreshToken) {
+    if (!resetToken) {
       toast.error('Invalid reset link. Please request a new password reset.')
       router.push('/auth/reset-password')
+    } else {
+      setToken(resetToken)
     }
   }, [searchParams, router])
 
@@ -73,19 +74,23 @@ export default function ResetPasswordConfirmPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    if (!validateForm() || !token) {
       return
     }
 
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
+      const response = await fetch('/api/auth/update-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
       })
 
-      if (error) {
-        toast.error(error.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to update password')
       } else {
         toast.success('Password updated successfully!')
         router.push('/signin')

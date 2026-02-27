@@ -1,67 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/utils/auth';
-import { validateEmail } from '@/utils/auth';
+import prisma from '@/lib/prisma';
+import { validateEmail, generateSecureToken } from '@/utils/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
-    // Validate input
-    if (!email) {
+    if (!email || !validateEmail(email)) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Valid email is required' },
         { status: 400 }
       );
     }
-
-    if (!validateEmail(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await createServerSupabaseClient();
 
     // Check if user exists
-    const { data: userData } = await supabase
-      .from('customer_profiles')
-      .select('id')
-      .eq('email', email)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
 
     // Always return success to prevent email enumeration
-    // but only send email if user exists
-    if (userData) {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password/confirm`,
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        message: 'If an account exists with this email, you will receive a password reset link'
       });
-
-      if (error) {
-        console.error('Password reset error:', error);
-        // Still return success to prevent enumeration
-      } else {
-        // Log password reset request
-        await supabase
-          .from('email_notifications')
-          .insert({
-            user_id: null, // We don't have the auth user ID here
-            email: email,
-            type: 'password_reset',
-            subject: 'Password Reset Request',
-            content: 'A password reset was requested for your account.',
-            status: 'sent',
-            created_at: new Date().toISOString(),
-          });
-      }
     }
 
+    // Generate reset token
+    const token = generateSecureToken();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+
+    // Store reset token (you may want to create a PasswordReset model)
+    // For now, we'll use the VerificationToken model
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires: expiresAt
+      }
+    });
+
+    // TODO: Send email with reset link
+    // const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password/confirm?token=${token}`;
+
     return NextResponse.json({
-      message: 'If an account with that email exists, a password reset link has been sent.',
+      success: true,
+      message: 'If an account exists with this email, you will receive a password reset link'
     });
 
   } catch (error) {
-    console.error('Password reset API error:', error);
+    console.error('Reset password error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

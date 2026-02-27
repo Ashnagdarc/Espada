@@ -6,7 +6,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 import { paystackService } from '@/lib/paystack';
 
 interface PaystackWebhookEvent {
@@ -45,9 +45,8 @@ interface PaystackWebhookEvent {
     };
     metadata?: {
       order_id?: string;
-      customer_id?: string;
-      order_number?: string;
-      [key: string]: any;
+      user_id?: string;
+      [key: string]: unknown;
     };
   };
 }
@@ -70,8 +69,8 @@ export async function POST(request: NextRequest) {
         console.error('Webhook: Invalid signature');
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
       }
-    } catch (error) {
-      console.error('Webhook: Signature validation error:', error);
+    } catch {
+      console.error('Webhook: Signature validation error');
       return NextResponse.json({ error: 'Signature validation failed' }, { status: 400 });
     }
 
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
     let event: PaystackWebhookEvent;
     try {
       event = JSON.parse(body);
-    } catch (error) {
+    } catch {
       console.error('Webhook: Invalid JSON payload');
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
@@ -125,19 +124,15 @@ export async function POST(request: NextRequest) {
  */
 async function handleChargeSuccess(data: PaystackWebhookEvent['data']) {
   try {
-    const { reference, status, gateway_response, paid_at, amount } = data;
-    void status;
-    void amount;
+    const { reference, gateway_response, paid_at } = data;
 
     // Get payment record
-    const { data: payment, error: paymentError } = await supabaseAdmin
-      .from('payments')
-      .select('id, order_id, status')
-      .eq('paystack_reference', reference)
-      .single();
+    const payment = await prisma.payment.findUnique({
+      where: { reference }
+    });
 
-    if (paymentError || !payment) {
-      console.error(`Webhook: Payment record not found for reference ${reference}:`, paymentError);
+    if (!payment) {
+      console.error(`Webhook: Payment record not found for reference ${reference}`);
       return;
     }
 
@@ -148,42 +143,27 @@ async function handleChargeSuccess(data: PaystackWebhookEvent['data']) {
     }
 
     // Update payment status
-    const { error: updatePaymentError } = await supabaseAdmin
-      .from('payments')
-      .update({
+    await prisma.payment.update({
+      where: { reference },
+      data: {
         status: 'success',
-        gateway_response,
-        paid_at: new Date(paid_at).toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('paystack_reference', reference);
-
-    if (updatePaymentError) {
-      console.error(`Webhook: Error updating payment ${reference}:`, updatePaymentError);
-      return;
-    }
+        metadata: JSON.stringify({
+          gateway_response,
+          paid_at
+        })
+      }
+    });
 
     // Update order status
-    const { error: updateOrderError } = await supabaseAdmin
-      .from('orders')
-      .update({
-        payment_status: 'completed',
-        status: 'processing',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', payment.order_id);
-
-    if (updateOrderError) {
-      console.error(`Webhook: Error updating order for payment ${reference}:`, updateOrderError);
-    }
+    await prisma.order.update({
+      where: { id: payment.orderId },
+      data: {
+        paymentStatus: 'completed',
+        status: 'processing'
+      }
+    });
 
     console.log(`Webhook: Successfully processed charge.success for ${reference}`);
-
-    // TODO: Add additional post-payment processing here:
-    // - Send confirmation email
-    // - Update inventory
-    // - Trigger fulfillment
-    // - Send admin notification
 
   } catch (error) {
     console.error('Webhook: Error handling charge.success:', error);
@@ -198,26 +178,15 @@ async function handleChargeFailed(data: PaystackWebhookEvent['data']) {
     const { reference, gateway_response } = data;
 
     // Update payment status
-    const { error: updatePaymentError } = await supabaseAdmin
-      .from('payments')
-      .update({
+    await prisma.payment.update({
+      where: { reference },
+      data: {
         status: 'failed',
-        gateway_response,
-        updated_at: new Date().toISOString()
-      })
-      .eq('paystack_reference', reference);
-
-    if (updatePaymentError) {
-      console.error(`Webhook: Error updating failed payment ${reference}:`, updatePaymentError);
-      return;
-    }
+        metadata: JSON.stringify({ gateway_response })
+      }
+    });
 
     console.log(`Webhook: Successfully processed charge.failed for ${reference}`);
-
-    // TODO: Add failure handling logic:
-    // - Send failure notification to customer
-    // - Log for admin review
-    // - Trigger retry logic if applicable
 
   } catch (error) {
     console.error('Webhook: Error handling charge.failed:', error);
@@ -232,25 +201,14 @@ async function handleChargeAbandoned(data: PaystackWebhookEvent['data']) {
     const { reference } = data;
 
     // Update payment status
-    const { error: updatePaymentError } = await supabaseAdmin
-      .from('payments')
-      .update({
-        status: 'abandoned',
-        updated_at: new Date().toISOString()
-      })
-      .eq('paystack_reference', reference);
-
-    if (updatePaymentError) {
-      console.error(`Webhook: Error updating abandoned payment ${reference}:`, updatePaymentError);
-      return;
-    }
+    await prisma.payment.update({
+      where: { reference },
+      data: {
+        status: 'abandoned'
+      }
+    });
 
     console.log(`Webhook: Successfully processed charge.abandoned for ${reference}`);
-
-    // TODO: Add abandonment handling logic:
-    // - Send cart recovery email
-    // - Track abandonment analytics
-    // - Trigger remarketing campaigns
 
   } catch (error) {
     console.error('Webhook: Error handling charge.abandoned:', error);

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { adminFetchCached } from '@/lib/admin/api'
-import { supabase } from '@/lib/supabase'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache'
 import {
   AreaChart,
@@ -86,39 +85,7 @@ export default function AdminAnalyticsPage() {
     fetchAnalytics();
   }, [timeRange]);
 
-  // Set up real-time subscriptions for orders and analytics
-  useEffect(() => {
-    const ordersSubscription = supabase
-      .channel('orders-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('Order change detected:', payload);
-          // Invalidate analytics cache and refresh
-          cache.invalidatePattern('analytics:');
-          fetchAnalytics(false);
-        }
-      )
-      .subscribe();
-
-    const analyticsSubscription = supabase
-      .channel('analytics-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'daily_analytics' },
-        (payload) => {
-          console.log('Analytics change detected:', payload);
-          // Invalidate analytics cache and refresh
-          cache.invalidatePattern('analytics:');
-          fetchAnalytics(false);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(ordersSubscription);
-      supabase.removeChannel(analyticsSubscription);
-    };
-  }, [timeRange]);
+  // Note: Real-time subscriptions removed - consider implementing polling for updates
 
   const fetchAnalytics = async (useCache: boolean = true) => {
     try {

@@ -6,7 +6,6 @@ import AdminPage from '@/components/admin/ui/AdminPage';
 import PageHeader from '@/components/admin/ui/PageHeader';
 import Card from '@/components/admin/ui/Card';
 import { Search, Filter, UserPlus, Mail, Phone, MapPin, Eye, Edit, Trash2, X, Calendar, ShoppingBag, DollarSign, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 import { useToastActions } from '@/hooks/useToast';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
@@ -77,43 +76,7 @@ function CustomersPageContent() {
     loadCustomers();
   }, [currentPage, searchTerm, filterStatus]);
 
-  // Set up real-time subscriptions for customers
-  useEffect(() => {
-    const customersSubscription = supabase
-      .channel('customers-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'customer_profiles' },
-        (payload) => {
-          console.log('Customer change detected:', payload);
-          
-          // Invalidate customers cache
-          cache.invalidatePattern('customers:');
-          
-          if (payload.eventType === 'INSERT') {
-            const newCustomer = payload.new as Customer;
-            setCustomers(prevCustomers => [newCustomer, ...prevCustomers]);
-            success('New Customer!', `${newCustomer.first_name} ${newCustomer.last_name} has registered`);
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedCustomer = payload.new as Customer;
-            setCustomers(prevCustomers =>
-              prevCustomers.map(customer =>
-                customer.id === updatedCustomer.id ? updatedCustomer : customer
-              )
-            );
-          } else if (payload.eventType === 'DELETE') {
-            const deletedCustomer = payload.old as Customer;
-            setCustomers(prevCustomers =>
-              prevCustomers.filter(customer => customer.id !== deletedCustomer.id)
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(customersSubscription);
-    };
-  }, [])
+  // Note: Realtime subscriptions removed - use polling or manual refresh instead
 
   const loadCustomers = async (useCache: boolean = true) => {
     try {
@@ -168,12 +131,12 @@ function CustomersPageContent() {
 
   const loadCustomerDetails = async (customerId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      const sessionToken = sessionStorage.getItem('adminAuth');
+      if (!sessionToken) return;
 
       const response = await fetch(`/api/admin/customers/${customerId}`, {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${sessionToken}`
         }
       });
 
@@ -211,8 +174,8 @@ function CustomersPageContent() {
     
     setEditLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const sessionToken = sessionStorage.getItem('adminAuth');
+      if (!sessionToken) {
         const errorMessage = 'Please log in to save changes';
         setError(errorMessage);
         showError('Authentication Required', errorMessage);
@@ -223,7 +186,7 @@ function CustomersPageContent() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${sessionToken}`
         },
         body: JSON.stringify(editForm)
       });
@@ -255,8 +218,8 @@ function CustomersPageContent() {
     if (!selectedCustomer) return;
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const sessionToken = sessionStorage.getItem('adminAuth');
+      if (!sessionToken) {
         const errorMessage = 'Please log in to delete customer';
       setError(errorMessage);
       showError('Authentication Required', errorMessage);
@@ -266,7 +229,7 @@ function CustomersPageContent() {
       const response = await fetch(`/api/admin/customers/${selectedCustomer.id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${sessionToken}`
         }
       });
 

@@ -6,7 +6,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import prisma from '@/lib/prisma';
 import { paystackService } from '@/lib/paystack';
 
 interface InitializePaymentRequest {
@@ -36,33 +36,28 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Verify order exists and belongs to customer
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .select(`
-        id,
-        customer_id,
-        order_number,
-        total_amount,
-        payment_status,
-        customer_profiles!inner(email)
-      `)
-      .eq('id', body.order_id)
-      .single();
+    // Verify order exists
+    const order = await prisma.order.findUnique({
+      where: { id: body.order_id },
+      include: {
+        user: {
+          include: {
+            profile: true
+          }
+        }
+      }
+    });
 
-    if (orderError || !order) {
-      console.error('Order lookup error:', orderError);
+    if (!order) {
       return NextResponse.json({
         success: false,
         error: 'Order not found'
       }, { status: 404 });
     }
 
-    // Verify customer email matches (handle relation array)
-    const profileEmail = Array.isArray(order.customer_profiles)
-      ? order.customer_profiles[0]?.email
-      : (order as any).customer_profiles?.email;
-    if (!profileEmail || profileEmail !== body.customer_email) {
+    // Verify customer email matches
+    const userEmail = order.user?.email || order.user?.profile?.email;
+    if (!userEmail || userEmail !== body.customer_email) {
       return NextResponse.json({
         success: false,
         error: 'Customer email does not match order'
@@ -70,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if order is already paid
-    if (order.payment_status === 'completed') {
+    if (order.paymentStatus === 'completed') {
       return NextResponse.json({
         success: false,
         error: 'Order already paid'
@@ -78,22 +73,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if there's already a pending payment for this order
-    const { data: existingPayment } = await supabaseAdmin
-      .from('payments')
-      .select('id, status, authorization_url')
-      .eq('order_id', body.order_id)
-      .eq('status', 'pending')
-      .single();
+    const existingPayment = await prisma.payment.findUnique({
+      where: { orderId: body.order_id }
+    });
 
-    // If there's already a pending payment, return its details
-    if (existingPayment) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          authorization_url: existingPayment.authorization_url,
-          message: 'Using existing pending payment'
-        }
-      });
+    if (existingPayment && existingPayment.status === 'pending' && existingPayment.metadata) {
+      const metadata = JSON.parse(existingPayment.metadata);
+      if (metadata.authorization_url) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            authorization_url: metadata.authorization_url,
+            message: 'Using existing pending payment'
+          }
+        });
+      }
     }
 
     // Generate unique reference
@@ -110,8 +104,8 @@ export async function POST(request: NextRequest) {
       callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`,
       metadata: {
         order_id: body.order_id,
-        customer_id: order.customer_id,
-        order_number: order.order_number
+        user_id: order.userId,
+        customer_id: order.userId
       }
     });
 
@@ -123,41 +117,37 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Save payment record
-    const { error: paymentError } = await supabaseAdmin
-      .from('payments')
-      .insert({
-        order_id: body.order_id,
-        paystack_reference: reference,
-        paystack_access_code: paystackResponse.data.access_code,
-        authorization_url: paystackResponse.data.authorization_url,
-        amount: body.amount,
-        currency: body.currency || 'NGN',
-        status: 'pending'
+    // Save or update payment record
+    if (existingPayment) {
+      await prisma.payment.update({
+        where: { id: existingPayment.id },
+        data: {
+          reference: reference,
+          amount: body.amount,
+          currency: body.currency || 'NGN',
+          status: 'pending',
+          metadata: JSON.stringify({
+            authorization_url: paystackResponse.data.authorization_url,
+            access_code: paystackResponse.data.access_code
+          })
+        }
       });
-
-    if (paymentError) {
-      console.error('Error saving payment record:', paymentError);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to save payment record'
-      }, { status: 500 });
-    }
-
-    // Update order with Paystack reference
-    const { error: orderUpdateError } = await supabaseAdmin
-      .from('orders')
-      .update({
-        paystack_reference: reference,
-        payment_method: 'paystack',
-        payment_gateway: 'paystack',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', body.order_id);
-
-    if (orderUpdateError) {
-      console.error('Error updating order:', orderUpdateError);
-      // Don't fail the request if order update fails, payment record is more important
+    } else {
+      await prisma.payment.create({
+        data: {
+          userId: order.userId,
+          orderId: body.order_id,
+          reference: reference,
+          amount: body.amount,
+          currency: body.currency || 'NGN',
+          status: 'pending',
+          paymentMethod: 'paystack',
+          metadata: JSON.stringify({
+            authorization_url: paystackResponse.data.authorization_url,
+            access_code: paystackResponse.data.access_code
+          })
+        }
+      });
     }
 
     return NextResponse.json({
