@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { AnalyticsData } from "@/lib/types/api";
 
@@ -10,19 +9,46 @@ type AnalyticsProduct = {
   price: number;
 };
 
-type AnalyticsOrder = Prisma.OrderGetPayload<{
-  include: {
-    items: { include: { product: true } };
-    user: { include: { profile: true } };
-  };
-}>;
+type AnalyticsOrder = {
+  id: string;
+  userId: string;
+  status: string;
+  paymentStatus: string;
+  totalAmount: number;
+  createdAt: Date;
+  items: Array<{
+    productId: string;
+    quantity: number;
+    price: number;
+    product: { name: string } | null;
+  }>;
+  user: {
+    email: string | null;
+    profile: {
+      firstName: string | null;
+      lastName: string | null;
+      email: string | null;
+    } | null;
+  } | null;
+};
 
-type AnalyticsRecentOrder = Prisma.OrderGetPayload<{
-  include: {
-    items: true;
-    user: { include: { profile: true } };
-  };
-}>;
+type AnalyticsRecentOrder = {
+  id: string;
+  status: string;
+  totalAmount: number;
+  createdAt: Date;
+  items: Array<{
+    id: string;
+  }>;
+  user: {
+    email: string | null;
+    profile: {
+      firstName: string | null;
+      lastName: string | null;
+      email: string | null;
+    } | null;
+  } | null;
+};
 
 function formatDateKey(date: Date) {
   return date.toISOString().split("T")[0];
@@ -96,8 +122,8 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    const typedOrders = orders;
-    const typedRecentOrders = recentOrders;
+    const typedOrders = orders as unknown as AnalyticsOrder[];
+    const typedRecentOrders = recentOrders as unknown as AnalyticsRecentOrder[];
 
     const totalOrders = typedOrders.length;
     const paidOrders = typedOrders.filter(
