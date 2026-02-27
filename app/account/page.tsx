@@ -8,7 +8,7 @@ import { CustomerOrderHistory } from '@/components/auth/CustomerOrderHistory';
 import { CustomerWishlist } from '@/components/auth/CustomerWishlist';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { User, Package, Settings, Heart, CreditCard, LogOut, Home, ArrowLeft } from 'lucide-react';
+import { User, Package, Settings, Heart, CreditCard, LogOut, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -38,7 +38,7 @@ function AccountContent() {
       await signOut();
       toast.success('Signed out successfully');
       // No need to manually redirect - signOut now handles it
-    } catch (error) {
+    } catch {
       toast.error('Error signing out');
       router.push('/'); // Fallback redirect on error
     }

@@ -35,13 +35,6 @@ const footerSections = [
   },
 ];
 
-const socialLinks = [
-  { name: "Instagram", icon: Instagram, href: "#" },
-  { name: "Twitter", icon: Twitter, href: "#" },
-  { name: "Facebook", icon: Facebook, href: "#" },
-  { name: "Email", icon: Mail, href: "mailto:hello@espada.com" },
-];
-
 const languages = ["English", "Español", "Français", "Deutsch"];
 const technologies = ["React", "Next.js", "TypeScript", "Tailwind CSS"];
 

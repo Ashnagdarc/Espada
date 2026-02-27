@@ -19,7 +19,6 @@ export async function GET(
             orders: {
               select: {
                 id: true,
-                orderNumber: true,
                 status: true,
                 totalAmount: true,
                 currency: true,
@@ -65,7 +64,7 @@ export async function GET(
       updatedAt: customer.updatedAt.toISOString(),
       orders: customer.user?.orders?.map(order => ({
         id: order.id,
-        orderNumber: order.orderNumber,
+        orderNumber: `ORD-${order.id.slice(-8).toUpperCase()}`,
         status: order.status,
         totalAmount: order.totalAmount,
         currency: order.currency,

@@ -18,6 +18,8 @@ export interface Product {
   stock: number;
   stock_quantity?: number;
   featured: boolean;
+  published?: boolean;
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

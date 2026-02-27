@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 function safeParseAddress(value?: string | null) {
@@ -25,9 +26,11 @@ export async function GET(request: Request) {
     const skip = (safePage - 1) * safeLimit
 
     const where = status && status !== 'all' ? { status } : undefined
-    const orderBy = sortBy === 'total_amount'
-      ? { totalAmount: sortOrder === 'asc' ? 'asc' : 'desc' }
-      : { createdAt: sortOrder === 'asc' ? 'asc' : 'desc' }
+    const sortDirection: Prisma.SortOrder = sortOrder === 'asc' ? 'asc' : 'desc'
+    const orderBy: Prisma.OrderOrderByWithRelationInput =
+      sortBy === 'total_amount'
+        ? { totalAmount: sortDirection }
+        : { createdAt: sortDirection }
 
     const [ordersData, count] = await Promise.all([
       prisma.order.findMany({

@@ -36,6 +36,7 @@ interface Product {
   tags: string[];
   rating: number;
   stock: number;
+  featured?: boolean;
 }
 
 // Interface for API product data

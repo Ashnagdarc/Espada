@@ -201,7 +201,7 @@ export default function OrderDetailPage() {
                         {order.items.map((item, index) => (
                           <div key={index} className="flex items-start justify-between p-5 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div className="flex-1 min-w-0 pr-4">
-                              <h4 style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-semibold text-gray-900 dark:text-white mb-2">{item.product?.name || 'Product'}</h4>
+                              <h4 style={{ fontFamily: 'Gilroy, sans-serif' }} className="font-semibold text-gray-900 dark:text-white mb-2">{item.productName || 'Product'}</h4>
                               <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm text-gray-600 dark:text-gray-400">
                                 <span>Quantity: {item.quantity}</span>
                               </div>
@@ -222,7 +222,7 @@ export default function OrderDetailPage() {
                     <div className="border-t border-gray-200 dark:border-gray-600 mt-6 pt-5">
                       <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="flex justify-between items-center text-xl font-bold text-gray-900 dark:text-white">
                         <span>Total</span>
-                        <span>${order?.totalAmount.toFixed(2)}</span>
+                        <span>${order ? order.total.toFixed(2) : '0.00'}</span>
                       </div>
                     </div>
                   </HoverCard>
@@ -270,11 +270,11 @@ export default function OrderDetailPage() {
                     <div className="space-y-4">
                       <div>
                         <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white font-medium">{order?.user?.name || 'N/A'}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white font-medium">{order?.customerName || 'N/A'}</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white break-all">{order?.user?.email || 'N/A'}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white break-all">{order?.customerEmail || 'N/A'}</div>
                       </div>
                     </div>
                   </HoverCard>
@@ -348,7 +348,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                         <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Amount</div>
-                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white text-2xl font-bold">${order?.totalAmount.toFixed(2)}</div>
+                        <div style={{ fontFamily: 'Gilroy, sans-serif' }} className="text-gray-900 dark:text-white text-2xl font-bold">${order ? order.total.toFixed(2) : '0.00'}</div>
                       </div>
                     </div>
                   </HoverCard>

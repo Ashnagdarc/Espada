@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma, type Product } from "@prisma/client";
+import { Prisma, ProductCategory, type Product } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (category) {
-      where.category = category;
+    if (category && Object.values(ProductCategory).includes(category as ProductCategory)) {
+      where.category = category as ProductCategory;
     }
 
     if (featured !== null && featured !== undefined) {

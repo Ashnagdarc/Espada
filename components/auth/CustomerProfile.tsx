@@ -42,6 +42,11 @@ export function CustomerProfile() {
   };
 
   const handleSave = async () => {
+    if (!user) {
+      toast.error('Please sign in to update your profile');
+      return;
+    }
+
     setIsSaving(true);
     try {
       const result = await updateProfile({
