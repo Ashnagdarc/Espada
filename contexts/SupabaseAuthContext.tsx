@@ -179,7 +179,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         
         const profileData: CustomerProfilePayload = {
           auth_user_id: data.user.id,
-          email: data.user.email,
+          email: data.user.email ?? null,
           role: 'customer'
         };
 

@@ -2,12 +2,14 @@
   "name": "espada-store",
   "private": true,
   "version": "0.1.0",
+  "description": "Full-stack e-commerce application with a storefront and administrative workflows.",
+  "packageManager": "pnpm@9.12.3",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
